@@ -12,6 +12,8 @@ int main(int argc, char **argv)
     manager.init("src/database/init.sql", init_database);
     auto p = manager.getProduct(2);
     std::cout << p->str() << std::endl;
+    p = manager.getProduct(2);
+    std::cout << p->str() << std::endl;
   }
   catch (std::exception &e)
   {

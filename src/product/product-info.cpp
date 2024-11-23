@@ -19,7 +19,7 @@ ProductInfo::ProductInfo(ProductInfo &&other) noexcept
   other.product_price = 0.0;
 }
 
-inline std::string ProductInfo::str() const noexcept
+std::string ProductInfo::str() const noexcept
 {
   return (
       "{ " +
@@ -32,7 +32,7 @@ inline std::string ProductInfo::str() const noexcept
       " }");
 }
 
-inline ProductInfo &ProductInfo::operator=(const ProductInfo &other)
+ProductInfo &ProductInfo::operator=(const ProductInfo &other)
 {
   if (this != &other)
   {
@@ -46,7 +46,7 @@ inline ProductInfo &ProductInfo::operator=(const ProductInfo &other)
   return *this;
 }
 
-inline ProductInfo &ProductInfo::operator=(ProductInfo &&other)
+ProductInfo &ProductInfo::operator=(ProductInfo &&other)
 {
   if (this != &other)
   {

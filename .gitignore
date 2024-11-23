@@ -1,9 +1,7 @@
 .vscode
 main
+libinvemanager.so
 libsqlite.so
-libdatabase.so
-libproducts.so
-libutils.so
 
 test.db
 src/lib/sqlite
