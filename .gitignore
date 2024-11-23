@@ -1,0 +1,15 @@
+.vscode
+main
+libsqlite.so
+libdatabase.so
+libproducts.so
+libutils.so
+
+test.db
+src/lib/sqlite
+
+Makefile
+cmake_install.cmake
+CMakeCache.txt
+build
+CMakeFiles
