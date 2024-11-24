@@ -18,10 +18,9 @@ void Database::checkFile(std::string f_name) noexcept(false)
   }
 }
 
-std::unordered_map<int, Product> &Database::parseQueryToUmap(std::unordered_map<int, Product> &&dest, QueryResult &&qresult)
+std::unordered_map<int, std::reference_wrapper<Product>> Database::parseQueryToUmap(std::unordered_map<int, std::reference_wrapper<Product>> &&dest, QueryResult &&qresult)
 {
   std::unordered_map<std::string, std::string> row;
-  Product p;
 
   auto cols = qresult.first;
   auto vals = qresult.second;
@@ -36,7 +35,7 @@ std::unordered_map<int, Product> &Database::parseQueryToUmap(std::unordered_map<
     // En caso de que sea la ulima columna por registro
     if (std::distance(vals.begin(), it) % cols.size() == cols.size() - 1)
     {
-      p = Product(row);
+      Product p(row);
       dest.emplace(p.identifier(), p);
       row.clear(); // Limpiar el mapa para la proxima fila
     }

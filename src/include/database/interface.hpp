@@ -33,7 +33,7 @@ public:
 
   Database(sqlite3 *other_db);
 
-  static std::unordered_map<int, Product> &parseQueryToUmap(std::unordered_map<int, Product> &&dest, QueryResult &&qresult);
+  static std::unordered_map<int, std::reference_wrapper<Product>> parseQueryToUmap(std::unordered_map<int, std::reference_wrapper<Product>> &&dest, QueryResult &&qresult);
 
   static std::string &mergeQueryArgs(std::string &&query, std::vector<std::string> &&args);
 

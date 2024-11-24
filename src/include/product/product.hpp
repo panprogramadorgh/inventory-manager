@@ -46,10 +46,15 @@ public:
   // Operators
   ProductInfo &operator=(const ProductInfo &other);
   ProductInfo &operator=(ProductInfo &&other);
+
+  ~ProductInfo() = default;
 };
 
 class Product : private ProductInfo
 {
+private:
+  mutable int cache_relevance;
+
 public:
   // Constructors
   Product();
@@ -60,6 +65,8 @@ public:
 
   // Methods
   int identifier() const noexcept;
+  int getCacheRelevance() const noexcept;
+  bool decreaseCacheRelevance() const noexcept;
   int add(int amount = 1);
   ProductInfo info() const noexcept;
   std::string str() const noexcept;
@@ -67,6 +74,8 @@ public:
   // Operators
   Product &operator=(const Product &other);
   Product &operator=(Product &&other);
+
+  ~Product() = default;
 };
 
 #endif

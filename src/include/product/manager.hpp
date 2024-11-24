@@ -9,12 +9,10 @@ class ProductManager
 {
 private:
   Database *db;
-  std::unordered_map<int, Product> cached_products;
+  std::unordered_map<int, std::reference_wrapper<Product>> cached_products;
 
   // Gestion interna de recursos cacheados
-  std::size_t addProductToCache(const Product &p) noexcept;
-
-  std::size_t moveProductToCache(const Product &p) noexcept;
+  std::size_t addProductToCache(Product &p) noexcept;
 
   std::size_t removeProductFromCache(int id) noexcept;
 
