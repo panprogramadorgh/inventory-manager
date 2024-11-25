@@ -15,9 +15,15 @@ int main(int argc, char **argv)
     p = manager.getProduct(2);
     p = manager.getProduct(2);
     p = manager.getProduct(2);
+    p = manager.getProduct(2);
+    p = manager.getProduct(2);
+    p = manager.getProduct(2);
+    p = manager.getProduct(2);
+    p = manager.getProduct(2);
+    p = manager.getProduct(2);
+    p = manager.getProduct(2);
+    p = manager.getProduct(2);
     manager.foo();
-
-    // std::cout << p->str() << std::endl;
   }
   catch (std::exception &e)
   {

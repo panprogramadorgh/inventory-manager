@@ -3,6 +3,8 @@
 #include "../include/product/product.hpp"
 #include "../include/utils/strutils.hpp"
 
+#include <memory> // FIXME: Debug
+
 // Static methods
 void Database::checkFile(std::string f_name) noexcept(false)
 {
@@ -18,7 +20,7 @@ void Database::checkFile(std::string f_name) noexcept(false)
   }
 }
 
-std::unordered_map<int, std::reference_wrapper<Product>> Database::parseQueryToUmap(std::unordered_map<int, std::reference_wrapper<Product>> &&dest, QueryResult &&qresult)
+std::unordered_map<int, std::shared_ptr<Product>> Database::parseQueryToUmap(std::unordered_map<int, std::shared_ptr<Product>> &&dest, QueryResult &&qresult)
 {
   std::unordered_map<std::string, std::string> row;
 
@@ -36,7 +38,7 @@ std::unordered_map<int, std::reference_wrapper<Product>> Database::parseQueryToU
     if (std::distance(vals.begin(), it) % cols.size() == cols.size() - 1)
     {
       Product p(row);
-      dest.emplace(p.identifier(), p);
+      dest.emplace(p.identifier(), std::make_shared<Product>(p));
       row.clear(); // Limpiar el mapa para la proxima fila
     }
   }

@@ -26,13 +26,16 @@ ProductManager &ProductManager::init(std::string init_file, std::function<void(D
 
 const Product *ProductManager::getProduct(int id) noexcept
 {
+  // It allocates a block of memory in the heap, after obtaining the data, these are written in the Product object located in this block of memory (assignment operator = copies the data) and finally returns a pointer to it.
+  Product *p = new Product();
+
   // Decrease cache relevance of products and remove irrelevant products
   std::vector<int> garbage_products;
   for (auto pair : cached_products)
   {
     if (pair.first != id)
     {
-      if (!pair.second.get().decreaseCacheRelevance())
+      if (!pair.second.get()->decreaseCacheRelevance())
       {
         garbage_products.push_back(pair.first);
       }
@@ -46,11 +49,17 @@ const Product *ProductManager::getProduct(int id) noexcept
   // Returns the product if it is in cache
   auto it = cached_products.find(id);
   if (it != cached_products.cend())
-    return &(it->second.get());
+  {
+    *p = *it->second.get(); // Copies the product inside the heap
+    return p;
+  }
 
   // Returns nullptr in case the product is not in cache and datbase is not initialized
   if (!db)
+  {
+    delete p;
     return nullptr;
+  }
 
   // Obtains the product from database
   std::string query = "SELECT * FROM products_info as p WHERE p.product_id = $";
@@ -60,25 +69,24 @@ const Product *ProductManager::getProduct(int id) noexcept
   }
   catch (const std::exception)
   {
+    delete p;
     return nullptr;
   }
-  auto products = Database::parseQueryToUmap(std::unordered_map<int, std::reference_wrapper<Product>>(), db->fetchQuery());
+  auto products = Database::parseQueryToUmap(std::unordered_map<int, std::shared_ptr<Product>>(), db->fetchQuery());
   it = products.find(id);
   if (it == products.end())
+  {
+    delete p;
     return nullptr;
+  }
 
-  addProductToCache(it->second.get()); // And finally we push the product to cache
+  addProductToCache(it->second); // And finally we push the product to cache
 
-  // If the product was found, it is moved to the heap and retuerned as a ptr.
-  // FIXME: Debug
-  // std::bad_alloc is obtained at the moment of call it->second.get().info();
-  std::cout << "Obtaining product . . ." << std::endl;
-  Product *p = new Product();
-  *p = std::move(it->second.get());
-  return nullptr;
+  *p = *it->second;
+  return p;
 }
 
-Product &ProductManager::addProduct(Product &&p, int vendor_id) noexcept(false)
+void ProductManager::addProduct(Product &p, int vendor_id) noexcept(false)
 {
   std::string query = "INSERT INTO products (product_id, product_name, product_description, vendor_id, product_count, product_price) VALUES ($, $, $, $, $, $)";
   db->executeUpdate(
@@ -89,19 +97,6 @@ Product &ProductManager::addProduct(Product &&p, int vendor_id) noexcept(false)
                              std::to_string(vendor_id),
                              std::to_string(p.info().product_price),
                              std::to_string(p.info().product_count)}));
-
-  query = "SELECT * FROM products_info as p WHERE p.product_id = $";
-  db->executeQuery(Database::mergeQueryArgs(std::move(query), {std::to_string(p.identifier())}));
-
-  auto result = Database::parseQueryToUmap(std::unordered_map<int, std::reference_wrapper<Product>>(), db->fetchQuery());
-  p = result.at(p.identifier());
-
-  return p;
-}
-
-Product &ProductManager::addProduct(Product &p, int vendor_id) noexcept(false)
-{
-  return addProduct(std::move(p), vendor_id);
 }
 
 void ProductManager::removeProduct(int id) noexcept(false)
@@ -111,42 +106,31 @@ void ProductManager::removeProduct(int id) noexcept(false)
   removeProductFromCache(id); // Es eliminado de la cache
 }
 
-void ProductManager::removeProduct(const Product *p) noexcept(false)
-{
-  removeProduct(p->identifier());
-  delete p;
-}
-
 void ProductManager::foo() noexcept(false)
 {
   std::cout << "Cache: " << std::endl;
-  for (auto key : cached_products)
+  for (auto pair : cached_products)
   {
-    // FIXME: Debug
-    // std::bad_alloc error at the moment of call key.second.get().info()
-    // std::cout << key.second.get().identifier() << std::endl;
-    std::cout << "Reading cache . . ." << std::endl;
-    std::cout << key.second.get().info().product_id << std::endl;
-    std::cout << key.second.get().str() << std::endl;
+    std::cout << pair.second->str() << std::endl;
   }
 
   db->executeQuery("SELECT * FROM products_info");
   std::cout << "Database: " << std::endl;
 
-  auto result = Database::parseQueryToUmap(std::unordered_map<int, std::reference_wrapper<Product>>(), db->fetchQuery());
+  auto result = Database::parseQueryToUmap(std::unordered_map<int, std::shared_ptr<Product>>(), db->fetchQuery());
 
   for (auto it = result.cbegin(); it != result.cend(); it++)
-    std::cout << it->second.get().str() << std::endl;
+    std::cout << it->second->str() << std::endl;
 }
 
 // Private methods
 
-std::size_t ProductManager::addProductToCache(Product &p) noexcept
+std::size_t ProductManager::addProductToCache(std::shared_ptr<Product> p) noexcept
 {
-  auto it = cached_products.find(p.identifier());
+  auto it = cached_products.find(p->identifier());
   if (it == cached_products.cend()) // In case the product does not exist in cache, it is been added.
   {
-    cached_products.emplace(p.identifier(), p);
+    cached_products.emplace(p->identifier(), p);
     return cached_products.size();
   }
   return 0;

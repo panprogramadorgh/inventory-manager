@@ -1,4 +1,6 @@
 .vscode
+tests
+
 main
 libinvemanager.so
 libsqlite.so
