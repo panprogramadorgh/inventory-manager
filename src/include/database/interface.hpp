@@ -3,7 +3,7 @@
 
 #include "../forwarder.hpp"
 #include "../product/product.hpp"
-#include "../sqlite/sqlite3.h"
+#include "../../build/sqlite-3.47.1/sqlite3.h"
 #include <filesystem>
 #include <functional>
 
