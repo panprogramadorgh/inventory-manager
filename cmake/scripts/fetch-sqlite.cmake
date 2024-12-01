@@ -15,9 +15,6 @@ if(NOT EXISTS ${SQLITE_SOURCE_DIR})
   message(STATUS "Extracting sqlite archive ${SQLITE_ARCHIVE}")
   execute_process(
     COMMAND unzip ${SQLITE_ARCHIVE} -d ${SQLITE_SOURCE_DIR}
-
-    # COMMAND cp "${SQLITE_AMAL}/sqlite3.c" ${SQLITE_SOURCE_DIR}
-    # COMMAND cp "${SQLITE_AMAL}/sqlite3.h" ${SQLITE_SOURCE_DIR}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   )
   execute_process(
