@@ -41,7 +41,7 @@ public:
   ProductInfo(ProductInfo &&other) noexcept;       // Move
 
   // Methods
-  std::string str() const noexcept;
+  std::string str(const std::vector<std::string> &visible_fields) const noexcept;
 
   // Operators
   ProductInfo &operator=(const ProductInfo &other);
@@ -63,13 +63,26 @@ public:
   Product(const Product &other); // Copy
   Product(Product &&other);      // Move
 
+  // Static methods
+  inline static std::unordered_map<std::string, std::string> parseToUmap(const ProductInfo &p) noexcept
+  {
+    return {
+      {"product_id", std::to_string(p.product_id)},
+      {"product_name", p.product_name},
+      {"product_description", p.product_description},
+      {"vendor_name", p.vendor_name},
+      {"product_count", std::to_string(p.product_count)},
+      {"product_price", std::to_string(p.product_price)}
+    };
+  }
+
   // Methods
   int identifier() const noexcept;
   int getCacheRelevance() const noexcept;
   bool decreaseCacheRelevance() const noexcept;
   int add(int amount = 1);
   ProductInfo info() const noexcept;
-  std::string str() const noexcept;
+  std::string str(const std::vector<std::string> &visible_fields) const noexcept;
 
   // Operators
   Product &operator=(const Product &other);

@@ -106,6 +106,7 @@ void ProductManager::removeProduct(int id) noexcept(false)
   removeProductFromCache(id); // Es eliminado de la cache
 }
 
+/*
 void ProductManager::foo() noexcept(false)
 {
   std::cout << "Cache: " << std::endl;
@@ -122,6 +123,7 @@ void ProductManager::foo() noexcept(false)
   for (auto it = result.cbegin(); it != result.cend(); it++)
     std::cout << it->second->str() << std::endl;
 }
+*/
 
 // Private methods
 

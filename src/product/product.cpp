@@ -57,18 +57,9 @@ ProductInfo Product::info() const noexcept
   return static_cast<ProductInfo>(*this);
 }
 
-std::string Product::str() const noexcept
+std::string Product::str(const std::vector<std::string> &visible_fields) const noexcept
 {
-  return (
-      "{ " +
-      std::to_string(product_id) + ", " +
-      product_name + ", " +
-      product_description + ", " +
-      vendor_name + ", " +
-      std::to_string(product_price) + ", " +
-      std::to_string(product_count) +
-      " }" + " - " +
-      std::to_string(cache_relevance));
+  return ProductInfo::str(visible_fields) + " - " + std::to_string(cache_relevance);
 }
 
 Product &Product::operator=(const Product &other)

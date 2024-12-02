@@ -1,3 +1,4 @@
+#include <bits/stdc++.h> // std::find
 #include "../include/product/product.hpp"
 
 extern std::unordered_map<ProductField, std::string> product_field_to_string;
@@ -19,17 +20,31 @@ ProductInfo::ProductInfo(ProductInfo &&other) noexcept
   other.product_price = 0.0;
 }
 
-std::string ProductInfo::str() const noexcept
+std::string ProductInfo::str(const std::vector<std::string> &visible_fields) const noexcept
 {
-  return (
-      "{ " +
-      std::to_string(product_id) + ", " +
-      product_name + ", " +
-      product_description + ", " +
-      vendor_name + ", " +
-      std::to_string(product_price) + ", " +
-      std::to_string(product_count) +
-      " }");
+  auto product_umap = Product::parseToUmap(*this); // Representation of an objet on a map
+  std::vector<std::string> fields = {
+    "product_id",
+    "product_name",
+    "product_description",
+    "vendor_name",
+    "product_count",
+    "product_price"
+  };
+  const bool all_visible = visible_fields[0] == "all";
+
+  std::string result_str;
+  for (auto &vfield : (all_visible ? fields : visible_fields))
+  {
+    // In case is not the first iteration
+    if (&(all_visible ? fields : visible_fields)[0] != &vfield)
+      result_str += ", ";
+
+    // Appends the field
+    result_str += product_umap.at(vfield);
+  }
+
+  return "{ " + result_str + " }";
 }
 
 ProductInfo &ProductInfo::operator=(const ProductInfo &other)
