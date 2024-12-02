@@ -12,21 +12,19 @@ if(NOT EXISTS ${SQLITE_ARCHIVE})
 endif()
 
 if(NOT EXISTS ${SQLITE_SOURCE_DIR})
-  message(STATUS "Extracting sqlite archive ${SQLITE_ARCHIVE}")
-  execute_process(
-    COMMAND unzip ${SQLITE_ARCHIVE} -d ${SQLITE_SOURCE_DIR}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  )
+  if(NOT EXISTS ${SQLITE_AMAL})
+  message(STATUS "Extracting sqlite archive ${SQLITE_ARCHIVE} at ${SQLITE_AMAL}")
+    execute_process(
+      COMMAND unzip ${SQLITE_ARCHIVE} -d ${SQLITE_SOURCE_DIR}
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    )
+  endif()
   execute_process(
     COMMAND cp "${SQLITE_AMAL}/sqlite3.c" ${SQLITE_SOURCE_DIR}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   )
   execute_process(
     COMMAND cp "${SQLITE_AMAL}/sqlite3.h" ${SQLITE_SOURCE_DIR}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  )
-  execute_process(
-    COMMAND rm -rf ${SQLITE_AMAL}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   )
 endif()
