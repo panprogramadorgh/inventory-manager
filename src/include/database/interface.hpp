@@ -35,9 +35,8 @@ public:
 
   static std::unordered_map<int, std::shared_ptr<Product>> parseQueryToUmap(std::unordered_map<int, std::shared_ptr<Product>> &&dest, QueryResult &&qresult);
 
-  static std::string &mergeQueryArgs(std::string &&query, std::vector<std::string> &&args);
+  static std::string &mergeQueryArgs(std::string &&query, std::vector<std::string> &&args) noexcept;
 
-  // TODO: Sobrecarga para std::unordeted_map<int, Product>
   static void printQuery(QueryResult qresult) noexcept;
 
   std::string getDatabaseFile() const noexcept;

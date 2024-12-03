@@ -129,13 +129,16 @@ void ProductManager::foo() noexcept(false)
 
 std::size_t ProductManager::addProductToCache(std::shared_ptr<Product> p) noexcept
 {
+  // Do not add product if it is virtual
+  if (p->identifier() == -1)
+    return 0;
+
   auto it = cached_products.find(p->identifier());
-  if (it == cached_products.cend()) // In case the product does not exist in cache, it is been added.
-  {
-    cached_products.emplace(p->identifier(), p);
-    return cached_products.size();
-  }
-  return 0;
+  if (it != cached_products.cend()) // In case the product does not exist in cache, it is been added.
+    return 0;
+
+  cached_products.emplace(p->identifier(), p);
+  return cached_products.size();
 }
 
 std::size_t ProductManager::removeProductFromCache(int id) noexcept

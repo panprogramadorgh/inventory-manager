@@ -37,6 +37,8 @@ public:
   // Constructors
   ProductInfo();
   ProductInfo(int id, std::string name, std::string description, std::string vendor_name, int count = 0, double price = 0.0);
+  // Virtual product constructor (id = -1)
+  ProductInfo(std::string name, std::string description, std::string vendor_name, int count = 0, double price = 0.0);
   ProductInfo(const ProductInfo &other) = default; // Copy
   ProductInfo(ProductInfo &&other) noexcept;       // Move
 
@@ -59,6 +61,8 @@ public:
   // Constructors
   Product();
   Product(int id, std::string name, std::string description, std::string vendor_name, int count = 0, double price = 0.0);
+  // Virtual product constructor (id = -1)
+  Product(std::string name, std::string description, std::string vendor_name, int count = 0, double price = 0.0);
   Product(std::unordered_map<std::string, std::string> map);
   Product(const Product &other); // Copy
   Product(Product &&other);      // Move
@@ -67,13 +71,12 @@ public:
   inline static std::unordered_map<std::string, std::string> parseToUmap(const ProductInfo &p) noexcept
   {
     return {
-      {"product_id", std::to_string(p.product_id)},
-      {"product_name", p.product_name},
-      {"product_description", p.product_description},
-      {"vendor_name", p.vendor_name},
-      {"product_count", std::to_string(p.product_count)},
-      {"product_price", std::to_string(p.product_price)}
-    };
+        {"product_id", std::to_string(p.product_id)},
+        {"product_name", p.product_name},
+        {"product_description", p.product_description},
+        {"vendor_name", p.vendor_name},
+        {"product_count", std::to_string(p.product_count)},
+        {"product_price", std::to_string(p.product_price)}};
   }
 
   // Methods

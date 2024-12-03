@@ -13,6 +13,11 @@ ProductInfo::ProductInfo(int id, std::string name, std::string description, std:
 {
 }
 
+ProductInfo::ProductInfo(std::string name, std::string description, std::string vendor_name, int count, double price)
+    : product_id(-1), product_name(std::move(name)), product_description(std::move(description)), vendor_name(std::move(vendor_name)), product_count(count), product_price(price)
+{
+}
+
 ProductInfo::ProductInfo(ProductInfo &&other) noexcept
     : product_id(other.product_id), product_name(std::move(other.product_name)), product_description(std::move(other.product_description)), vendor_name(std::move(other.vendor_name)), product_count(other.product_count), product_price(other.product_price)
 {
@@ -24,13 +29,12 @@ std::string ProductInfo::str(const std::vector<std::string> &visible_fields) con
 {
   auto product_umap = Product::parseToUmap(*this); // Representation of an objet on a map
   std::vector<std::string> fields = {
-    "product_id",
-    "product_name",
-    "product_description",
-    "vendor_name",
-    "product_count",
-    "product_price"
-  };
+      "product_id",
+      "product_name",
+      "product_description",
+      "vendor_name",
+      "product_count",
+      "product_price"};
   const bool all_visible = visible_fields[0] == "all";
 
   std::string result_str;

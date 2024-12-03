@@ -37,7 +37,7 @@ std::unordered_map<int, std::shared_ptr<Product>> Database::parseQueryToUmap(std
     // En caso de que sea la ulima columna por registro
     if (std::distance(vals.begin(), it) % cols.size() == cols.size() - 1)
     {
-      Product p(row);
+      Product p(row); // It creates a full product with id member
       dest.emplace(p.identifier(), std::make_shared<Product>(p));
       row.clear(); // Limpiar el mapa para la proxima fila
     }
@@ -58,7 +58,7 @@ void Database::printQuery(QueryResult qresult) noexcept
     std::cout << *it << (std::distance(vals.cbegin(), it) % cols.size() == cols.size() - 1 ? "\n" : ",");
 }
 
-std::string &Database::mergeQueryArgs(std::string &&query, std::vector<std::string> &&args)
+std::string &Database::mergeQueryArgs(std::string &&query, std::vector<std::string> &&args) noexcept
 {
   std::size_t pos, i = 0;
 

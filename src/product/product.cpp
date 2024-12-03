@@ -10,6 +10,11 @@ Product::Product(int id, std::string name, std::string description, std::string 
 {
 }
 
+Product::Product(std::string name, std::string description, std::string vendor_name, int count, double price)
+    : ProductInfo(name, description, vendor_name, count, price)
+{
+}
+
 Product::Product(std::unordered_map<std::string, std::string> map)
     : ProductInfo(
           std::atoi(map.at(product_field_to_string[ProductField::product_id]).c_str()),

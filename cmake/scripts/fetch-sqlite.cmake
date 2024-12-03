@@ -33,7 +33,7 @@ if(NOT EXISTS ${SQLITE_CMAKE_FILE})
   file(WRITE ${SQLITE_CMAKE_FILE} "
     cmake_minimum_required(VERSION 3.10)
     project(Sqlite)
-    add_library(sqlite STATIC \"${SQLITE_SOURCE_DIR}/sqlite3.c\")
+    add_library(sqlite SHARED \"${SQLITE_SOURCE_DIR}/sqlite3.c\")
     target_include_directories(sqlite PUBLIC \"${SQLITE_SOURCE_DIR}\")
   ")
   message(STATUS "Generating dynamically ${SQLITE_CMAKE_FILE}")
