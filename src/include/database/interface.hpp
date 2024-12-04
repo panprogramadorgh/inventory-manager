@@ -35,7 +35,7 @@ public:
 
   static std::unordered_map<int, std::shared_ptr<Product>> parseQueryToUmap(std::unordered_map<int, std::shared_ptr<Product>> &&dest, QueryResult &&qresult);
 
-  static std::string &mergeQueryArgs(std::string &&query, std::vector<std::string> &&args) noexcept;
+  static std::string mergeQueryArgs(std::string query, std::vector<std::string> &&args) noexcept;
 
   static void printQuery(QueryResult qresult) noexcept;
 
@@ -45,9 +45,9 @@ public:
 
   QueryResult fetchQuery() const noexcept;
 
-  void executeQuery(std::string raw_query, std::vector<std::string> args = {}) const noexcept(false);
+  void executeQuery(std::string raw_query, std::vector<std::string> &&args = {}) const noexcept(false);
 
-  void executeUpdate(std::string raw_query, std::vector<std::string> args = {}) const noexcept(false);
+  void executeUpdate(std::string raw_query, std::vector<std::string> &&args = {}) const noexcept(false);
 
   ~Database();
 };

@@ -58,13 +58,12 @@ void Database::printQuery(QueryResult qresult) noexcept
     std::cout << *it << (std::distance(vals.cbegin(), it) % cols.size() == cols.size() - 1 ? "\n" : ",");
 }
 
-std::string &Database::mergeQueryArgs(std::string &&query, std::vector<std::string> &&args) noexcept
+std::string Database::mergeQueryArgs(std::string query, std::vector<std::string> &&args) noexcept
 {
   std::size_t pos, i = 0;
 
   while ((pos = query.find('$')) != std::string::npos)
     strInsert(query, args.at(i++), pos, 1);
-
   return query;
 }
 
@@ -110,9 +109,9 @@ QueryResult Database::fetchQuery() const noexcept
   return std::make_pair(cols, vals);
 }
 
-void Database::executeQuery(std::string raw_query, std::vector<std::string> args) const noexcept(false)
+void Database::executeQuery(std::string  raw_query, std::vector<std::string> &&args) const noexcept(false)
 {
-  std::string query = mergeQueryArgs(std::move(raw_query), std::move(args)); // Monta la consulta con los argumentos indicados
+  std::string query = mergeQueryArgs(raw_query, std::move(args)); // Monta la consulta con los argumentos indicados
   char *query_msg = nullptr;                                                 // Mensaje de sliqte3 (debe ser liberado con sqlite3_free)
   int query_result;                                                          // Almacena el codigo de error de la consulta
 
@@ -145,9 +144,9 @@ void Database::executeQuery(std::string raw_query, std::vector<std::string> args
   };
 }
 
-void Database::executeUpdate(std::string raw_query, std::vector<std::string> args) const noexcept(false)
+void Database::executeUpdate(std::string raw_query, std::vector<std::string> &&args) const noexcept(false)
 {
-  std::string query = mergeQueryArgs(std::move(raw_query), std::move(args)); // Monta la consulta con los argumentos indicados
+  std::string query = mergeQueryArgs(raw_query, std::move(args)); // Monta la consulta con los argumentos indicados
   char *query_msg = nullptr;                                                 // Mensaje de sliqte3 (debe ser liberado con sqlite3_free)
   int query_result;                                                          // Almacena el codigo de error de la consultaF
 

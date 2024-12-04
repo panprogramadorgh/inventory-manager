@@ -12,5 +12,7 @@ void init_database(Database &db, std::string db_init_file)
   while (std::getline(file, each_line))
     sql_text += each_line + '\n';
 
+  db.executeQuery("BEGIN TRANSACTION");
   db.executeUpdate(sql_text); // Puede lanzar error de consulta
+  db.executeQuery("COMMIT");
 }

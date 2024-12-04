@@ -34,11 +34,11 @@ public:
   /// @param p En realidad el miembro `vendor_name` del objeto p es ignorado puesto que el vendedor es indicado como un segundo argumento del metodo.
   /// @param vendor_id Hace referencia al vendedor del producto
   /// @returns Retorna una referencia al nuevo producto insertado (con el nombre del vendedor correspondiente al id indicado)
-  void addProduct(Product &p, int vendor_id) noexcept(false);
+  void addProduct(const ProductInfo &p, const int vendor_id, const bool commit_update = false) noexcept(false);
 
   /// @brief Su proposito es eliminar productos de la base de datos y de la cache
   /// @param id Identificador de producto
-  void removeProduct(int id) noexcept(false);
+  void removeProduct(const int id, const bool commit_update = true) noexcept(false);
 
   /// @brief Used for debugging propouses
   void foo() noexcept(false);

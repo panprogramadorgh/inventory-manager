@@ -3,7 +3,6 @@
 std::string &strInsert(std::string &a, std::string b, std::size_t p, std::size_t n) noexcept
 {
   std::string start, end;
-
   try
   {
     start = a.substr(0, p);
@@ -13,7 +12,6 @@ std::string &strInsert(std::string &a, std::string b, std::size_t p, std::size_t
   {
     return a;
   }
-
   a = start + b + end;
   return a;
 }

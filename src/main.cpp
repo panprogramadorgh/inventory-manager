@@ -20,9 +20,14 @@ int main(int argc, char **argv)
   cxxopts::Options options(argv[0], "Allows to manager inventory with products.");
 
   options.add_options()("h,help", "Get help")
-      // Product id
+      // Product properties
       ("id", "Product id", cxxopts::value<int>())
-      // Product fields
+      ("n,name", "Product name", cxxopts::value<std::string>())
+      ("d,description", "Brief product description", cxxopts::value<std::string>())
+      ("v,vendorid", "Product vendor id", cxxopts::value<int>())
+      ("c,count", "Product quantity", cxxopts::value<int>())
+      ("p,price", "Product value", cxxopts::value<double>())
+      // Product fields to display
       ("f,fields", "Product fields to display", cxxopts::value<std::vector<std::string>>()->default_value({"all"}))
       // Positionals
       ("method", "Product method", cxxopts::value<std::string>());
@@ -46,21 +51,6 @@ int main(int argc, char **argv)
   Database db(home + "/inventory-manager.db");
   ProductManager manager(&db);
 
-  // TOO: Comprobar integriad de archivo de base de datos por cada vez que se lanza el programa
-  // FIXME: Problema al leer archivo de base de datos
-  std::ifstream dbfile("/home/alvaro/inventory-manager.db");
-  if (!dbfile || !dbfile.good())
-  {
-    std::cerr << "Colud not read database file" << std::endl;
-  }
-  else
-  {
-    std::string line, sql_text;
-    while (std::getline(dbfile, line))
-      sql_text += line;
-    std::cout << sql_text << std::endl;
-  }
-
   // TODO: Crear funcion de gestion de entrada de comandos
   // TODO: Crear modo "console" donde se procesan varias entrada en una misma "sesion" (llamar a la anterior funcion)
   try
@@ -76,10 +66,22 @@ int main(int argc, char **argv)
       else
         throw std::runtime_error("Could not find product with id '" + std::to_string(id) + "'");
     }
-    else if (result["method"].as<std::string>() == "rm")
+    else if (result["method"].as<std::string>() == "add")
+    {
+      ProductInfo p(
+        result["name"].as<std::string>(),
+        result["description"].as<std::string>(),
+        "", // We specify the vendor by their id
+        result["count"].as<int>(),
+        result["price"].as<double>()
+      ); // Virtual object to insert in database
+      int vendor_id = result["vendorid"].as<int>();
+      manager.addProduct(p, vendor_id, true);
+    }
+    else if (result["method"].as<std::string>() == "rem")
     {
       int id = result["id"].as<int>();
-      manager.removeProduct(id); // Throws a QueryError if there is an exception
+      manager.removeProduct(id, true); // Throws a QueryError if there is an exception
       std::cout << "Product with id '" << std::to_string(id) << "' was removed" << std::endl;
     }
     else if constexpr (current_build_mode == BuildMode::Testing)
