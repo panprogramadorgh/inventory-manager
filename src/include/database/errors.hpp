@@ -3,36 +3,51 @@
 
 #include "../database/interface.hpp"
 
+/* Base class for database errors */
 class DatabaseError : public std::exception
 {
-private:
-  std::string message;
-  int code;
+protected:
+  char *message;
+  const int code;
 
 public:
-  DatabaseError(int code, std::string message);
-
+  DatabaseError(const int code, const char *msg);
   virtual const char *what() const noexcept;
+
+  inline std::string toString() const noexcept
+  {
+    return message;
+  }
+
+  ~DatabaseError()
+  {
+    delete[] message;
+  }
 };
+
+/* The following initialize the super class with the specific message */
 
 class ConnError : public DatabaseError
 {
 public:
-  ConnError(int exit_code);
+  ConnError(const int conn_exit_code);
 };
 
 class QueryError : public DatabaseError
 {
 public:
-  QueryError(int query_result);
+  char *query_err_message;
 
-  QueryError(int query_result, char *query_message);
+  QueryError(const int query_exit_code);
+  QueryError(const int query_exit_code, const char *msg);
+
+  const char *what() const noexcept override;
 };
 
 class InitError : public DatabaseError
 {
 public:
-  InitError(int exit_code);
+  InitError(int init_exit_code);
 };
 
 #endif

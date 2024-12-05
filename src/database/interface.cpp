@@ -3,8 +3,6 @@
 #include "../include/product/product.hpp"
 #include "../include/utils/strutils.hpp"
 
-#include <memory> // FIXME: Debug
-
 // Static methods
 void Database::checkFile(std::string f_name) noexcept(false)
 {
@@ -64,6 +62,7 @@ std::string Database::mergeQueryArgs(std::string query, std::vector<std::string>
 
   while ((pos = query.find('$')) != std::string::npos)
     strInsert(query, args.at(i++), pos, 1);
+
   return query;
 }
 
@@ -109,11 +108,11 @@ QueryResult Database::fetchQuery() const noexcept
   return std::make_pair(cols, vals);
 }
 
-void Database::executeQuery(std::string  raw_query, std::vector<std::string> &&args) const noexcept(false)
+void Database::executeQuery(std::string raw_query, std::vector<std::string> &&args) const noexcept(false)
 {
   std::string query = mergeQueryArgs(raw_query, std::move(args)); // Monta la consulta con los argumentos indicados
-  char *query_msg = nullptr;                                                 // Mensaje de sliqte3 (debe ser liberado con sqlite3_free)
-  int query_result;                                                          // Almacena el codigo de error de la consulta
+  char *query_msg = nullptr;                                      // Mensaje de sliqte3 (debe ser liberado con sqlite3_free)
+  int query_result;                                               // Almacena el codigo de error de la consulta
 
   // Escribir registros en la pantalla
   auto callback = [](void *ctx, int rows, char **vals, char **cols) -> int
@@ -132,27 +131,32 @@ void Database::executeQuery(std::string  raw_query, std::vector<std::string> &&a
     return 0;
   };
 
-  // Callback tiene tipo incompatible con sqlite3_exec
   query_result = sqlite3_exec(db, query.c_str(), callback, (void *)this, &query_msg);
 
   if (query_result != SQLITE_OK)
   {
-    if (query_msg != nullptr)
-      throw QueryError(query_result, query_msg);
-    else
-      throw QueryError(query_result);
-  };
+    /* Now QueryError copies the error, so query_msg may be free. */
+    QueryError qerror(query_result, query_msg);
+    sqlite3_free(query_msg);
+    throw qerror;
+  }
 }
 
 void Database::executeUpdate(std::string raw_query, std::vector<std::string> &&args) const noexcept(false)
 {
   std::string query = mergeQueryArgs(raw_query, std::move(args)); // Monta la consulta con los argumentos indicados
-  char *query_msg = nullptr;                                                 // Mensaje de sliqte3 (debe ser liberado con sqlite3_free)
-  int query_result;                                                          // Almacena el codigo de error de la consultaF
+  char *query_msg = nullptr;                                      // Mensaje de sliqte3 (debe ser liberado con sqlite3_free)
+  int query_result;                                               // Almacena el codigo de error de la consultaF
 
+  // FIXME: Arreglar problema con mensaje de error nulo que hace fallar la construccion de un string.
   query_result = sqlite3_exec(db, query.c_str(), nullptr, nullptr, &query_msg);
   if (query_result != SQLITE_OK)
-    throw QueryError(query_result, query_msg);
+  {
+    /* Now QueryError copies the error, so query_msg may be free. */
+    QueryError qerror(query_result, query_msg);
+    sqlite3_free(query_msg);
+    throw qerror;
+  }
 }
 
 Database::~Database()

@@ -65,7 +65,7 @@ const Product *ProductManager::getProduct(int id) noexcept
   try
   {
     std::string query =
-      "SELECT * FROM products_info as p WHERE p.product_id = $";
+        "SELECT * FROM products_info as p WHERE p.product_id = $";
     db->executeQuery(Database::mergeQueryArgs(query, {std::to_string(id)}));
   }
   catch (const std::exception)
@@ -93,16 +93,14 @@ void ProductManager::addProduct(const ProductInfo &p, const int vendor_id, const
   if (commit_update)
     db->executeUpdate("BEGIN TRANSACTION");
 
-  // FIXME: Error al combianr argumentos de query.
-  // Ver src/products/manager.cpp para mas detalles del error
   std::string query = "INSERT INTO products (product_name, product_description, vendor_id, product_count, product_price) VALUES ($, $, $, $, $, $)";
+
   query = Database::mergeQueryArgs(
-          query, {
-                             "\"" + p.product_name + "\"",
-                             "\"" + p.product_description + "\"",
-                             std::to_string(vendor_id),
-                             std::to_string(p.product_price),
-                             std::to_string(p.product_count)});
+      query, {"\"" + p.product_name + "\"",
+              "\"" + p.product_description + "\"",
+              std::to_string(vendor_id),
+              std::to_string(p.product_price),
+              std::to_string(p.product_count)});
   db->executeUpdate(query);
 
   if (commit_update)

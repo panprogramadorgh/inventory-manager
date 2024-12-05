@@ -17,12 +17,11 @@ int strInsert(std::string &a, std::string b, std::size_t p, std::size_t n) noexc
     end = a.substr(p + n);
   }
   catch (const std::exception &)
-    {
+  {
     return 1;
-    }
+  }
   return (a = start + b + end), 0;
 }
-
 
 std::string mergeQueryArgs(std::string query, std::vector<std::string> &&args) noexcept
 {
@@ -33,9 +32,14 @@ std::string mergeQueryArgs(std::string query, std::vector<std::string> &&args) n
   return query;
 }
 
+void foo(char *bar)
+{
+  delete bar;
+}
+
 int main()
 {
-    std::string query("SELECT * FROM products WHERE product_id = $ AND product_name = $");
-    query = mergeQueryArgs(query, {std::to_string(1), "Test"});
-    std::cout << query << std::endl;
+  char *q = "Hola";
+  foo(q);
+  std::cout << q << std::endl;
 }
