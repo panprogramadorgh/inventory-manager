@@ -1,8 +1,8 @@
 #ifndef DBINTERFACE_HPP
 #define DBINTERFACE_HPP
 
-#include "../forwarder.hpp"
-#include "../product/product.hpp"
+#include "forwarder.hpp"
+#include "product/product.hpp"
 #include "sqlite3.h"
 #include <filesystem>
 #include <functional>
@@ -20,9 +20,11 @@ private:
   std::vector<std::string> cols;
   std::vector<std::string> vals;
 
-  static void checkFile(std::string f_name) noexcept(false);
-
   void setDatabaseFile(std::string db_name);
+
+  // Static methods
+
+  static void checkFile(std::string f_name) noexcept(false);
 
 public:
   Database() noexcept;
@@ -32,12 +34,6 @@ public:
   Database(const Database &other);
 
   Database(sqlite3 *other_db);
-
-  static std::unordered_map<int, std::shared_ptr<Product>> parseQueryToUmap(std::unordered_map<int, std::shared_ptr<Product>> &&dest, QueryResult &&qresult);
-
-  static std::string mergeQueryArgs(std::string query, std::vector<std::string> &&args) noexcept;
-
-  static void printQuery(QueryResult qresult) noexcept;
 
   std::string getDatabaseFile() const noexcept;
 
@@ -49,7 +45,19 @@ public:
 
   void executeUpdate(std::string raw_query, std::vector<std::string> &&args = {}) const noexcept(false);
 
-  ~Database();
+  ~Database()
+  {
+    sqlite3_close(db);
+  }
+
+
+  // Static methods
+
+  static std::unordered_map<int, std::shared_ptr<Product>> parseQueryToUmap(std::unordered_map<int, std::shared_ptr<Product>> &&dest, QueryResult &&qresult);
+
+  static std::string mergeQueryArgs(std::string query, std::vector<std::string> &&args) noexcept;
+
+  static void printQuery(QueryResult qresult) noexcept;
 };
 
 #endif

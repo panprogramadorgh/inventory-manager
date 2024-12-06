@@ -7,31 +7,25 @@
 class DatabaseError : public std::exception
 {
 protected:
-  char *message;
+  char *error_message;
   const int code;
 
 public:
   DatabaseError(const int code, const char *msg);
-  virtual const char *what() const noexcept;
+  virtual const char *what() const noexcept override;
 
   inline std::string toString() const noexcept
   {
-    return message;
+    return error_message;
   }
 
-  ~DatabaseError()
+  virtual ~DatabaseError()
   {
-    delete[] message;
+    delete[] error_message;
   }
 };
 
 /* The following initialize the super class with the specific message */
-
-class ConnError : public DatabaseError
-{
-public:
-  ConnError(const int conn_exit_code);
-};
 
 class QueryError : public DatabaseError
 {
@@ -41,7 +35,19 @@ public:
   QueryError(const int query_exit_code);
   QueryError(const int query_exit_code, const char *msg);
 
-  const char *what() const noexcept override;
+  virtual const char *what() const noexcept override;
+
+  ~QueryError()
+  {
+    if (query_err_message != nullptr)
+      delete[] query_err_message;
+  }
+};
+
+class ConnError : public DatabaseError
+{
+public:
+  ConnError(const int conn_exit_code);
 };
 
 class InitError : public DatabaseError

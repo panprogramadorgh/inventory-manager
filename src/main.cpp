@@ -1,19 +1,8 @@
-#include "include/forwarder.hpp"
-#include "include/product/manager.hpp"
-#include "include/product/product.hpp"
-#include "include/utils/dbutils.hpp"
+#include "forwarder.hpp"
+#include "product/manager.hpp"
+#include "product/product.hpp"
+#include "utils/dbutils.hpp"
 #include "cxxopts.hpp"
-
-#include <fstream>
-
-/* Building configuration */
-enum class BuildMode
-{
-  Release,
-  Testing
-}
-
-constexpr current_build_mode = BuildMode::Testing;
 
 int main(int argc, char **argv)
 {
@@ -21,12 +10,7 @@ int main(int argc, char **argv)
 
   options.add_options()("h,help", "Get help")
       // Product properties
-      ("id", "Product id", cxxopts::value<int>())
-      ("n,name", "Product name", cxxopts::value<std::string>())
-      ("d,description", "Brief product description", cxxopts::value<std::string>())
-      ("v,vendorid", "Product vendor id", cxxopts::value<int>())
-      ("c,count", "Product quantity", cxxopts::value<int>())
-      ("p,price", "Product value", cxxopts::value<double>())
+      ("id", "Product id", cxxopts::value<int>())("n,name", "Product name", cxxopts::value<std::string>())("d,description", "Brief product description", cxxopts::value<std::string>())("v,vendorid", "Product vendor id", cxxopts::value<int>())("c,count", "Product quantity", cxxopts::value<int>())("p,price", "Product value", cxxopts::value<double>())
       // Product fields to display
       ("f,fields", "Product fields to display", cxxopts::value<std::vector<std::string>>()->default_value({"all"}))
       // Positionals
@@ -69,12 +53,11 @@ int main(int argc, char **argv)
     else if (result["method"].as<std::string>() == "add")
     {
       ProductInfo p(
-        result["name"].as<std::string>(),
-        result["description"].as<std::string>(),
-        "", // We specify the vendor by their id
-        result["count"].as<int>(),
-        result["price"].as<double>()
-      ); // Virtual object to insert in database
+          result["name"].as<std::string>(),
+          result["description"].as<std::string>(),
+          "", // We specify the vendor by their id
+          result["count"].as<int>(),
+          result["price"].as<double>()); // Virtual object to insert in database
       int vendor_id = result["vendorid"].as<int>();
       manager.addProduct(p, vendor_id, true);
     }
@@ -84,19 +67,14 @@ int main(int argc, char **argv)
       manager.removeProduct(id, true); // Throws a QueryError if there is an exception
       std::cout << "Product with id '" << std::to_string(id) << "' was removed" << std::endl;
     }
-    else if constexpr (current_build_mode == BuildMode::Testing)
+#if DEV_MODE
+    else if (result["method"].as<std::string>() == "init")
     {
-      if (result["method"].as<std::string>() == "init")
-      {
-        /* Puede tirar: QueryError, InitError, ConnError */
-        manager.init(home + "/code/inventory-manager/src/database/init.sql", init_database);
-        std::cerr << "Database was initialized" << std::endl;
-      }
-      else
-      {
-        throw std::runtime_error("Invalid method");
-      }
+      /* Puede tirar: QueryError, InitError, ConnError */
+      manager.init(home + "/code/inventory-manager/src/database/init.sql", init_database);
+      std::cerr << "Database was initialized" << std::endl;
     }
+#endif
     else
     {
       throw std::runtime_error("Invalid method");

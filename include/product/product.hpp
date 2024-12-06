@@ -1,7 +1,7 @@
 #ifndef PPRODUCT_HPP
 #define PPRODUCT_HPP
 
-#include "../forwarder.hpp"
+#include "forwarder.hpp"
 
 // Ensures secure access to product_field_to_string
 enum class ProductField

@@ -1,5 +1,5 @@
-#include "../include/utils/dbutils.hpp"
-#include "../include/database/errors.hpp"
+#include "utils/dbutils.hpp"
+#include "database/errors.hpp"
 #include <fstream>
 
 void init_database(Database &db, std::string db_init_file)

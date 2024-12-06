@@ -1,4 +1,4 @@
-#include "../include/utils/strutils.hpp"
+#include "utils/strutils.hpp"
 
 std::string &strInsert(std::string &a, std::string b, std::size_t p, std::size_t n) noexcept
 {

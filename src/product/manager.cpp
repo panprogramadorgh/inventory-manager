@@ -1,5 +1,5 @@
-#include "../include/product/manager.hpp"
-#include "../include/database/interface.hpp"
+#include "product/manager.hpp"
+#include "database/interface.hpp"
 #include <list>
 
 // Constructors
@@ -64,15 +64,16 @@ const Product *ProductManager::getProduct(int id) noexcept
   // Obtains the product from database
   try
   {
-    std::string query =
-        "SELECT * FROM products_info as p WHERE p.product_id = $";
-    db->executeQuery(Database::mergeQueryArgs(query, {std::to_string(id)}));
+    db->executeQuery("SELECT * FROM products_info as p WHERE p.product_id = $", {std::to_string(id)});
   }
   catch (const std::exception)
   {
     delete p;
     return nullptr;
   }
+
+  std::cout << "Sql query was successfully run !" << std::endl;
+
   auto products = Database::parseQueryToUmap(std::unordered_map<int, std::shared_ptr<Product>>(), db->fetchQuery());
   it = products.find(id);
   if (it == products.end())
@@ -93,15 +94,13 @@ void ProductManager::addProduct(const ProductInfo &p, const int vendor_id, const
   if (commit_update)
     db->executeUpdate("BEGIN TRANSACTION");
 
-  std::string query = "INSERT INTO products (product_name, product_description, vendor_id, product_count, product_price) VALUES ($, $, $, $, $, $)";
-
-  query = Database::mergeQueryArgs(
-      query, {"\"" + p.product_name + "\"",
-              "\"" + p.product_description + "\"",
-              std::to_string(vendor_id),
-              std::to_string(p.product_price),
-              std::to_string(p.product_count)});
-  db->executeUpdate(query);
+  db->executeUpdate(
+      "INSERT INTO products (product_name, product_description, vendor_id, product_count, product_price) VALUES ($, $, $, $, $, $)",
+      {"\"" + p.product_name + "\"",
+       "\"" + p.product_description + "\"",
+       std::to_string(vendor_id),
+       std::to_string(p.product_price),
+       std::to_string(p.product_count)});
 
   if (commit_update)
     db->executeQuery("COMMIT");
@@ -112,8 +111,8 @@ void ProductManager::removeProduct(const int id, const bool commit_update) noexc
   if (commit_update)
     db->executeUpdate("BEGIN TRANSACTION");
 
-  std::string query = "DELETE FROM products as p WHERE p.product_id = $";
-  db->executeUpdate(Database::mergeQueryArgs(query, {std::to_string(id)}));
+  db->executeUpdate("DELETE FROM products as p WHERE p.product_id = $",
+                    {std::to_string(id)});
   removeProductFromCache(id); // Es eliminado de la cache
 
   if (commit_update)

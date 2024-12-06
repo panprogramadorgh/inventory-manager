@@ -1,5 +1,5 @@
 #include <bits/stdc++.h> // std::find
-#include "../include/product/product.hpp"
+#include "product/product.hpp"
 
 extern std::unordered_map<ProductField, std::string> product_field_to_string;
 

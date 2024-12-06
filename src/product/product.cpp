@@ -1,4 +1,4 @@
-#include "../include/product/product.hpp"
+#include "product/product.hpp"
 
 Product::Product()
     : ProductInfo(), cache_relevance(10)

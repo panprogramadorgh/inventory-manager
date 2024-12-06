@@ -1,9 +1,9 @@
 #ifndef PMANAGER_HPP
 #define PMANAGER_HPP
 
-#include "../database/interface.hpp"
-#include "../database/errors.hpp"
-#include "../product/product.hpp"
+#include "database/interface.hpp"
+#include "database/errors.hpp"
+#include "product/product.hpp"
 #include <memory>
 
 class ProductManager
