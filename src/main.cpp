@@ -71,7 +71,7 @@ int main(int argc, char **argv)
     else if (result["method"].as<std::string>() == "init")
     {
       /* Puede tirar: QueryError, InitError, ConnError */
-      manager.init(home + "/code/inventory-manager/src/database/init.sql", init_database);
+      manager.init(DATABASE_INIT_FILE, init_database);
       std::cerr << "Database was initialized" << std::endl;
     }
 #endif

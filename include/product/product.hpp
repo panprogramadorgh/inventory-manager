@@ -14,8 +14,10 @@ enum class ProductField
   product_price
 };
 
+typedef std::unordered_map<ProductField, std::string> UmappedProduct;
+
 // Maps each sql colum of products_info
-inline std::unordered_map<ProductField, std::string> product_field_to_string = {
+inline UmappedProduct product_field_to_string = {
     {ProductField::product_id, "product_id"},
     {ProductField::product_name, "product_name"},
     {ProductField::product_description, "product_description"},
@@ -24,74 +26,166 @@ inline std::unordered_map<ProductField, std::string> product_field_to_string = {
     {ProductField::product_price, "product_price"},
 };
 
+inline std::unordered_map<std::string, ProductField> string_to_product_field = {
+    {"product_id", ProductField::product_id},
+    {"product_name", ProductField::product_name},
+    {"product_description", ProductField::product_description},
+    {"vendor_name", ProductField::vendor_name},
+    {"product_count", ProductField::product_count},
+    {"product_price", ProductField::product_price},
+};
+
 class ProductInfo
 {
 public:
   int product_id;
   std::string product_name;
   std::string product_description;
-  std::string vendor_name; // sql vendors(vendor_name)
+  std::string vendor_name; // vendors(vendor_name)
   int product_count;
   double product_price;
 
-  // Constructors
-  ProductInfo();
-  ProductInfo(int id, std::string name, std::string description, std::string vendor_name, int count = 0, double price = 0.0);
   // Virtual product constructor (id = -1)
-  ProductInfo(std::string name, std::string description, std::string vendor_name, int count = 0, double price = 0.0);
-  ProductInfo(const ProductInfo &other) = default; // Copy
-  ProductInfo(ProductInfo &&other) noexcept;       // Move
+  ProductInfo()
+      : product_id(-1), product_name(""), product_description(""), vendor_name(""), product_count(0), product_price(0.0)
+  {
+  }
+  ProductInfo(UmappedProduct &up)
+      : product_id(std::atoi(up.at(ProductField::product_id).c_str())),
+        product_name(up.at(ProductField::product_name)),
+        product_description(up.at(ProductField::product_description)),
+        vendor_name(up.at(ProductField::vendor_name)),
+        product_count(std::atoi(up.at(ProductField::product_count).c_str())),
+        product_price(std::atoi(up.at(ProductField::product_price).c_str()))
+  {
+  }
+  // Constructors
+  ProductInfo(ProductInfo &other) noexcept
+      : product_id(other.product_id), product_name(other.product_name), product_description(other.product_description), vendor_name(other.vendor_name), product_count(other.product_count), product_price(other.product_price)
+  {
+  }
+  ProductInfo(ProductInfo &&other) noexcept
+      : product_id(other.product_id), product_name(std::move(other.product_name)), product_description(std::move(other.product_description)), vendor_name(std::move(other.vendor_name)), product_count(other.product_count), product_price(other.product_price)
+  {
+    other.product_count = -1;
+    other.product_price = -1.0;
+  }
 
   // Methods
-  std::string str(const std::vector<std::string> &visible_fields) const noexcept;
+  std::string str(std::vector<std::string> visible_fields = {}) const noexcept;
 
   // Operators
-  ProductInfo &operator=(const ProductInfo &other);
-  ProductInfo &operator=(ProductInfo &&other);
+  ProductInfo &operator=(ProductInfo &other)
+  {
+    if (this != &other)
+    {
+      product_id = other.product_id;
+      product_name = other.product_name;
+      product_description = other.product_description;
+      vendor_name = other.vendor_name;
+      product_count = other.product_count;
+      product_price = other.product_price;
+    }
+    return *this;
+  }
+  ProductInfo &operator=(ProductInfo &&other)
+  {
+    if (this != &other)
+    {
+      product_id = other.product_id;
+      product_name = std::move(other.product_name);
+      product_description = std::move(other.product_description);
+      vendor_name = std::move(other.vendor_name);
+      product_count = other.product_count;
+      product_price = other.product_price;
 
-  ~ProductInfo() = default;
+      other.product_id = -1;
+      other.product_count = -1;
+      other.product_price = -1.0;
+    }
+    return *this;
+  }
+
+  virtual ~ProductInfo()
+  {
+    product_id = -1;
+    product_count = -1;
+    product_price = -1;
+  }
 };
 
-class Product : private ProductInfo
+constexpr int initial_cache_relevance = 10;
+
+class Product : protected ProductInfo
 {
 private:
   mutable int cache_relevance;
 
 public:
-  // Constructors
-  Product();
-  Product(int id, std::string name, std::string description, std::string vendor_name, int count = 0, double price = 0.0);
-  // Virtual product constructor (id = -1)
-  Product(std::string name, std::string description, std::string vendor_name, int count = 0, double price = 0.0);
-  Product(std::unordered_map<std::string, std::string> map);
-  Product(const Product &other); // Copy
-  Product(Product &&other);      // Move
-
-  // Static methods
-  inline static std::unordered_map<std::string, std::string> parseToUmap(const ProductInfo &p) noexcept
+  Product()
+      : ProductInfo(), cache_relevance(initial_cache_relevance)
   {
-    return {
-        {"product_id", std::to_string(p.product_id)},
-        {"product_name", p.product_name},
-        {"product_description", p.product_description},
-        {"vendor_name", p.vendor_name},
-        {"product_count", std::to_string(p.product_count)},
-        {"product_price", std::to_string(p.product_price)}};
+  }
+  Product(UmappedProduct &up)
+      : ProductInfo(up),
+        cache_relevance(initial_cache_relevance)
+  {
+  }
+  Product(Product &&other)
+      : ProductInfo(std::move(other)), cache_relevance(initial_cache_relevance)
+  {
   }
 
   // Methods
-  int identifier() const noexcept;
-  int getCacheRelevance() const noexcept;
-  bool decreaseCacheRelevance() const noexcept;
-  int add(int amount = 1);
-  ProductInfo info() const noexcept;
-  std::string str(const std::vector<std::string> &visible_fields) const noexcept;
+  int identifier() const noexcept
+  {
+    return this->product_id;
+  }
+  ProductInfo info()
+  {
+    return *this;
+  }
+  std::string str(std::vector<std::string> visible_fields = {}) const noexcept
+  {
+    return ProductInfo::str(visible_fields) + " - " + std::to_string(cache_relevance);
+  }
+
+  // Cache methods
+  int getCacheRelevance() const noexcept
+  {
+    return cache_relevance;
+  }
+  bool decreaseCacheRelevance() const noexcept
+  {
+    return cache_relevance-- > 0;
+  }
 
   // Operators
-  Product &operator=(const Product &other);
-  Product &operator=(Product &&other);
+  Product &operator=(Product &&other)
+  {
+    if (this != &other)
+    {
+      ProductInfo::operator=(other);
+    }
+    return *this;
+  }
 
-  ~Product() = default;
+  // Static methods
+  static UmappedProduct umapProduct(const ProductInfo &p) noexcept
+  {
+    return {
+        {ProductField::product_id, std::to_string(p.product_id)},
+        {ProductField::product_name, p.product_name},
+        {ProductField::product_description, p.product_description},
+        {ProductField::vendor_name, p.vendor_name},
+        {ProductField::product_count, std::to_string(p.product_count)},
+        {ProductField::product_price, std::to_string(p.product_price)}};
+  }
+
+  virtual ~Product()
+  {
+    cache_relevance = -1;
+  }
 };
 
 #endif

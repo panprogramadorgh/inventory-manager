@@ -18,9 +18,10 @@ void Database::checkFile(std::string f_name) noexcept(false)
   }
 }
 
-std::unordered_map<int, std::shared_ptr<Product>> Database::parseQueryToUmap(std::unordered_map<int, std::shared_ptr<Product>> &&dest, QueryResult &&qresult)
+QueryUmap &Database::umapQuery(QueryUmap &&dest, QueryResult &&qresult)
 {
-  std::unordered_map<std::string, std::string> row;
+  UmappedProduct row;
+  ProductField field;
 
   auto cols = qresult.first;
   auto vals = qresult.second;
@@ -30,40 +31,20 @@ std::unordered_map<int, std::shared_ptr<Product>> Database::parseQueryToUmap(std
        std::distance(vals.begin(), it) % cols.size() < cols.size();
        it++)
   {
-    row[cols[std::distance(vals.begin(), it) % cols.size()]] = *it;
+    field = string_to_product_field.at(cols[std::distance(vals.begin(), it) % cols.size()]);
+    row[field] = *it;
 
     // En caso de que sea la ulima columna por registro
     if (std::distance(vals.begin(), it) % cols.size() == cols.size() - 1)
     {
-      Product p(row); // It creates a full product with id member
-      dest.emplace(p.identifier(), std::make_shared<Product>(p));
+      // It creates a full product with id member and it is stored in dest
+      Product p(row);
+      dest.emplace(p.identifier(), std::make_shared<Product>(std::move(p)));
       row.clear(); // Limpiar el mapa para la proxima fila
     }
   }
 
   return dest;
-}
-
-void Database::printQuery(QueryResult qresult) noexcept
-{
-  auto cols = qresult.first;
-  auto vals = qresult.second;
-
-  for (auto it = cols.cbegin(); it != cols.cend(); it++)
-    std::cout << *it << (it == cols.cend() - 1 ? "\n" : ",");
-
-  for (auto it = vals.cbegin(); it != vals.cend(); it++)
-    std::cout << *it << (std::distance(vals.cbegin(), it) % cols.size() == cols.size() - 1 ? "\n" : ",");
-}
-
-std::string Database::mergeQueryArgs(std::string query, std::vector<std::string> &&args) noexcept
-{
-  std::size_t pos, i = 0;
-
-  while ((pos = query.find('$')) != std::string::npos)
-    strInsert(query, args.at(i++), pos, 1);
-
-  return query;
 }
 
 Database::Database() noexcept
@@ -136,6 +117,7 @@ void Database::executeQuery(std::string raw_query, std::vector<std::string> &&ar
   if (query_exit_code != SQLITE_OK)
   {
     /* Now QueryError copies the error, so msg may be free. */
+    // FIXME: Double free error
     QueryError qerror(query_exit_code, msg);
     // sqlite3_free(msg);
     throw qerror;
@@ -152,8 +134,9 @@ void Database::executeUpdate(std::string raw_query, std::vector<std::string> &&a
   if (query_exit_code != SQLITE_OK)
   {
     /* Now QueryError copies the error, so msg may be free. */
+    // FIXME: Double free error
     QueryError qerror(query_exit_code, msg);
-    sqlite3_free(msg);
+    // sqlite3_free(msg);
     throw qerror;
   }
 }
@@ -161,4 +144,53 @@ void Database::executeUpdate(std::string raw_query, std::vector<std::string> &&a
 void Database::setDatabaseFile(std::string db_name)
 {
   file_name = db_name;
+}
+
+/* Static methods */
+
+void Database::printQuery(const QueryResult qresult) noexcept
+{
+  auto cols = qresult.first;
+  auto vals = qresult.second;
+
+  for (auto it = cols.cbegin(); it != cols.cend(); it++)
+    std::cout << *it << (it == cols.cend() - 1 ? "\n" : ",");
+
+  for (auto it = vals.cbegin(); it != vals.cend(); it++)
+    std::cout << *it << (std::distance(vals.cbegin(), it) % cols.size() == cols.size() - 1 ? "\n" : ",");
+}
+
+void Database::printQuery(const QueryUmap qumap) noexcept
+{
+  ProductInfo pinfo; // Intermediate step to umap product
+  UmappedProduct up;
+
+  for (auto fit = product_field_to_string.cbegin(); fit != product_field_to_string.cend(); fit++)
+  {
+    if (fit != product_field_to_string.cbegin())
+      std::cout << ',';
+    std::cout << fit->second;
+  }
+  for (auto pit = qumap.cbegin(); pit != qumap.cend(); pit++)
+  {
+    pinfo = pit->second->info();
+    up = Product::umapProduct(pinfo);
+    for (auto fit = up.cbegin(); fit != up.cend(); fit++)
+    {
+      if (fit != up.cbegin())
+        std::cout << ',';
+      std::cout << fit->second;
+    }
+    std::cout << std::endl;
+  }
+}
+
+std::string Database::mergeQueryArgs(std::string query, std::vector<std::string> &&args) noexcept
+{
+  std::size_t pos, i = 0;
+
+  while ((pos = query.find('$')) != std::string::npos)
+    strInsert(query, args.at(i++), pos, 1);
+
+  return query;
 }

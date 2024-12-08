@@ -23,12 +23,12 @@ public:
 
   ProductManager(const ProductManager &other);
 
-  ProductManager &init(std::string init_file, std::function<void(Database &, std::string)> db_initializer);
+  ProductManager &init(const std::string &init_file, std::function<void(const Database &, const std::string)> db_initializer);
 
   /// @brief  Permite obtener prodctos desde la base de datos y los cachea
   /// @param id Identificador del producto dentro de la base de datos
   /// @return Retorna un puntero a un bloque de memoria dinamica que ha de ser manualmente eliminado con delete para llamar al destructor de Product
-  const Product *getProduct(int id) noexcept;
+  ProductInfo *getProduct(const int id) noexcept;
 
   /// @brief Permite agregar productos actualizando la base de datos.
   /// @param p En realidad el miembro `vendor_name` del objeto p es ignorado puesto que el vendedor es indicado como un segundo argumento del metodo.
@@ -39,9 +39,6 @@ public:
   /// @brief Su proposito es eliminar productos de la base de datos y de la cache
   /// @param id Identificador de producto
   void removeProduct(const int id, const bool commit_update = true) noexcept(false);
-
-  /// @brief Used for debugging propouses
-  void foo() noexcept(false);
 };
 
 #endif

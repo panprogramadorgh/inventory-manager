@@ -15,7 +15,7 @@ ProductManager::ProductManager(const ProductManager &other)
   cached_products = other.cached_products;
 }
 
-ProductManager &ProductManager::init(std::string init_file, std::function<void(Database &, std::string)> db_initializer)
+ProductManager &ProductManager::init(const std::string &init_file, std::function<void(const Database &, const std::string)> db_initializer)
 {
   db->connect();
   db_initializer(*db, init_file);
@@ -24,10 +24,10 @@ ProductManager &ProductManager::init(std::string init_file, std::function<void(D
 
 // Public methods
 
-const Product *ProductManager::getProduct(int id) noexcept
+ProductInfo *ProductManager::getProduct(const int id) noexcept
 {
   // It allocates a block of memory in the heap, after obtaining the data, these are written in the Product object located in this block of memory (assignment operator = copies the data) and finally returns a pointer to it.
-  Product *p = new Product();
+  ProductInfo *p = new ProductInfo();
 
   // Decrease cache relevance of products and remove irrelevant products
   std::vector<int> garbage_products;
@@ -50,7 +50,7 @@ const Product *ProductManager::getProduct(int id) noexcept
   auto it = cached_products.find(id);
   if (it != cached_products.cend())
   {
-    *p = *it->second.get(); // Copies the product inside the heap
+    *p = it->second->info(); // Copies the product inside the heap
     return p;
   }
 
@@ -74,7 +74,7 @@ const Product *ProductManager::getProduct(int id) noexcept
 
   std::cout << "Sql query was successfully run !" << std::endl;
 
-  auto products = Database::parseQueryToUmap(std::unordered_map<int, std::shared_ptr<Product>>(), db->fetchQuery());
+  auto products = Database::umapQuery(QueryUmap(), db->fetchQuery());
   it = products.find(id);
   if (it == products.end())
   {
@@ -84,7 +84,7 @@ const Product *ProductManager::getProduct(int id) noexcept
 
   addProductToCache(it->second); // And finally we push the product to cache
 
-  *p = *it->second;
+  *p = it->second->info();
   return p;
 }
 
@@ -118,25 +118,6 @@ void ProductManager::removeProduct(const int id, const bool commit_update) noexc
   if (commit_update)
     db->executeUpdate("COMMIT");
 }
-
-/*
-void ProductManager::foo() noexcept(false)
-{
-  std::cout << "Cache: " << std::endl;
-  for (auto pair : cached_products)
-  {
-    std::cout << pair.second->str() << std::endl;
-  }
-
-  db->executeQuery("SELECT * FROM products_info");
-  std::cout << "Database: " << std::endl;
-
-  auto result = Database::parseQueryToUmap(std::unordered_map<int, std::shared_ptr<Product>>(), db->fetchQuery());
-
-  for (auto it = result.cbegin(); it != result.cend(); it++)
-    std::cout << it->second->str() << std::endl;
-}
-*/
 
 // Private methods
 

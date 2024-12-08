@@ -12,6 +12,8 @@ namespace fs = std::filesystem;
 typedef std::pair<std::vector<std::string>, std::vector<std::string>>
     QueryResult;
 
+typedef std::unordered_map<int, std::shared_ptr<Product>> QueryUmap;
+
 class Database
 {
 private:
@@ -50,14 +52,14 @@ public:
     sqlite3_close(db);
   }
 
-
   // Static methods
 
-  static std::unordered_map<int, std::shared_ptr<Product>> parseQueryToUmap(std::unordered_map<int, std::shared_ptr<Product>> &&dest, QueryResult &&qresult);
+  static QueryUmap &umapQuery(QueryUmap &&dest, QueryResult &&qresult);
 
   static std::string mergeQueryArgs(std::string query, std::vector<std::string> &&args) noexcept;
 
-  static void printQuery(QueryResult qresult) noexcept;
+  static void printQuery(const QueryResult qresult) noexcept;
+  static void printQuery(const QueryUmap qumap) noexcept;
 };
 
 #endif
