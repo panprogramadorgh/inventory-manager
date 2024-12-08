@@ -46,18 +46,19 @@ int main(int argc, char **argv)
 
       auto p = manager.getProduct(id);
       if (p != nullptr)
-        std::cout << p->info().str(fields) << std::endl;
+        std::cout << p->str() << std::endl;
       else
         throw std::runtime_error("Could not find product with id '" + std::to_string(id) + "'");
     }
     else if (result["method"].as<std::string>() == "add")
     {
-      ProductInfo p(
-          result["name"].as<std::string>(),
-          result["description"].as<std::string>(),
-          "", // We specify the vendor by their id
-          result["count"].as<int>(),
-          result["price"].as<double>()); // Virtual object to insert in database
+      UmappedProduct up = {
+          {ProductField::product_name, result["name"].as<std::string>()},
+          {ProductField::product_description, result["description"].as<std::string>()},
+          {ProductField::vendor_name, ""}, // We specify the vendor by their id
+          {ProductField::product_count, std::to_string(result["count"].as<int>())},
+          {ProductField::product_price, std::to_string(result["price"].as<double>())}};
+      ProductInfo p(up); // Virtual ProductInfo to insert in database
       int vendor_id = result["vendorid"].as<int>();
       manager.addProduct(p, vendor_id, true);
     }

@@ -4,18 +4,20 @@
 
 int main()
 {
-  Database db(DATABASE_INIT_FILE);
-  
+  std::string dbfile = std::string(getenv("HOME")) + "/inventory-manager.db";
+  Database db(dbfile.c_str());
+
   try
   {
     db.connect();
     db.executeQuery("SELECT * FROM products_info");
   }
-  catch(const std::exception& e)
+  catch (const std::exception &e)
   {
     std::cerr << e.what() << '\n';
+    return EXIT_FAILURE;
   }
-  
+
   auto result = Database::umapQuery(QueryUmap(), db.fetchQuery());
   Database::printQuery(result);
 

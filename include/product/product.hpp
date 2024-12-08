@@ -166,6 +166,8 @@ public:
     if (this != &other)
     {
       ProductInfo::operator=(other);
+      cache_relevance = other.cache_relevance;
+      other.cache_relevance = -1;
     }
     return *this;
   }

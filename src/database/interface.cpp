@@ -119,7 +119,7 @@ void Database::executeQuery(std::string raw_query, std::vector<std::string> &&ar
     /* Now QueryError copies the error, so msg may be free. */
     // FIXME: Double free error
     QueryError qerror(query_exit_code, msg);
-    // sqlite3_free(msg);
+    sqlite3_free(msg);
     throw qerror;
   }
 }
@@ -136,7 +136,7 @@ void Database::executeUpdate(std::string raw_query, std::vector<std::string> &&a
     /* Now QueryError copies the error, so msg may be free. */
     // FIXME: Double free error
     QueryError qerror(query_exit_code, msg);
-    // sqlite3_free(msg);
+    sqlite3_free(msg);
     throw qerror;
   }
 }
