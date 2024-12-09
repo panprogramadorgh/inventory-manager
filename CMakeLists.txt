@@ -29,9 +29,11 @@ file(GLOB PRODUCTS_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/src/product/*.cpp")
 file(GLOB UTILS_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/src/utils/*.cpp")
 
 if(TESTING)
+  message(STATUS "Preparing project for testing mode")
   add_executable(main ${TESTING_EXECUTABLE_PATH} ${DATABASE_SOURCE} ${PRODUCTS_SOURCE} ${UTILS_SOURCE})
   target_compile_definitions(main PRIVATE TESTING_MODE)
 else()
+  message(STATUS "Preparing project for release mode")
   add_executable(main ${EXECUTABLE_PATH} ${DATABASE_SOURCE} ${PRODUCTS_SOURCE} ${UTILS_SOURCE})
 endif()
 

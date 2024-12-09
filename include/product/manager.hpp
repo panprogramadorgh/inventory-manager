@@ -24,13 +24,17 @@ public:
       : db(nullptr), should_free_db_ptr(true)
   {
     db = new Database(dbfile);
+    db->connect();
   }
 
+  // Must receive a connected database (Database::connect())
   ProductManager(Database *db, bool should_manage_mem = false)
       : db(db), should_free_db_ptr(should_manage_mem)
   {
   }
 
+  // TODO: Mejorar Database::connect() abriendo solo conexiones si son inexistentes
+  // other.db must be already connected (Database::connect())
   ProductManager(ProductManager &&other)
       : db(other.db),
         should_free_db_ptr(other.should_free_db_ptr),
@@ -41,9 +45,9 @@ public:
 
   // Methods
 
+  // Initializes the database with intial data
   ProductManager &init(const std::string &init_file, std::function<void(const Database &, const std::string)> db_initializer)
   {
-    db->connect();
     db_initializer(*db, init_file);
     return *this;
   }

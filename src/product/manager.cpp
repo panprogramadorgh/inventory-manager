@@ -14,7 +14,7 @@ ProductInfo *ProductManager::getProduct(const int id) noexcept
   {
     if (pair.first != id)
     {
-      if (!pair.second.get()->decreaseCacheRelevance())
+      if (!pair.second->decreaseCacheRelevance())
       {
         garbage_products.push_back(pair.first);
       }
@@ -43,9 +43,9 @@ ProductInfo *ProductManager::getProduct(const int id) noexcept
   // Obtains the product from database
   try
   {
-    db->executeQuery("SELECT * FROM products_info as p WHERE p.product_id = $", {std::to_string(id)});
+    db->executeQuery("SELECT * FROM products_info WHERE product_id = $", {std::to_string(id)});
   }
-  catch (const std::exception&)
+  catch (const std::exception &e)
   {
     delete p;
     return nullptr;

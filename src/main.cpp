@@ -6,7 +6,7 @@
 
 int main(int argc, char **argv)
 {
-  cxxopts::Options options(argv[0], "Allows to manager inventory with products.");
+  cxxopts::Options options(argv[0], "Allows to manage inventory with products.");
 
   options.add_options()("h,help", "Get help")
       // Product properties
@@ -29,10 +29,10 @@ int main(int argc, char **argv)
   {
     std::cerr << "A method must be specified" << std::endl;
     return EXIT_FAILURE;
-  }
-
-  Database db(std::string(getenv("HOME")) + "/inventory-manager.db");
-  ProductManager manager(&db);
+  };
+  
+  ProductManager manager(
+      std::string(getenv("HOME")) + "/inventory-manager.db");
 
   // TODO: Crear funcion de gestion de entrada de comandos
   // TODO: Crear modo "console" donde se procesan varias entrada en una misma "sesion" (llamar a la anterior funcion)
@@ -44,10 +44,13 @@ int main(int argc, char **argv)
       auto fields = result["fields"].as<std::vector<std::string>>();
 
       auto p = manager.getProduct(id);
-      if (p != nullptr)
+      if (p)
         std::cout << p->str() << std::endl;
       else
-        throw std::runtime_error("Could not find product with id '" + std::to_string(id) + "'");
+      {
+        throw std::runtime_error(
+            "Could not find product with id '" + std::to_string(id) + "'");
+      }
     }
     else if (result["method"].as<std::string>() == "add")
     {
@@ -55,9 +58,8 @@ int main(int argc, char **argv)
           {ProductField::product_name, result["name"].as<std::string>()},
           {ProductField::product_description, result["description"].as<std::string>()},
           {ProductField::vendor_name, ""}, // We specify the vendor by their id
-          {ProductField::product_count, std::to_string(result["count"].as<int>())},
-          {ProductField::product_price, std::to_string(result["price"].as<double>())}};
-      // FIXME: Bugged constructor.
+          {ProductField::product_count, result["count"].as<std::string>()},
+          {ProductField::product_price, result["price"].as<std::string>()}};
       ProductInfo p(up); // Virtual ProductInfo to insert in database
       int vendor_id = result["vendorid"].as<int>();
       manager.addProduct(p, vendor_id, true);
