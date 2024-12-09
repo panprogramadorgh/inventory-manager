@@ -81,7 +81,7 @@ void Database::connect() noexcept(false)
 {
   int exit_code;
   if ((exit_code = sqlite3_open(file_name.c_str(), &db)))
-    throw ConnError(exit_code);
+    throw DatabaseError(exit_code, DatabaseError::connection_error_message);
 }
 
 QueryResult Database::fetchQuery() const noexcept
@@ -116,9 +116,7 @@ void Database::executeQuery(std::string raw_query, std::vector<std::string> &&ar
 
   if (query_exit_code != SQLITE_OK)
   {
-    /* Now QueryError copies the error, so msg may be free. */
-    // FIXME: Double free error
-    QueryError qerror(query_exit_code, msg);
+    DatabaseError qerror(query_exit_code, msg);
     sqlite3_free(msg);
     throw qerror;
   }
@@ -133,9 +131,7 @@ void Database::executeUpdate(std::string raw_query, std::vector<std::string> &&a
   query_exit_code = sqlite3_exec(db, query.c_str(), nullptr, nullptr, &msg);
   if (query_exit_code != SQLITE_OK)
   {
-    /* Now QueryError copies the error, so msg may be free. */
-    // FIXME: Double free error
-    QueryError qerror(query_exit_code, msg);
+    DatabaseError qerror(query_exit_code, msg);
     sqlite3_free(msg);
     throw qerror;
   }

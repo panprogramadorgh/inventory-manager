@@ -95,7 +95,7 @@ void ProductManager::addProduct(const ProductInfo &p, const int vendor_id, const
     db->executeUpdate("BEGIN TRANSACTION");
 
   db->executeUpdate(
-      "INSERT INTO products (product_name, product_description, vendor_id, product_count, product_price) VALUES ($, $, $, $, $, $)",
+      "INSERT INTO products (product_name, product_description, vendor_id, product_count, product_price) VALUES ($, $, $, $, $)",
       {"\"" + p.product_name + "\"",
        "\"" + p.product_description + "\"",
        std::to_string(vendor_id),

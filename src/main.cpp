@@ -31,8 +31,7 @@ int main(int argc, char **argv)
     return EXIT_FAILURE;
   }
 
-  std::string home = getenv("HOME");
-  Database db(home + "/inventory-manager.db");
+  Database db(std::string(getenv("HOME")) + "/inventory-manager.db");
   ProductManager manager(&db);
 
   // TODO: Crear funcion de gestion de entrada de comandos
@@ -58,6 +57,7 @@ int main(int argc, char **argv)
           {ProductField::vendor_name, ""}, // We specify the vendor by their id
           {ProductField::product_count, std::to_string(result["count"].as<int>())},
           {ProductField::product_price, std::to_string(result["price"].as<double>())}};
+      // FIXME: Bugged constructor.
       ProductInfo p(up); // Virtual ProductInfo to insert in database
       int vendor_id = result["vendorid"].as<int>();
       manager.addProduct(p, vendor_id, true);
@@ -65,13 +65,12 @@ int main(int argc, char **argv)
     else if (result["method"].as<std::string>() == "rem")
     {
       int id = result["id"].as<int>();
-      manager.removeProduct(id, true); // Throws a QueryError if there is an exception
+      manager.removeProduct(id, true);
       std::cout << "Product with id '" << std::to_string(id) << "' was removed" << std::endl;
     }
 #if DEV_MODE
     else if (result["method"].as<std::string>() == "init")
     {
-      /* Puede tirar: QueryError, InitError, ConnError */
       manager.init(DATABASE_INIT_FILE, init_database);
       std::cerr << "Database was initialized" << std::endl;
     }

@@ -50,7 +50,8 @@ public:
       : product_id(-1), product_name(""), product_description(""), vendor_name(""), product_count(0), product_price(0.0)
   {
   }
-  ProductInfo(UmappedProduct &up)
+  // FIXME: Bugged constructor.
+  ProductInfo(const UmappedProduct &up)
       : product_id(std::atoi(up.at(ProductField::product_id).c_str())),
         product_name(up.at(ProductField::product_name)),
         product_description(up.at(ProductField::product_description)),
