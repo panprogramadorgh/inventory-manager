@@ -1,26 +1,5 @@
 #include "product/manager.hpp"
 #include "database/interface.hpp"
-#include <list>
-
-// Constructors
-
-ProductManager::ProductManager(Database *db)
-    : db(db)
-{
-}
-
-ProductManager::ProductManager(const ProductManager &other)
-{
-  db = other.db;
-  cached_products = other.cached_products;
-}
-
-ProductManager &ProductManager::init(const std::string &init_file, std::function<void(const Database &, const std::string)> db_initializer)
-{
-  db->connect();
-  db_initializer(*db, init_file);
-  return *this;
-}
 
 // Public methods
 
@@ -66,13 +45,11 @@ ProductInfo *ProductManager::getProduct(const int id) noexcept
   {
     db->executeQuery("SELECT * FROM products_info as p WHERE p.product_id = $", {std::to_string(id)});
   }
-  catch (const std::exception)
+  catch (const std::exception&)
   {
     delete p;
     return nullptr;
   }
-
-  std::cout << "Sql query was successfully run !" << std::endl;
 
   auto products = Database::umapQuery(QueryUmap(), db->fetchQuery());
   it = products.find(id);

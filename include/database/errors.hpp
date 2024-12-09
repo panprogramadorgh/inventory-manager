@@ -17,7 +17,7 @@ public:
   static constexpr char init_error_message[] = "Database initialization error";
 
   // Constructors
-  DatabaseError(const int code, const char *msg = nullptr)
+  DatabaseError(const int code = -1, const char *msg = nullptr)
       : code(code)
   {
     if (msg == nullptr)
@@ -57,9 +57,19 @@ public:
     return error_message;
   }
 
+  int getErrorCode()
+  {
+    return code;
+  }
+
   // Operators
 
-  virtual DatabaseError &operator=(DatabaseError &other)
+  operator bool()
+  {
+    return error_message;
+  }
+
+  DatabaseError &operator=(DatabaseError &other)
   {
     if (this != &other)
     {
@@ -77,7 +87,7 @@ public:
     return *this;
   }
 
-  virtual DatabaseError &operator=(DatabaseError &&other)
+  DatabaseError &operator=(DatabaseError &&other)
   {
     if (this != &other)
     {
@@ -97,7 +107,7 @@ public:
     return *this;
   }
 
-  virtual ~DatabaseError()
+  ~DatabaseError()
   {
     if (error_message)
       delete[] error_message;

@@ -10,20 +10,43 @@ class ProductManager
 {
 private:
   Database *db;
-  // TODO: Cambiar enfoque de cache a punteros inteligentes. Los errores en tiempo de ejecucion se deben a la eliminacion de las referencias (objetos de memoria de pila) por los std::reference_wrapper
-  std::unordered_map<int, std::shared_ptr<Product>> cached_products;
+  bool should_free_db_ptr;
+
+  QueryUmap cached_products;
 
   // Gestion interna de recursos cacheados
   std::size_t addProductToCache(std::shared_ptr<Product>) noexcept;
-  
+
   std::size_t removeProductFromCache(int id) noexcept;
 
 public:
-  ProductManager(Database *db = nullptr);
+  ProductManager(std::string dbfile)
+      : db(nullptr), should_free_db_ptr(true)
+  {
+    db = new Database(dbfile);
+  }
 
-  ProductManager(const ProductManager &other);
+  ProductManager(Database *db, bool should_manage_mem = false)
+      : db(db), should_free_db_ptr(should_manage_mem)
+  {
+  }
 
-  ProductManager &init(const std::string &init_file, std::function<void(const Database &, const std::string)> db_initializer);
+  ProductManager(ProductManager &&other)
+      : db(other.db),
+        should_free_db_ptr(other.should_free_db_ptr),
+        cached_products(std::move(other.cached_products))
+  {
+    other.db = nullptr;
+  }
+
+  // Methods
+
+  ProductManager &init(const std::string &init_file, std::function<void(const Database &, const std::string)> db_initializer)
+  {
+    db->connect();
+    db_initializer(*db, init_file);
+    return *this;
+  }
 
   /// @brief  Permite obtener prodctos desde la base de datos y los cachea
   /// @param id Identificador del producto dentro de la base de datos
@@ -39,6 +62,33 @@ public:
   /// @brief Su proposito es eliminar productos de la base de datos y de la cache
   /// @param id Identificador de producto
   void removeProduct(const int id, const bool commit_update = true) noexcept(false);
+
+  // Operators
+
+  operator bool()
+  {
+    return db;
+  }
+
+  ProductManager &operator=(ProductManager &&other)
+  {
+    if (this != &other)
+    {
+      db = other.db;
+      other.db = nullptr;
+      should_free_db_ptr = other.should_free_db_ptr;
+      cached_products = std::move(other.cached_products);
+    }
+    return *this;
+  }
+
+  ~ProductManager()
+  {
+    if (should_free_db_ptr)
+      delete db;
+    db = nullptr;
+    // Cached products is managed by its own implementation
+  }
 };
 
 #endif
