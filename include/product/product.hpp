@@ -45,21 +45,30 @@ public:
   int product_count;
   double product_price;
 
-  // Virtual product constructor (id = -1)
+  /* TODO:
+   * Eliminar constructor predeterminado
+   * Constructor con ProductInfo seguro, evitando construir productos con campos no inicializados de ProductInfo
+   * Replantear ProductManager::getProduct `ProductInfo *p = new ProductInfo();` se debe alocar diectamente en el heap, sin este paso
+   */
+  // Default constructor: Virtual product constructor (id = -1)
   ProductInfo()
       : product_id(-1), product_name(""), product_description(""), vendor_name(""), product_count(0), product_price(0.0)
   {
   }
-  // FIXME: Bugged constructor.
-  ProductInfo(const UmappedProduct &up)
-      : product_id(std::atoi(up.at(ProductField::product_id).c_str())),
+
+  // Secure constructor with UmappedProduct
+  ProductInfo(const UmappedProduct up, bool is_virtual = true)
+      : product_id(-1),
         product_name(up.at(ProductField::product_name)),
         product_description(up.at(ProductField::product_description)),
         vendor_name(up.at(ProductField::vendor_name)),
         product_count(std::atoi(up.at(ProductField::product_count).c_str())),
         product_price(std::atoi(up.at(ProductField::product_price).c_str()))
   {
+    if (!is_virtual)
+      product_id = std::atoi(up.at(ProductField::product_id).c_str());
   }
+
   // Constructors
   ProductInfo(ProductInfo &other) noexcept
       : product_id(other.product_id), product_name(other.product_name), product_description(other.product_description), vendor_name(other.vendor_name), product_count(other.product_count), product_price(other.product_price)
@@ -74,6 +83,11 @@ public:
 
   // Methods
   std::string str(std::vector<std::string> visible_fields = {}) const noexcept;
+
+  bool isVirtual() const noexcept
+  {
+    return product_id == -1;
+  }
 
   // Operators
   ProductInfo &operator=(ProductInfo &other)
@@ -123,15 +137,27 @@ private:
   mutable int cache_relevance;
 
 public:
+  // Default constructor: Virtual product (id = -1)
   Product()
       : ProductInfo(), cache_relevance(initial_cache_relevance)
   {
   }
-  Product(UmappedProduct &up)
-      : ProductInfo(up),
+  Product(const ProductInfo &pinfo)
+      : ProductInfo(
+            {
+                {ProductField::product_id, std::to_string(pinfo.product_id)},
+                {ProductField::product_name, pinfo.product_name},
+                {ProductField::product_description, pinfo.product_description},
+                {ProductField::vendor_name, pinfo.vendor_name},
+                {ProductField::product_count, std::to_string(pinfo.product_count)},
+                {ProductField::product_price, std::to_string(pinfo.product_price)},
+            },
+            pinfo.isVirtual()),
         cache_relevance(initial_cache_relevance)
   {
   }
+
+  Product(const Product &other) = delete;
   Product(Product &&other)
       : ProductInfo(std::move(other)), cache_relevance(initial_cache_relevance)
   {
@@ -162,6 +188,7 @@ public:
   }
 
   // Operators
+  Product &operator=(const Product &other) = delete;
   Product &operator=(Product &&other)
   {
     if (this != &other)

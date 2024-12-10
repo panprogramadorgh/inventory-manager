@@ -3,7 +3,7 @@ DROP TABLE IF EXISTS vendors;
 -- Se limpian los datos
 CREATE TABLE
   vendors (
-    vendor_id INTEGER PRIMARY KEY NOT NULL,
+    vendor_id INTEGER PRIMARY KEY AUTOINCREMENT,
     vendor_name TEXT NOT NULL,
     -- Puede ser almacenado en un buffer de 128 bytes (para almacenar el caracter nulo)
     CHECK (LENGTH (vendor_name) < 128)
@@ -22,7 +22,7 @@ DROP TABLE IF EXISTS products;
 -- Se limpian los datos
 CREATE TABLE
   products (
-    product_id INTEGER PRIMARY KEY NOT NULL,
+    product_id INTEGER PRIMARY KEY AUTOINCREMENT,
     product_name TEXT NOT NULL,
     product_description TEXT NOT NULL,
     vendor_id INTEGER NOT NULL,

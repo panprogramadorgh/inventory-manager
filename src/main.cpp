@@ -30,7 +30,7 @@ int main(int argc, char **argv)
     std::cerr << "A method must be specified" << std::endl;
     return EXIT_FAILURE;
   };
-  
+
   ProductManager manager(
       std::string(getenv("HOME")) + "/inventory-manager.db");
 
@@ -58,9 +58,9 @@ int main(int argc, char **argv)
           {ProductField::product_name, result["name"].as<std::string>()},
           {ProductField::product_description, result["description"].as<std::string>()},
           {ProductField::vendor_name, ""}, // We specify the vendor by their id
-          {ProductField::product_count, result["count"].as<std::string>()},
-          {ProductField::product_price, result["price"].as<std::string>()}};
-      ProductInfo p(up); // Virtual ProductInfo to insert in database
+          {ProductField::product_count, std::to_string(result["count"].as<int>())},
+          {ProductField::product_price, std::to_string(result["price"].as<double>())}};
+      ProductInfo p(up, true); // Virtual ProductInfo to insert in database
       int vendor_id = result["vendorid"].as<int>();
       manager.addProduct(p, vendor_id, true);
     }
@@ -71,6 +71,7 @@ int main(int argc, char **argv)
       std::cout << "Product with id '" << std::to_string(id) << "' was removed" << std::endl;
     }
 #if DEV_MODE
+    // Resets database data
     else if (result["method"].as<std::string>() == "init")
     {
       manager.init(DATABASE_INIT_FILE, init_database);

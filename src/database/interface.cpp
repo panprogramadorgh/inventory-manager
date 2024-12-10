@@ -37,9 +37,9 @@ QueryUmap &Database::umapQuery(QueryUmap &&dest, QueryResult &&qresult)
     // En caso de que sea la ulima columna por registro
     if (std::distance(vals.begin(), it) % cols.size() == cols.size() - 1)
     {
-      // It creates a full product with id member and it is stored in dest
-      Product p(row);
-      dest.emplace(p.identifier(), std::make_shared<Product>(std::move(p)));
+      // Creates a non-virtual ProductInfo
+      ProductInfo pinfo(row, false);
+      dest.emplace(pinfo.product_id, std::make_shared<Product>(Product(pinfo)));
       row.clear(); // Limpiar el mapa para la proxima fila
     }
   }
@@ -113,7 +113,6 @@ void Database::executeQuery(std::string raw_query, std::vector<std::string> &&ar
   };
 
   query_exit_code = sqlite3_exec(db, query.c_str(), callback, (void *)this, &msg);
-
   if (query_exit_code != SQLITE_OK)
   {
     DatabaseError qerror(query_exit_code, msg);
