@@ -3,20 +3,55 @@
 #include "product/product.hpp"
 #include "utils/strutils.hpp"
 
-// Static methods
-void Database::checkFile(std::string f_name) noexcept(false)
+// Non-static methods
+
+void Database::executeQuery(std::string query, std::vector<std::string> &&args) const noexcept(false)
 {
-  if (!std::filesystem::exists(f_name))
+  std::string query = mergeQueryArgs(query, std::move(args)); // Monta la consulta con los argumentos indicados
+  char *msg = nullptr;                                        // Mensaje de sliqte3 (debe ser liberado con sqlite3_free)
+  int query_exit_code;                                        // Almacena el codigo de error de la consulta
+
+  auto callback = [](void *ctx, int rows, char **vals, char **cols) -> int
   {
-    std::error_code ec = std::make_error_code(std::errc::no_such_file_or_directory);
+    Database *this_db = static_cast<Database *>(ctx);
 
-    std::filesystem::path file_path = f_name;
-    std::string message = "Could not find database file: " + file_path.string();
+    for (int i = 0; i < rows; i++)
+    {
+      bool col_exists = std::any_of(this_db->cols.begin(), this_db->cols.end(), [cols, i](const std::string &s)
+                                    { return s == std::string(cols[i]); });
+      // If the column does not exist, it is added to the query columns vector (i.e. it has not yet finished saving all the fields of the first record of the current query)
+      if (!col_exists)
+        this_db->cols.insert(this_db->cols.cend(), cols[i]);
+      this_db->vals.insert(this_db->vals.cend(), vals[i]);
+    }
+    return 0;
+  };
 
-    // Lanza error de archivo no encontrado
-    throw std::filesystem::filesystem_error(message, file_path, ec);
+  query_exit_code = sqlite3_exec(db, query.c_str(), callback, (void *)this, &msg);
+  if (query_exit_code != SQLITE_OK)
+  {
+    DatabaseError qerror(query_exit_code, msg);
+    sqlite3_free(msg);
+    throw qerror;
   }
 }
+
+void Database::executeUpdate(std::string query, std::vector<std::string> &&args) const noexcept(false)
+{
+  std::string query = mergeQueryArgs(query, std::move(args)); // Monta la consulta con los argumentos indicados
+  char *msg = nullptr;                                        // Mensaje de sliqte3 (debe ser liberado con sqlite3_free)
+  int query_exit_code;                                        // Almacena el codigo de error de la consulta
+
+  query_exit_code = sqlite3_exec(db, query.c_str(), nullptr, nullptr, &msg);
+  if (query_exit_code != SQLITE_OK)
+  {
+    DatabaseError qerror(query_exit_code, msg);
+    sqlite3_free(msg);
+    throw qerror;
+  }
+}
+
+// Static methods
 
 QueryUmap &Database::umapQuery(QueryUmap &&dest, QueryResult &&qresult)
 {
@@ -46,102 +81,6 @@ QueryUmap &Database::umapQuery(QueryUmap &&dest, QueryResult &&qresult)
 
   return dest;
 }
-
-Database::Database() noexcept
-    : db(nullptr)
-{
-  // Se deben inicializar debidamente los miembros
-}
-
-Database::Database(std::string f_name) noexcept(false)
-    : file_name(f_name)
-{
-  checkFile(f_name);
-}
-
-Database::Database(const Database &other)
-{
-  setDatabaseFile(other.getDatabaseFile());
-  cols = other.cols;
-  vals = other.vals;
-}
-
-Database::Database(sqlite3 *other_db)
-{
-  sqlite3_close(db);
-  db = other_db;
-}
-
-std::string Database::getDatabaseFile() const noexcept
-{
-  return this->file_name;
-}
-
-void Database::connect() noexcept(false)
-{
-  int exit_code;
-  if ((exit_code = sqlite3_open(file_name.c_str(), &db)))
-    throw DatabaseError(exit_code, DatabaseError::connection_error_message);
-}
-
-QueryResult Database::fetchQuery() const noexcept
-{
-  return std::make_pair(cols, vals);
-}
-
-void Database::executeQuery(std::string raw_query, std::vector<std::string> &&args) const noexcept(false)
-{
-  std::string query = mergeQueryArgs(raw_query, std::move(args)); // Monta la consulta con los argumentos indicados
-  char *msg = nullptr;                                            // Mensaje de sliqte3 (debe ser liberado con sqlite3_free)
-  int query_exit_code;                                            // Almacena el codigo de error de la consulta
-
-  // Escribir registros en la pantalla
-  auto callback = [](void *ctx, int rows, char **vals, char **cols) -> int
-  {
-    Database *this_db = static_cast<Database *>(ctx);
-
-    for (int i = 0; i < rows; i++)
-    {
-      bool col_exists = std::any_of(this_db->cols.begin(), this_db->cols.end(), [cols, i](const std::string &s)
-                                    { return s == std::string(cols[i]); });
-      // Si no existe la columna, es añadida al vector de columnas de consulta (es decir, todavia no ha terminado de guardar todos los campos del primer registro de la query actual)
-      if (!col_exists)
-        this_db->cols.insert(this_db->cols.cend(), cols[i]);
-      this_db->vals.insert(this_db->vals.cend(), vals[i]);
-    }
-    return 0;
-  };
-
-  query_exit_code = sqlite3_exec(db, query.c_str(), callback, (void *)this, &msg);
-  if (query_exit_code != SQLITE_OK)
-  {
-    DatabaseError qerror(query_exit_code, msg);
-    sqlite3_free(msg);
-    throw qerror;
-  }
-}
-
-void Database::executeUpdate(std::string raw_query, std::vector<std::string> &&args) const noexcept(false)
-{
-  std::string query = mergeQueryArgs(raw_query, std::move(args)); // Monta la consulta con los argumentos indicados
-  char *msg = nullptr;                                            // Mensaje de sliqte3 (debe ser liberado con sqlite3_free)
-  int query_exit_code;                                            // Almacena el codigo de error de la consulta
-
-  query_exit_code = sqlite3_exec(db, query.c_str(), nullptr, nullptr, &msg);
-  if (query_exit_code != SQLITE_OK)
-  {
-    DatabaseError qerror(query_exit_code, msg);
-    sqlite3_free(msg);
-    throw qerror;
-  }
-}
-
-void Database::setDatabaseFile(std::string db_name)
-{
-  file_name = db_name;
-}
-
-/* Static methods */
 
 void Database::printQuery(const QueryResult qresult) noexcept
 {
@@ -178,14 +117,4 @@ void Database::printQuery(const QueryUmap qumap) noexcept
     }
     std::cout << std::endl;
   }
-}
-
-std::string Database::mergeQueryArgs(std::string query, std::vector<std::string> &&args) noexcept
-{
-  std::size_t pos, i = 0;
-
-  while ((pos = query.find('$')) != std::string::npos)
-    strInsert(query, args.at(i++), pos, 1);
-
-  return query;
 }

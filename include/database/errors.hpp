@@ -12,13 +12,14 @@ protected:
   int code;
 
 public:
-  // Static members
-  static constexpr char connection_error_message[] = "Database connection error";
-  static constexpr char init_error_message[] = "Database initialization error";
+  struct ErrorMessages
+  {
+    static constexpr char *const OPENING_FAILED = "Database opening failed.";
+    static constexpr char *const INITIALIZATION_FAILED = "Database initialization failed.";
+  }
 
   // Constructors
-  DatabaseError(const int code = -1, const char *msg = nullptr)
-      : code(code)
+  DatabaseError(const int code = -1, const char *msg = nullptr) : code(code)
   {
     if (msg == nullptr)
       msg = "Database error";
@@ -113,5 +114,4 @@ public:
       delete[] error_message;
   }
 };
-
 #endif

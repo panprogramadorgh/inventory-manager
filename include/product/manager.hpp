@@ -69,7 +69,7 @@ public:
 
   // Operators
 
-  operator bool()
+  operator bool() const noexcept
   {
     return db;
   }

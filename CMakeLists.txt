@@ -23,25 +23,30 @@ include("${SCRIPTS}/fetch-cxxopts.cmake")
 add_library(add_includes INTERFACE)
 target_include_directories(add_includes INTERFACE ${INCLUDES})
 
-# Creates EXECUTABLE target
+# Creates invemanager target
 file(GLOB DATABASE_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/src/database/*.cpp")
 file(GLOB PRODUCTS_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/src/product/*.cpp")
 file(GLOB UTILS_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/src/utils/*.cpp")
 
+add_library(libinvman SHARED ${DATABASE_SOURCE} ${PRODUCTS_SOURCE} ${UTILS_SOURCE})
+
+# Creates the executable target
 if(TESTING)
   message(STATUS "Preparing project for testing mode")
-  add_executable(main ${TESTING_EXECUTABLE_PATH} ${DATABASE_SOURCE} ${PRODUCTS_SOURCE} ${UTILS_SOURCE})
+  add_executable(main ${TESTING_EXECUTABLE_PATH})
   target_compile_definitions(main PRIVATE TESTING_MODE)
 else()
   message(STATUS "Preparing project for release mode")
-  add_executable(main ${EXECUTABLE_PATH} ${DATABASE_SOURCE} ${PRODUCTS_SOURCE} ${UTILS_SOURCE})
+  add_executable(main ${EXECUTABLE_PATH})
 endif()
 
+# Links the library with the executable
+target_link_libraries(main PRIVATE libinvman)
+
+# Definitions
 if(DEV)
   target_compile_definitions(main PRIVATE DEV_MODE)
 endif()
-
-# Definitions
 target_compile_definitions(main PRIVATE DATABASE_INIT_FILE="${DATABASE_INIT_FILE}")
 
 # Dependencies
@@ -51,3 +56,7 @@ add_dependencies(main create_database_file)
 target_link_libraries(main PRIVATE add_includes) # INTERFACE
 target_link_libraries(main PRIVATE cxxopts)
 target_link_libraries(main PRIVATE sqlite)
+
+# Installation target
+
+include("${SCRIPTS}/installation.cmake")

@@ -1,5 +1,4 @@
 #include "product/manager.hpp"
-#include "database/interface.hpp"
 
 // Public methods
 

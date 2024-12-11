@@ -12,7 +12,7 @@ int main(int argc, char **argv)
       // Product properties
       ("id", "Product id", cxxopts::value<int>())("n,name", "Product name", cxxopts::value<std::string>())("d,description", "Brief product description", cxxopts::value<std::string>())("v,vendorid", "Product vendor id", cxxopts::value<int>())("c,count", "Product quantity", cxxopts::value<int>())("p,price", "Product value", cxxopts::value<double>())
       // Product fields to display
-      ("f,fields", "Product fields to display", cxxopts::value<std::vector<std::string>>()->default_value({"all"}))
+      ("f,fields", "Product fields to display", cxxopts::value<std::vector<std::string>>())
       // Positionals
       ("method", "Product method", cxxopts::value<std::string>());
 
@@ -45,7 +45,7 @@ int main(int argc, char **argv)
 
       auto p = manager.getProduct(id);
       if (p)
-        std::cout << p->str() << std::endl;
+        std::cout << p->str(fields) << std::endl;
       else
       {
         throw std::runtime_error(
