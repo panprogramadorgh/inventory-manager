@@ -1,6 +1,6 @@
 ## Inventory Manager
 
-**Inventory Manager** es un programa de gestión de activos con interfaz de línea de comandos, desarrollado en C++. Utiliza SQLite como motor de almacenamiento de datos y un sistema inteligente de gestión de caché de productos.
+**Inventory Manager** es un programa de gestión de activos con interfaz de línea de comandos, desarrollado en C++. Utiliza SQLite como motor de almacenamiento de datos y un sistema inteligente de gestión de caché de productos (por el momento esta caracteristica no es aprovechada dado el estado actual del software).
 
 El objetivo futuro para este software es ser compatible con "activos inteligentes", que son aquellos capaces de conectarse a través de la red para facilitar la gestión de inventarios.
 
@@ -15,8 +15,10 @@ sudo apt update && sudo apt upgrade
 sudo apt install cmake
 
 mkdir build && cd build
-cmake ..
+cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DDEV=ON ..
+sudo make install
 
 # Lanzar el programa
-./main
+invman init
+invman get --id=2 -f
 ```

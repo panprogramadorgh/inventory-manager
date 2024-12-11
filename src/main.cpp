@@ -12,6 +12,7 @@ int main(int argc, char **argv)
       // Product properties
       ("id", "Product id", cxxopts::value<int>())("n,name", "Product name", cxxopts::value<std::string>())("d,description", "Brief product description", cxxopts::value<std::string>())("v,vendorid", "Product vendor id", cxxopts::value<int>())("c,count", "Product quantity", cxxopts::value<int>())("p,price", "Product value", cxxopts::value<double>())
       // Product fields to display
+      // TODO: Enhance --fields option to allow selection of fields to be print at screen
       ("f,fields", "Product fields to display", cxxopts::value<bool>()->default_value("false"))
       // Positionals
       ("method", "Product method", cxxopts::value<std::string>());
