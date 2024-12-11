@@ -3,28 +3,29 @@
 
 #include "forwarder.hpp"
 #include "product/product.hpp"
+#include "database/errors.hpp"
+#include "utils/strutils.hpp"
 #include "sqlite3.h"
 #include <filesystem>
 #include <functional>
 
 namespace fs = std::filesystem;
 
-typedef std::pair<std::vector<std::string>, std::vector<std::string>>
-    QueryResult;
+using QueryResult = std::pair<std::vector<std::string>, std::vector<std::string>>;
 
-typedef std::unordered_map<int, std::shared_ptr<Product>> QueryUmap;
+using QueryUmap = std::unordered_map<int, std::shared_ptr<Product>>;
 
 class Database
 {
 private:
-  sqlite3 *const db;
+  sqlite3 *db;
   const std::string file_name;
   std::vector<std::string> cols;
   std::vector<std::string> vals;
   bool should_close_db, should_open_db;
 
   // Static methods
-  static void Database::checkFile(const std::string fname)
+  static void checkFile(const std::string fname)
   {
     if (std::filesystem::exists(fname))
       return;
@@ -34,13 +35,13 @@ private:
   }
 
 public:
-  Database(std::string fname)
-      : file_name(fname), should_open_db(true), should_close_db(true)
+  Database(const std::string fname)
+      : db(nullptr), file_name(fname), should_open_db(true), should_close_db(true)
   {
     checkFile(fname);
   }
 
-  Database(const Database &&other)
+  Database(Database &&other)
       : should_open_db(other.should_open_db),
         should_close_db(other.should_close_db),
         db(other.db),
@@ -88,7 +89,7 @@ public:
   static QueryUmap &umapQuery(QueryUmap &&dest, QueryResult &&qresult);
 
   // Allows you to format SQL queries with a vector of arguments
-  std::string Database::mergeQueryArgs(std::string query, std::vector<std::string> &&args) noexcept
+  static std::string mergeQueryArgs(std::string query, const std::vector<std::string> &&args) noexcept
   {
     std::size_t pos, i = 0;
 

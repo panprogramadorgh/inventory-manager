@@ -14,7 +14,7 @@ enum class ProductField
   product_price
 };
 
-typedef std::unordered_map<ProductField, std::string> UmappedProduct;
+using UmappedProduct = std::unordered_map<ProductField, std::string>;
 
 // Maps each sql colum of products_info
 inline UmappedProduct product_field_to_string = {

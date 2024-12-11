@@ -5,9 +5,9 @@
 
 // Non-static methods
 
-void Database::executeQuery(std::string query, std::vector<std::string> &&args) const noexcept(false)
+void Database::executeQuery(const std::string raw_query, std::vector<std::string> &&args) const noexcept(false)
 {
-  std::string query = mergeQueryArgs(query, std::move(args)); // Monta la consulta con los argumentos indicados
+  std::string query = mergeQueryArgs(raw_query, std::move(args)); // Monta la consulta con los argumentos indicados
   char *msg = nullptr;                                        // Mensaje de sliqte3 (debe ser liberado con sqlite3_free)
   int query_exit_code;                                        // Almacena el codigo de error de la consulta
 
@@ -36,9 +36,9 @@ void Database::executeQuery(std::string query, std::vector<std::string> &&args) 
   }
 }
 
-void Database::executeUpdate(std::string query, std::vector<std::string> &&args) const noexcept(false)
+void Database::executeUpdate(const std::string raw_query, std::vector<std::string> &&args) const noexcept(false)
 {
-  std::string query = mergeQueryArgs(query, std::move(args)); // Monta la consulta con los argumentos indicados
+  std::string query = mergeQueryArgs(raw_query, std::move(args)); // Monta la consulta con los argumentos indicados
   char *msg = nullptr;                                        // Mensaje de sliqte3 (debe ser liberado con sqlite3_free)
   int query_exit_code;                                        // Almacena el codigo de error de la consulta
 

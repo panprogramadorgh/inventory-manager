@@ -1,0 +1,11 @@
+if(NOT DEFINED CMAKE_INSTALL_PREFIX)
+  message(FATAL_ERROR "CMAKE_INSTALL_PREFIX is not defined")
+endif()
+
+# Creates the install target
+install(TARGETS invmanl invman
+  RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}/bin"
+  LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
+
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include"
+  DESTINATION "${CMAKE_INSTALL_PREFIX}/include/libinvmanl")

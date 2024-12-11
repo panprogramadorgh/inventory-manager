@@ -8,7 +8,7 @@ set(EXECUTABLE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
 set(TESTING_EXECUTABLE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/tests/main.cpp")
 set(DATABASE_INIT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/cmake/database/initializer.sql")
 set(INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include")
-set(SCRIPTS "${CMAKE_CURRENT_SOURCE_DIR}/cmake/scripts")
+set(SCRIPTS "${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake")
 
 # It obtains and builds sqlite source files.
 include("${SCRIPTS}/fetch-sqlite.cmake")
@@ -23,40 +23,39 @@ include("${SCRIPTS}/fetch-cxxopts.cmake")
 add_library(add_includes INTERFACE)
 target_include_directories(add_includes INTERFACE ${INCLUDES})
 
-# Creates invemanager target
+# Creates invmanl target
 file(GLOB DATABASE_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/src/database/*.cpp")
 file(GLOB PRODUCTS_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/src/product/*.cpp")
 file(GLOB UTILS_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/src/utils/*.cpp")
 
-add_library(libinvman SHARED ${DATABASE_SOURCE} ${PRODUCTS_SOURCE} ${UTILS_SOURCE})
+add_library(invmanl SHARED ${DATABASE_SOURCE} ${PRODUCTS_SOURCE} ${UTILS_SOURCE})
+target_link_libraries(invmanl PUBLIC add_includes)
+target_link_libraries(invmanl PUBLIC cxxopts)
+target_link_libraries(invmanl PUBLIC sqlite)
 
 # Creates the executable target
 if(TESTING)
   message(STATUS "Preparing project for testing mode")
-  add_executable(main ${TESTING_EXECUTABLE_PATH})
-  target_compile_definitions(main PRIVATE TESTING_MODE)
+  add_executable(invman ${TESTING_EXECUTABLE_PATH})
+  target_compile_definitions(invman PRIVATE TESTING_MODE)
 else()
   message(STATUS "Preparing project for release mode")
-  add_executable(main ${EXECUTABLE_PATH})
+  add_executable(invman ${EXECUTABLE_PATH})
 endif()
 
 # Links the library with the executable
-target_link_libraries(main PRIVATE libinvman)
+target_link_libraries(invman PRIVATE invmanl)
 
 # Definitions
 if(DEV)
-  target_compile_definitions(main PRIVATE DEV_MODE)
+  target_compile_definitions(invman PRIVATE DEV_MODE)
 endif()
-target_compile_definitions(main PRIVATE DATABASE_INIT_FILE="${DATABASE_INIT_FILE}")
+
+target_compile_definitions(invman PRIVATE DATABASE_INIT_FILE="${DATABASE_INIT_FILE}")
 
 # Dependencies
-add_dependencies(main create_database_file)
+add_dependencies(invman create_database_file)
 
-# Linking libraries
-target_link_libraries(main PRIVATE add_includes) # INTERFACE
-target_link_libraries(main PRIVATE cxxopts)
-target_link_libraries(main PRIVATE sqlite)
-
-# Installation target
-
-include("${SCRIPTS}/installation.cmake")
+# Creates installation / desinstallation targets
+include("${SCRIPTS}/create-install-target.cmake")
+include("${SCRIPTS}/create-uninstall-target.cmake")

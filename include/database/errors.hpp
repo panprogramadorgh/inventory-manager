@@ -14,9 +14,9 @@ protected:
 public:
   struct ErrorMessages
   {
-    static constexpr char *const OPENING_FAILED = "Database opening failed.";
-    static constexpr char *const INITIALIZATION_FAILED = "Database initialization failed.";
-  }
+    static constexpr char OPENING_FAILED[] = "Database opening failed";
+    static constexpr char INITIALIZATION_FAILED[] = "Database initialization failed";
+  };
 
   // Constructors
   DatabaseError(const int code = -1, const char *msg = nullptr) : code(code)

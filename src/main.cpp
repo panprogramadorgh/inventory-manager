@@ -12,7 +12,7 @@ int main(int argc, char **argv)
       // Product properties
       ("id", "Product id", cxxopts::value<int>())("n,name", "Product name", cxxopts::value<std::string>())("d,description", "Brief product description", cxxopts::value<std::string>())("v,vendorid", "Product vendor id", cxxopts::value<int>())("c,count", "Product quantity", cxxopts::value<int>())("p,price", "Product value", cxxopts::value<double>())
       // Product fields to display
-      ("f,fields", "Product fields to display", cxxopts::value<std::vector<std::string>>())
+      ("f,fields", "Product fields to display", cxxopts::value<bool>()->default_value("false"))
       // Positionals
       ("method", "Product method", cxxopts::value<std::string>());
 
@@ -41,15 +41,20 @@ int main(int argc, char **argv)
     if (result["method"].as<std::string>() == "get")
     {
       int id = result["id"].as<int>();
-      auto fields = result["fields"].as<std::vector<std::string>>();
-
       auto p = manager.getProduct(id);
-      if (p)
-        std::cout << p->str(fields) << std::endl;
-      else
+
+      if (!p)
       {
         throw std::runtime_error(
             "Could not find product with id '" + std::to_string(id) + "'");
+      }
+      if (result.count("fields"))
+      {
+        std::cout << p->str({"product_id", "product_name", "product_description", "vendor_name", "product_price", "product_count"}) << std::endl;
+      }
+      else
+      {
+        std::cout << "Product was added to cache" << std::endl;
       }
     }
     else if (result["method"].as<std::string>() == "add")

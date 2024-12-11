@@ -1,0 +1,4 @@
+file(READ "@CMAKE_CURRENT_BINARY_DIR@/install_manifest.txt" files_to_remove)
+foreach(file ${files_to_remove})
+  file(REMOVE ${file})
+endforeach()
