@@ -67,8 +67,7 @@ public:
 
   /// @brief Su proposito es eliminar productos de la base de datos y de la cache
   /// @param id Identificador de producto
-  void removeProduct(const int id, const bool commit_update = true) noexcept(false);
-
+  void removeProduct(const int id, const bool commit_update = true) noexcept;
   // Operators
 
   operator bool() const noexcept

@@ -85,19 +85,23 @@ int main(int argc, char **argv)
     }
     else if (result["method"].as<std::string>() == "add")
     {
+      /* Product fields */
+      std::string name, desc;
+      int count, vendor_id;
+      double price;
+
       if (!result.count("n") ||
           !result.count("d") ||
           !result.count("vendor-id") ||
           !result.count("c") ||
           !result.count("p"))
       {
-        options.help();
-        throw std::exception();
+        throw std::runtime_error(options.help());
       }
 
-      std::string name = result["n"].as<std::string>(), desc = result["d"].as<std::string>();
-      int count = result["c"].as<int>(), vendor_id = result["vendor-id"].as<int>();
-      double price = result["p"].as<double>();
+      name = result["n"].as<std::string>(), desc = result["d"].as<std::string>();
+      count = result["c"].as<int>(), vendor_id = result["vendor-id"].as<int>();
+      price = result["p"].as<double>();
 
       UmappedProduct up = {
           {ProductField::product_name, name},
@@ -114,7 +118,7 @@ int main(int argc, char **argv)
     {
       if (!result.count("id"))
         throw std::runtime_error(options.help());
-        
+
       int id = result["id"].as<int>();
       manager.removeProduct(id, true);
       std::cout << "Product with id '" << std::to_string(id) << "' was removed" << std::endl;

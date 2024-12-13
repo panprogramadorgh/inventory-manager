@@ -64,7 +64,7 @@ public:
   {
     int exit_code;
     if (!should_open_db || (exit_code = sqlite3_open(file_name.c_str(), &db)))
-      throw DatabaseError(exit_code, DatabaseError::ErrorMessages::OPENING_FAILED);
+      throw DatabaseError(exit_code, DatabaseError::GenericErrorMessages::OPENING_FAILED);
   }
 
   // Database interaction utilities

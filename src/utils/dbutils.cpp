@@ -8,7 +8,7 @@ void init_database(const Database &db, const std::string db_init_file)
   std::string each_line, sql_text;
 
   if (!file || !file.good()) // Error leyendo archivo texto sql
-    throw DatabaseError(file.rdstate(), DatabaseError::ErrorMessages::INITIALIZATION_FAILED);
+    throw DatabaseError(file.rdstate(), DatabaseError::GenericErrorMessages::INITIALIZATION_FAILED);
   while (std::getline(file, each_line))
     sql_text += each_line + '\n';
 

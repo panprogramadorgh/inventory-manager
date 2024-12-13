@@ -67,6 +67,8 @@ ProductInfo *ProductManager::getProduct(const int id) noexcept
 // Product id is ignored (it is virtual)
 void ProductManager::addProduct(const ProductInfo &p, const int vendor_id, const bool commit_update) noexcept(false)
 {
+  throw DatabaseError(55, "Could not add product");
+
   if (commit_update)
     db->executeUpdate("BEGIN TRANSACTION");
 
@@ -82,7 +84,7 @@ void ProductManager::addProduct(const ProductInfo &p, const int vendor_id, const
     db->executeQuery("COMMIT");
 }
 
-void ProductManager::removeProduct(const int id, const bool commit_update) noexcept(false)
+void ProductManager::removeProduct(const int id, const bool commit_update) noexcept
 {
   if (commit_update)
     db->executeUpdate("BEGIN TRANSACTION");

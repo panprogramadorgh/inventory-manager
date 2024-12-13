@@ -4,50 +4,41 @@
 #include "database/interface.hpp"
 #include <cstring>
 
+// TODO: Enhance what() method to display `code` value too.
+
 /* Base class for database errors */
 class DatabaseError : public std::exception
 {
 protected:
-  char *error_message;
+  std::string error_message;
   int code;
 
 public:
-  struct ErrorMessages
+  struct GenericErrorMessages
   {
     static constexpr char OPENING_FAILED[] = "Database opening failed";
     static constexpr char INITIALIZATION_FAILED[] = "Database initialization failed";
   };
 
   // Constructors
-  DatabaseError(const int code = -1, const char *msg = nullptr) : code(code)
+  DatabaseError(const int code, const char *error_desc = nullptr) : code(code)
   {
-    if (msg == nullptr)
-      msg = "Database error";
-    std::size_t msg_len = std::strlen(msg);
-    error_message = new char[msg_len + 1];
-    std::strcpy(error_message, msg);
+    error_message += "Database error (" + std::to_string(code) + ")";
+    if (error_desc)
+    {
+      error_message += " : ";
+      error_message += error_desc;
+    }
   }
 
   DatabaseError(DatabaseError &other)
-      : code(other.code), error_message(nullptr)
+      : code(other.code), error_message(other.error_message)
   {
-    if (other.error_message != nullptr)
-    {
-      error_message = new char[std::strlen(other.error_message) + 1];
-      std::strcpy(error_message, other.error_message);
-    }
   }
 
   DatabaseError(DatabaseError &&other)
-      : code(other.code), error_message(nullptr)
+      : code(other.code), error_message(std::move(other.error_message))
   {
-    if (other.error_message != nullptr)
-    {
-      error_message = new char[std::strlen(other.error_message) + 1];
-      std::strcpy(error_message, other.error_message);
-      delete[] other.error_message;
-      other.error_message = nullptr;
-    }
     other.code = -1;
   }
 
@@ -55,7 +46,7 @@ public:
 
   const char *what() const noexcept
   {
-    return error_message;
+    return error_message.c_str();
   }
 
   int getErrorCode()
@@ -67,23 +58,15 @@ public:
 
   operator bool()
   {
-    return error_message;
+    return code > -1;
   }
 
   DatabaseError &operator=(DatabaseError &other)
   {
     if (this != &other)
     {
-      if (error_message != nullptr)
-        delete[] error_message; // Dispatches old mem block;
       code = other.code;
-      if (other.error_message == nullptr)
-        error_message = nullptr;
-      else
-      {
-        error_message = new char[std::strlen(other.error_message) + 1];
-        std::strcpy(error_message, other.error_message);
-      }
+      error_message = other.error_message;
     }
     return *this;
   }
@@ -92,26 +75,16 @@ public:
   {
     if (this != &other)
     {
-      if (error_message != nullptr)
-        delete[] error_message; // Dispatches old mem block;
       code = other.code;
-      if (other.error_message == nullptr)
-        error_message = nullptr;
-      else
-      {
-        error_message = new char[std::strlen(other.error_message) + 1];
-        std::strcpy(error_message, other.error_message);
-        delete[] other.error_message;
-        other.error_message = nullptr;
-      }
+      other.code = -1;
+      error_message = std::move(other.error_message);
     }
     return *this;
   }
 
   ~DatabaseError()
   {
-    if (error_message)
-      delete[] error_message;
+    code = -1;
   }
 };
 #endif

@@ -58,6 +58,4 @@ add_dependencies(invman create_database_file)
 
 # Creates installation / desinstallation targets
 include("${SCRIPTS}/create-install-target.cmake")
-
-# FIXME: Arreglar target de desinstalacion
 include("${SCRIPTS}/create-uninstall-target.cmake")
