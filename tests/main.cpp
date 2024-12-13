@@ -3,30 +3,16 @@
 #include "product/manager.hpp"
 #include "utils/dbutils.hpp"
 
-int main()
+int main(int argc, char **argv)
 {
-  std::string dbfile = std::string(getenv("HOME")) + "/inventory-manager.db";
-  Database db(dbfile.c_str());
+  using ArgumentList = std::vector<std::string>;
+  ArgumentList args;
 
-  try
-  {
-    db.connect();
-    db.executeQuery("SELECT * FROM foo");
-  }
-  catch (const std::exception &e)
-  {
-    std::cerr << e.what() << '\n';
-    return EXIT_FAILURE;
-  }
-  catch (const std::exception *e)
-  {
-    std::cerr << e->what() << '\n';
-    delete e;
-    return EXIT_FAILURE;
-  }
+  while (--argc > 0)
+    args.push_back(argv[argc]);
 
-  auto result = Database::umapQuery(QueryUmap(), db.fetchQuery());
-  Database::printQuery(result);
+  for (const auto &a : args)
+    std::cout << a << std::endl;
 
   return EXIT_SUCCESS;
 }
