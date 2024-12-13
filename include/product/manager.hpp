@@ -57,6 +57,8 @@ public:
   /// @return Retorna un puntero a un bloque de memoria dinamica que ha de ser manualmente eliminado con delete para llamar al destructor de Product
   ProductInfo *getProduct(const int id) noexcept;
 
+  // TODO: Metodo de obtencion de productos por patron de nombre
+
   /// @brief Permite agregar productos actualizando la base de datos.
   /// @param p En realidad el miembro `vendor_name` del objeto p es ignorado puesto que el vendedor es indicado como un segundo argumento del metodo.
   /// @param vendor_id Hace referencia al vendedor del producto

@@ -71,10 +71,7 @@ int main(int argc, char **argv)
         displayables.push_back(ProductField::product_price);
 
       if (!result.count("id"))
-      {
-        options.help();
-        throw std::exception();
-      }
+        throw std::runtime_error(options.help());
 
       int id = result["id"].as<int>();
       auto p = manager.getProduct(id);
@@ -88,19 +85,36 @@ int main(int argc, char **argv)
     }
     else if (result["method"].as<std::string>() == "add")
     {
+      if (!result.count("n") ||
+          !result.count("d") ||
+          !result.count("vendor-id") ||
+          !result.count("c") ||
+          !result.count("p"))
+      {
+        options.help();
+        throw std::exception();
+      }
+
+      std::string name = result["n"].as<std::string>(), desc = result["d"].as<std::string>();
+      int count = result["c"].as<int>(), vendor_id = result["vendor-id"].as<int>();
+      double price = result["p"].as<double>();
+
       UmappedProduct up = {
-          {ProductField::product_name, result["n"].as<std::string>()},
-          {ProductField::product_description, result["d"].as<std::string>()},
+          {ProductField::product_name, name},
+          {ProductField::product_description, desc},
           {ProductField::vendor_name, ""}, // We specify the vendor by their id
-          {ProductField::product_count, std::to_string(result["c"].as<int>())},
-          {ProductField::product_price, std::to_string(result["p"].as<double>())}};
+          {ProductField::product_count, std::to_string(count)},
+          {ProductField::product_price, std::to_string(price)}};
       ProductInfo p(up, true); // Virtual ProductInfo to insert in database
-      int vendor_id = result["vendor-id"].as<int>();
+
       // TODO: Imprimir id de nuevo producto
       manager.addProduct(p, vendor_id, true);
     }
     else if (result["method"].as<std::string>() == "rem")
     {
+      if (!result.count("id"))
+        throw std::runtime_error(options.help());
+        
       int id = result["id"].as<int>();
       manager.removeProduct(id, true);
       std::cout << "Product with id '" << std::to_string(id) << "' was removed" << std::endl;
