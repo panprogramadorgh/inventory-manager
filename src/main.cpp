@@ -10,10 +10,27 @@ int main(int argc, char **argv)
 
   options.add_options()("h,help", "Get help")
       // Product properties
-      ("id", "Product id", cxxopts::value<int>())("n,name", "Product name", cxxopts::value<std::string>())("d,description", "Brief product description", cxxopts::value<std::string>())("v,vendorid", "Product vendor id", cxxopts::value<int>())("c,count", "Product quantity", cxxopts::value<int>())("p,price", "Product value", cxxopts::value<double>())
-      // Product fields to display
-      // TODO: Enhance --fields option to allow selection of fields to be print at screen
-      ("f,fields", "Product fields to display", cxxopts::value<bool>()->default_value("false"))
+      ("id", "Product id", cxxopts::value<int>())
+      //
+      ("n,name", "Product name", cxxopts::value<std::string>())
+      //
+      ("N,show-name", "Shows the product name", cxxopts::value<bool>()->default_value("false"))
+      //
+      ("d,description", "Brief product description", cxxopts::value<std::string>())
+      //
+      ("D,show-description", "Shows the product description", cxxopts::value<bool>()->default_value("false"))
+      // Only used when creating a product
+      ("v,vendor-id", "Product vendor id", cxxopts::value<int>())
+      //
+      ("V,show-vendor", "Shows product vendor name", cxxopts::value<bool>()->default_value("false"))
+      //
+      ("c,count", "Product quantity", cxxopts::value<int>())
+      //
+      ("C,show-count", "Shows product quantity", cxxopts::value<bool>()->default_value("false"))
+      //
+      ("p,price", "Product value", cxxopts::value<double>())
+      //
+      ("P,show-price", "Shows product value", cxxopts::value<bool>()->default_value("false"))
       // Positionals
       ("method", "Product method", cxxopts::value<std::string>());
 
@@ -41,6 +58,24 @@ int main(int argc, char **argv)
   {
     if (result["method"].as<std::string>() == "get")
     {
+      std::vector<ProductField> displayables;
+      if (result["N"].as<bool>())
+        displayables.push_back(ProductField::product_name);
+      if (result["D"].as<bool>())
+        displayables.push_back(ProductField::product_description);
+      if (result["V"].as<bool>()) // vendor name
+        displayables.push_back(ProductField::product_name);
+      if (result["C"].as<bool>())
+        displayables.push_back(ProductField::product_count);
+      if (result["P"].as<bool>())
+        displayables.push_back(ProductField::product_price);
+
+      if (!result.count("id"))
+      {
+        options.help();
+        throw std::exception();
+      }
+
       int id = result["id"].as<int>();
       auto p = manager.getProduct(id);
 
@@ -49,25 +84,19 @@ int main(int argc, char **argv)
         throw std::runtime_error(
             "Could not find product with id '" + std::to_string(id) + "'");
       }
-      if (result.count("fields"))
-      {
-        std::cout << p->str({"product_id", "product_name", "product_description", "vendor_name", "product_price", "product_count"}) << std::endl;
-      }
-      else
-      {
-        std::cout << "Product was added to cache" << std::endl;
-      }
+      std::cout << p->str(displayables) << std::endl;
     }
     else if (result["method"].as<std::string>() == "add")
     {
       UmappedProduct up = {
-          {ProductField::product_name, result["name"].as<std::string>()},
-          {ProductField::product_description, result["description"].as<std::string>()},
+          {ProductField::product_name, result["n"].as<std::string>()},
+          {ProductField::product_description, result["d"].as<std::string>()},
           {ProductField::vendor_name, ""}, // We specify the vendor by their id
-          {ProductField::product_count, std::to_string(result["count"].as<int>())},
-          {ProductField::product_price, std::to_string(result["price"].as<double>())}};
+          {ProductField::product_count, std::to_string(result["c"].as<int>())},
+          {ProductField::product_price, std::to_string(result["p"].as<double>())}};
       ProductInfo p(up, true); // Virtual ProductInfo to insert in database
-      int vendor_id = result["vendorid"].as<int>();
+      int vendor_id = result["vendor-id"].as<int>();
+      // TODO: Imprimir id de nuevo producto
       manager.addProduct(p, vendor_id, true);
     }
     else if (result["method"].as<std::string>() == "rem")

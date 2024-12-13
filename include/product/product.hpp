@@ -82,7 +82,7 @@ public:
   }
 
   // Methods
-  std::string str(std::vector<std::string> visible_fields = {}) const noexcept;
+  std::string str(std::vector<ProductField> visible_fields = {}) const noexcept;
 
   bool isVirtual() const noexcept
   {
@@ -172,7 +172,7 @@ public:
   {
     return *this;
   }
-  std::string str(std::vector<std::string> visible_fields = {}) const noexcept
+  std::string str(std::vector<ProductField> visible_fields = {}) const noexcept
   {
     return ProductInfo::str(visible_fields) + " - " + std::to_string(cache_relevance);
   }

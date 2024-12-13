@@ -19,6 +19,6 @@ cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DDEV=ON ..
 sudo make install
 
 # Lanzar el programa
-invman init
+invman init # Inicializa la base de datos con datos placeholder
 invman get --id=2 -f
 ```

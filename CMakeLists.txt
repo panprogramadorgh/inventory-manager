@@ -6,7 +6,7 @@ option(DEV "Enable developing mode" OFF)
 
 set(EXECUTABLE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
 set(TESTING_EXECUTABLE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/tests/main.cpp")
-set(DATABASE_INIT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/cmake/database/initializer.sql")
+set(DATABASE_INIT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/scripts/database/initializer.sql")
 set(INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set(SCRIPTS "${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake")
 

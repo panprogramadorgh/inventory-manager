@@ -4,7 +4,7 @@ extern UmappedProduct product_field_to_string;
 
 /* Products info class */
 
-std::string ProductInfo::str(std::vector<std::string> visible_fields) const noexcept
+std::string ProductInfo::str(std::vector<ProductField> visible_fields) const noexcept
 {
   auto up = Product::umapProduct(*this); // Representation of ProductInfo on a map
   std::string csv;
@@ -12,7 +12,7 @@ std::string ProductInfo::str(std::vector<std::string> visible_fields) const noex
   if (visible_fields.size() < 1)
   {
     for (auto &field : product_field_to_string)
-      visible_fields.push_back(field.second);
+      visible_fields.push_back(field.first);
   }
 
   // Appends the field values as csv
@@ -20,7 +20,7 @@ std::string ProductInfo::str(std::vector<std::string> visible_fields) const noex
   {
     if (&visible_fields[0] != &field)
       csv += ",";
-    csv += up.at(string_to_product_field.at(field));
+    csv += up.at(field);
   }
   return csv;
 }
