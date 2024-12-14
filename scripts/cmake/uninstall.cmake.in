@@ -1,9 +1,36 @@
-file(STRINGS "@CMAKE_CURRENT_BINARY_DIR@/install_manifest.txt" files_to_remove)
-foreach(file ${files_to_remove})
+# Binary files like executables at @INST_RUNTIME_DESTINATION@ or libraries at @INST_LIBRARY_DESTINATION@
+file(STRINGS "@CMAKE_CURRENT_BINARY_DIR@/install_manifest.txt" binaries_to_remove)
+
+# Header files located at @INST_HEADERS_DESTINATION@
+file(STRINGS "@CMAKE_CURRENT_BINARY_DIR@/headers_manifest.txt" headers_to_remove)
+
+message(STATUS "Removing binary files from")
+
+# Removes binaries
+foreach(file ${binaries_to_remove})
   file(REMOVE ${file})
+
+  # Checks if there was an error removing file
   if(EXISTS ${file})
     message(WARNING "Failed to remove ${file}")
   else()
     message(STATUS "Removed ${file}")
   endif()
 endforeach()
+
+message(STATUS "Removing header files")
+
+# Removes headers
+foreach(header ${headers_to_remove})
+  file(REMOVE ${header})
+
+  if(EXISTS ${header})
+    message(WARNING "Failed to remove ${header}")
+  else()
+    message(STATUS "Removed ${header}")
+  endif()
+endforeach()
+
+# Removes @INST_HEADERS_DESTINATION@ directory
+file(REMOVE_RECURSE "@INST_HEADERS_DESTINATION@")
+message(STATUS "Headers wrapper directory removed @INST_HEADERS_DESTINATION@")

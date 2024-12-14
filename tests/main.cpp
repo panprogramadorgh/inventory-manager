@@ -1,7 +1,6 @@
 #include "forwarder.hpp"
 #include "product/product.hpp"
 #include "product/manager.hpp"
-#include "utils/dbutils.hpp"
 
 int main(int argc, char **argv)
 {

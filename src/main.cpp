@@ -98,7 +98,6 @@ int main(int argc, char **argv)
       {
         throw std::runtime_error(options.help());
       }
-
       name = result["n"].as<std::string>(), desc = result["d"].as<std::string>();
       count = result["c"].as<int>(), vendor_id = result["vendor-id"].as<int>();
       price = result["p"].as<double>();

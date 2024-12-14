@@ -4,21 +4,51 @@
 
 El objetivo futuro para este software es ser compatible con "activos inteligentes", que son aquellos capaces de conectarse a través de la red para facilitar la gestión de inventarios.
 
-### Construcción del proyecto:
+### Construccion del proyecto:
+
+En primer lugar vamos a necesitar la popular herramienta de generacion de Makefiles CMake, la cual podremos obtener facilmente desde los repositorios estandar de Ubuntu de la siguiente manera:
+
+> [Instalar CMake](https://atekihcan.com/blog/random/installing-latest-cmake-from-source-on-linux-distro/) con un make file directamente
+
+```bash
+# En caso de que cmake no esté instalado
+sudo apt update && sudo apt upgrade
+sudo apt install cmake
+```
 
 ```bash
 git clone https://github.com/panprogramadorgh/inventory-manager
 cd inventory-manager
 
-# En caso de que cmake no esté instalado
-sudo apt update && sudo apt upgrade
-sudo apt install cmake
-
 mkdir build && cd build
 cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DDEV=ON ..
-sudo make install
+make
 
-# Lanzar el programa
-invman init # Inicializa la base de datos con datos placeholder
-invman get --id=2 -f
+# Lanzamos el programa ubicado en este mismo directorio
+./invman get --id 2
+```
+
+Si lo que se busca es **instalar el software en la maquina** podemos hacer lo siguiente:
+
+```bash
+sudo make install
+# Lanzamos el programa instalado en /usr/local/bin
+invman get --id 3
+```
+
+Es posible que al momento de lanza el programa obtengamos un **error relacionado con la libreria del sistema ld.so**. Esta libreria se encarga de gestionar en tiempo de ejecucion las dependencias (libreria dinamica) para el programa. De manera predeterminada en la mayoria de sistemas ld.so no tiene configurara la ruta de busqueda de librerias dinamicas para /usr/local, puesto que esta no es una ruta estandar para el sistema y mas bien esta orientada a instalaciones de terceros.
+
+Para agregar una nueva ruta de enlace de librerias dinamicas en ls.so podemos modificar una variable de entorno de la siguiente manera:
+
+```bash
+# Adds a new library dir
+export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+```
+
+Es altamente **recomendable agregar la anterior linea** a un script de inicio de sesion como `$HOME/.bashrc`
+
+**Para desinstalar el software** podemos ejecutar el pseudo-target `uninstall` de la siguiente manera:
+
+```bash
+sudo make uninstall
 ```

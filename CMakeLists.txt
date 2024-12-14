@@ -1,14 +1,36 @@
 cmake_minimum_required(VERSION 3.10)
 project(InventoryManager)
 
-option(TESTING "Enable testing mode" OFF)
-option(DEV "Enable developing mode" OFF)
+option(TESTING "Enable testing mode" OFF) # Loads a diferent entry point for the program
+option(DEV "Enable developing mode" OFF)  # Enables some features like an initializing database method
 
+## Compilation CMake variables ##
+
+# Determines the absolute path the begining of the program
 set(EXECUTABLE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
 set(TESTING_EXECUTABLE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/tests/main.cpp")
+
+# Determines the absolute path to the sql database initializer code
 set(DATABASE_INIT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/scripts/database/initializer.sql")
-set(INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include")
+
+# Determines the absolute path to header files to compile the program
+set(HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/include")
+
+## Installation / Uninstallation CMake variables ##
+
+# Determines the absolute path to CMake installation / uninstallation scripts
 set(SCRIPTS "${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake")
+
+# Determines the installation path for library libinvmanl.so header files
+set(INST_HEADERS_DESTINATION "${CMAKE_INSTALL_PREFIX}/include/libinvmanl")
+
+# Determines the installation path for the program executable
+set(INST_RUNTIME_DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
+
+# Determines the installation path for libinvmanl.so
+set(INST_LIBRARY_DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
+
+## Includes the library compilation scripts ( sqlite3 and cxxopts ) ##
 
 # It obtains and builds sqlite source files.
 include("${SCRIPTS}/fetch-sqlite.cmake")
@@ -21,12 +43,11 @@ include("${SCRIPTS}/fetch-cxxopts.cmake")
 
 # It creates a interface lib for exposing headers to ${EXECUTABLE}
 add_library(add_includes INTERFACE)
-target_include_directories(add_includes INTERFACE ${INCLUDES})
+target_include_directories(add_includes INTERFACE ${HEADERS})
 
 # Creates invmanl target
 file(GLOB DATABASE_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/src/database/*.cpp")
 file(GLOB PRODUCTS_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/src/product/*.cpp")
-file(GLOB UTILS_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/src/utils/*.cpp")
 
 add_library(invmanl SHARED ${DATABASE_SOURCE} ${PRODUCTS_SOURCE} ${UTILS_SOURCE})
 target_link_libraries(invmanl PUBLIC add_includes)
