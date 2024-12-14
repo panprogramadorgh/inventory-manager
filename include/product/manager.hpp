@@ -45,13 +45,6 @@ public:
 
   // Methods
 
-  // Initializes the database with intial data
-  ProductManager &init(const std::string &init_file, std::function<void(const Database &, const std::string)> db_initializer)
-  {
-    db_initializer(*db, init_file);
-    return *this;
-  }
-
   /// @brief  Permite obtener prodctos desde la base de datos y los cachea
   /// @param id Identificador del producto dentro de la base de datos
   /// @return Retorna un puntero a un bloque de memoria dinamica que ha de ser manualmente eliminado con delete para llamar al destructor de Product

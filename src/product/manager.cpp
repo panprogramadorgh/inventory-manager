@@ -67,11 +67,6 @@ ProductInfo *ProductManager::getProduct(const int id) noexcept
 // Product id is ignored (it is virtual)
 void ProductManager::addProduct(const ProductInfo &p, const int vendor_id, const bool commit_update) noexcept(false)
 {
-  throw DatabaseError(55, "Could not add product");
-
-  if (commit_update)
-    db->executeUpdate("BEGIN TRANSACTION");
-
   db->executeUpdate(
       "INSERT INTO products (product_name, product_description, vendor_id, product_count, product_price) VALUES ($, $, $, $, $)",
       {"\"" + p.product_name + "\"",
@@ -79,20 +74,15 @@ void ProductManager::addProduct(const ProductInfo &p, const int vendor_id, const
        std::to_string(vendor_id),
        std::to_string(p.product_price),
        std::to_string(p.product_count)});
-
   if (commit_update)
     db->executeQuery("COMMIT");
 }
 
 void ProductManager::removeProduct(const int id, const bool commit_update) noexcept
 {
-  if (commit_update)
-    db->executeUpdate("BEGIN TRANSACTION");
-
   db->executeUpdate("DELETE FROM products as p WHERE p.product_id = $",
                     {std::to_string(id)});
   removeProductFromCache(id); // Es eliminado de la cache
-
   if (commit_update)
     db->executeUpdate("COMMIT");
 }

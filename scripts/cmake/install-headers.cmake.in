@@ -2,11 +2,11 @@
 
 message(STATUS "Installing header files for libinvmanl.so at @INST_HEADERS_DESTINATION@")
 
-file(GLOB_RECURSE headers "@CMAKE_CURRENT_SOURCE_DIR@/include/*.hpp")
+file(GLOB_RECURSE headers "@HEADERS@/*.hpp")
 
 # Creates / Empties headers manifest file
-file(WRITE "@CMAKE_CURRENT_BINARY_DIR@/headers_manifest.txt")
-message(STATUS "Creating headers manifest at @CMAKE_CURRENT_BINARY_DIR@/headers_manifest.txt")
+file(WRITE "@HEADERS_MANIFEST@")
+message(STATUS "Creating headers manifest at @HEADERS_MANIFEST@")
 
 foreach(file ${headers})
   # Copies the headers files
@@ -16,7 +16,7 @@ foreach(file ${headers})
   get_filename_component(filename ${file} NAME)
 
   # Writes each header path at manifest
-  file(APPEND "@CMAKE_CURRENT_BINARY_DIR@/headers_manifest.txt" "@INST_HEADERS_DESTINATION@/${filename}\n")
+  file(APPEND "@HEADERS_MANIFEST@" "@INST_HEADERS_DESTINATION@/${filename}\n")
 
   # Prints the name of the file
   message(STATUS "Installed @INST_HEADERS_DESTINATION@/${filename}")

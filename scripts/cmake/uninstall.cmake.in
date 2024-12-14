@@ -1,16 +1,18 @@
 # Binary files like executables at @INST_RUNTIME_DESTINATION@ or libraries at @INST_LIBRARY_DESTINATION@
-file(STRINGS "@CMAKE_CURRENT_BINARY_DIR@/install_manifest.txt" binaries_to_remove)
+file(STRINGS "@INSTALL_MANIFEST@" binaries_to_remove)
+
+# Program data archives like invman.db at @INST_ARCHIVES_DESTINATION@
+file(STRINGS "@ARCHIVES_MANIFEST@" archives_to_remove)
 
 # Header files located at @INST_HEADERS_DESTINATION@
-file(STRINGS "@CMAKE_CURRENT_BINARY_DIR@/headers_manifest.txt" headers_to_remove)
-
-message(STATUS "Removing binary files from")
+file(STRINGS "@HEADERS_MANIFEST@" headers_to_remove)
 
 # Removes binaries
+message(STATUS "Removing binary files from @INST_RUNTIME_DESTINATION@ and @INST_LIBRARY_DESTINATION@")
+
 foreach(file ${binaries_to_remove})
   file(REMOVE ${file})
 
-  # Checks if there was an error removing file
   if(EXISTS ${file})
     message(WARNING "Failed to remove ${file}")
   else()
@@ -18,9 +20,26 @@ foreach(file ${binaries_to_remove})
   endif()
 endforeach()
 
-message(STATUS "Removing header files")
+# Removes archives
+message(STATUS "Removing program data archives from @INST_ARCHIVES_DESTINATION@")
+
+foreach(archive ${archives_to_remove})
+  filE(REMOVE ${archive})
+
+  if(EXISTS ${archive})
+    message(WARNING "Failed to remove ${archive}")
+  else()
+    message(STATUS "Removed ${archive}")
+  endif()
+endforeach()
+
+# Removes @INST_ARCHIVES_DESTINATION@ directory
+file(REMOVE_RECURSE "@INST_ARCHIVES_DESTINATION@")
+message(STATUS "Archives wrapper directory removed @INST_ARCHIVES_DESTINATION@")
 
 # Removes headers
+message(STATUS "Removing header files from @INST_HEADERS_DESTINATION@")
+
 foreach(header ${headers_to_remove})
   file(REMOVE ${header})
 

@@ -1,0 +1,38 @@
+import sqlite3
+import os
+
+# Globals
+db_init_file = "@DB_INIT_FILE_DESTINATION@"
+db_data_file = "@DB_DATA_FILE_DESTINATION@"
+
+
+def read_file(path: str):
+    block_size = 1024
+    block: bytes = bytes()
+    content: str = ""
+
+    with os.fdopen(os.open(path, flags=os.O_RDONLY), "rb") as f:
+        while True:
+            block = os.read(f.fileno(), block_size)
+            if not block:
+                break
+            content += block.decode()
+    return content
+
+
+def main():
+    conn = sqlite3.connect(db_data_file)
+    cursor = conn.cursor()
+
+    print(f"[python3] -- Initializing database with sqlite-{sqlite3.sqlite_version}")
+    sql_text = read_file(db_init_file)
+    cursor.executescript(sql_text)
+
+    cursor.execute("SELECT * FROM products_info;")  # Queries the custom view
+    print(cursor.fetchall())
+
+    print("Database was successfilly inicialized")
+
+
+if __name__ == "__main__":
+    main()

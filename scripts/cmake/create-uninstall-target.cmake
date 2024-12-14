@@ -3,11 +3,13 @@ if(NOT DEFINED CMAKE_INSTALL_PREFIX)
 endif()
 
 # Configures the template for uninstall.cmake script
-configure_file(
-  "${SCRIPTS}/uninstall.cmake.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/uninstall.cmake"
-  @ONLY
-)
+if(NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/uninstall.cmake")
+  configure_file(
+    "${SCRIPTS}/uninstall.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/uninstall.cmake"
+    @ONLY
+  )
+endif()
 
 # Creates uninstall target which runs uninstall.cmake script
 add_custom_target(uninstall
