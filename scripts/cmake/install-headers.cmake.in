@@ -12,10 +12,12 @@ foreach(file ${headers})
   # Copies the headers files
   file(COPY "${file}" DESTINATION "@INST_HEADERS_DESTINATION@")
 
+  # Gets the header file name
+  get_filename_component(filename ${file} NAME)
+
   # Writes each header path at manifest
-  file(APPEND "@CMAKE_CURRENT_BINARY_DIR@/headers_manifest.txt" "${file}\n")
+  file(APPEND "@CMAKE_CURRENT_BINARY_DIR@/headers_manifest.txt" "@INST_HEADERS_DESTINATION@/${filename}\n")
 
   # Prints the name of the file
-  get_filename_component(filename ${file} NAME)
   message(STATUS "Installed @INST_HEADERS_DESTINATION@/${filename}")
 endforeach()
