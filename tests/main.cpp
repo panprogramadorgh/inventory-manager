@@ -4,14 +4,9 @@
 
 int main(int argc, char **argv)
 {
-  using ArgumentList = std::vector<std::string>;
-  ArgumentList args;
-
-  while (--argc > 0)
-    args.push_back(argv[argc]);
-
-  for (const auto &a : args)
-    std::cout << a << std::endl;
+  std::string *str = (std::string *)nullptr;
+  delete str;
+  delete str;
 
   return EXIT_SUCCESS;
 }

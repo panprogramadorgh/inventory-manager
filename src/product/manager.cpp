@@ -4,8 +4,7 @@
 
 ProductInfo *ProductManager::getProduct(const int id) noexcept
 {
-  // It allocates a block of memory in the heap, after obtaining the data, these are written in the Product object located in this block of memory (assignment operator = copies the data) and finally returns a pointer to it.
-  ProductInfo *p = new ProductInfo();
+  ProductInfo *p = (ProductInfo *)nullptr;
 
   // Decrease cache relevance of products and remove irrelevant products
   std::vector<int> garbage_products;
@@ -28,16 +27,13 @@ ProductInfo *ProductManager::getProduct(const int id) noexcept
   auto it = cached_products.find(id);
   if (it != cached_products.cend())
   {
-    *p = it->second->info(); // Copies the product inside the heap
+    p = new ProductInfo(it->second->info());
     return p;
   }
 
   // Returns nullptr in case the product is not in cache and datbase is not initialized
   if (!db)
-  {
-    delete p;
-    return nullptr;
-  }
+    return p;
 
   // Obtains the product from database
   try
@@ -46,21 +42,19 @@ ProductInfo *ProductManager::getProduct(const int id) noexcept
   }
   catch (const std::exception &e)
   {
-    delete p;
-    return nullptr;
+    return p;
   }
 
   auto products = Database::umapQuery(QueryUmap(), db->fetchQuery());
   it = products.find(id);
   if (it == products.end())
   {
-    delete p;
-    return nullptr;
+    return p;
   }
 
   addProductToCache(it->second); // And finally we push the product to cache
 
-  *p = it->second->info();
+  p = new ProductInfo(it->second->info());
   return p;
 }
 

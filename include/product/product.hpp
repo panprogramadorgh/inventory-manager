@@ -45,11 +45,6 @@ public:
   int product_count;
   double product_price;
 
-  /* TODO:
-   * Eliminar constructor predeterminado
-   * Constructor con ProductInfo seguro, evitando construir productos con campos no inicializados de ProductInfo
-   * Replantear ProductManager::getProduct `ProductInfo *p = new ProductInfo();` se debe alocar diectamente en el heap, sin este paso
-   */
   // Default constructor: Virtual product constructor (id = -1)
   ProductInfo()
       : product_id(-1), product_name(""), product_description(""), vendor_name(""), product_count(0), product_price(0.0)

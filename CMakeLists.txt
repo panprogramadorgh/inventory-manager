@@ -4,10 +4,6 @@ project(InventoryManager)
 set(MAINCPP "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp" CACHE STRING "Sets the entry point of the program") # Loads a diferent entry point for the program
 option(DEV_MODE "Enable developing mode" OFF) # Enables some features like an initializing database method
 
-# TODO: Crear archivo de base de datos al momento de la instalacion
-# TODO: Mover ~/inventory-manager.db a ~/.local/share/invman o /var/lib/invman
-# TODO: Eliminar archivo de base de datos en la desinstalacion
-
 # # Compilation CMake variables ##
 
 # Determines the absolute path to header files to compile the program
@@ -54,7 +50,7 @@ include("${SCRIPTS}/fetch-sqlite.cmake")
 include("${SCRIPTS}/fetch-cxxopts.cmake")
 
 # It creates the database file and a target which runs a python script that inits the database
-include("${SCRIPTS}/creates-initdb-target.cmake")
+include("${SCRIPTS}/create-initdb-target.cmake")
 
 # It creates a interface lib for exposing headers to ${EXECUTABLE}
 add_library(add_includes INTERFACE)

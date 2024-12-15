@@ -51,7 +51,6 @@ int main(int argc, char **argv)
 
   ProductManager manager(DB_DATA_FILE_DESTINATION);
 
-  // TODO: Crear modo "console" donde se procesan varias entradas en una misma "sesion" (llamar a la anterior funcion)
   try
   {
     /* The `get` method allows the user to display at screen products from the database (at this moment making reference to products just with their id)  */
@@ -79,6 +78,7 @@ int main(int argc, char **argv)
             "Could not find product with id '" + std::to_string(id) + "'");
       }
       std::cout << p->str(displayables) << std::endl;
+      delete p;
     }
     /* The `add` method allows users to insert new products in the database. The product id is calculated by the own implementation and must not be specify as a command line option */
     else if (result["method"].as<std::string>() == "add")
@@ -114,7 +114,6 @@ int main(int argc, char **argv)
       ProductInfo p(up, true);
       /* - - - */
 
-      // TODO: Print new product calculated ID at screen
       manager.addProduct(p, vendor_id, true);
     }
     else if (result["method"].as<std::string>() == "rem")

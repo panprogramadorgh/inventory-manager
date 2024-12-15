@@ -11,12 +11,13 @@ if(NOT EXISTS ${DB_DATA_FILE_DESTINATION})
   # Creates the database file
   file(WRITE ${DB_DATA_FILE_DESTINATION} "")
 
-  # Writes the database file path at the archive manifest file
-  file(WRITE ${ARCHIVES_MANIFEST} "${DB_DATA_FILE_DESTINATION}\n")
   message(STATUS "Created database file at ${DB_DATA_FILE_DESTINATION}")
 else()
   message(STATUS "Database file was found")
 endif()
+
+# Writes the database file path at the archive manifest file
+file(WRITE ${ARCHIVES_MANIFEST} "${DB_DATA_FILE_DESTINATION}\n")
 
 # Creates init_database target to init databse
 add_custom_target(init_database
