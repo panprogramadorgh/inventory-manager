@@ -3,6 +3,15 @@
 
 #include "forwarder.hpp"
 
+template <typename T>
+concept IsProduct = std::is_same_v<Product, T>;
+
+template <typename T>
+concept IsProductInfo = std::is_same_v<ProductInfo, T>;
+
+template <typename T>
+concept IsProductOrProductInfo = IsProduct<T> || IsProductInfo<T>;
+
 // Ensures secure access to product_field_to_string
 enum class ProductField
 {

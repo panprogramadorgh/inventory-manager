@@ -2,10 +2,57 @@
 
 // Public methods
 
-ProductInfo *ProductManager::getProduct(const int id) noexcept
+ProductManager::SecureReturn<ProductInfo> ProductManager::secGetProduct(const int id) noexcept
 {
-  ProductInfo *p = (ProductInfo *)nullptr;
+  // Decrease cache relevance of products and remove irrelevant products
+  std::vector<int> garbage_products;
+  for (auto pair : cached_products)
+  {
+    if (pair.first != id)
+    {
+      if (!pair.second->decreaseCacheRelevance())
+      {
+        garbage_products.push_back(pair.first);
+      }
+    }
+  }
+  for (int each_id : garbage_products)
+  {
+    cached_products.erase(each_id);
+  }
 
+  // Returns the product if it is in cache
+  auto it = cached_products.find(id);
+  if (it != cached_products.cend())
+    return std::make_pair(it->second->info(), std::string(""));
+
+  if (!db)
+    return std::make_pair(std::make_shared<ProductInfo>(nullptr), ErrorMessages::DB_IS_NULL);
+
+  // Obtains the product from database
+  try
+  {
+    db->executeQuery("SELECT * FROM products_info WHERE product_id = $", {std::to_string(id)});
+  }
+  catch (const std::exception &e)
+  {
+    return std::make_pair(std::make_shared<ProductInfo>(nullptr), std::string(e.what()));
+  }
+
+  auto products = Database::umapQuery(QueryUmap(), db->fetchQuery());
+  it = products.find(id);
+  if (it == products.end())
+  {
+    return std::make_pair(std::make_shared<ProductInfo>(nullptr), std::string(ErrorMessages::PRODUCT_NOT_FOUND));
+  }
+
+  addProductToCache(it->second); // And finally we push the product to cache
+
+  return std::make_pair(it->second->info(), std::string(""));
+}
+
+ProductInfo ProductManager::getProduct(const int id)
+{
   // Decrease cache relevance of products and remove irrelevant products
   std::vector<int> garbage_products;
   for (auto pair : cached_products)
@@ -27,13 +74,12 @@ ProductInfo *ProductManager::getProduct(const int id) noexcept
   auto it = cached_products.find(id);
   if (it != cached_products.cend())
   {
-    p = new ProductInfo(it->second->info());
-    return p;
+    return it->second->info();
   }
 
   // Returns nullptr in case the product is not in cache and datbase is not initialized
   if (!db)
-    return p;
+    throw std::runtime_error(ErrorMessages::DB_IS_NULL);
 
   // Obtains the product from database
   try
@@ -42,20 +88,19 @@ ProductInfo *ProductManager::getProduct(const int id) noexcept
   }
   catch (const std::exception &e)
   {
-    return p;
+    throw std::runtime_error(e.what());
   }
 
   auto products = Database::umapQuery(QueryUmap(), db->fetchQuery());
   it = products.find(id);
   if (it == products.end())
   {
-    return p;
+    throw std::runtime_error(ErrorMessages::PRODUCT_NOT_FOUND);
   }
 
   addProductToCache(it->second); // And finally we push the product to cache
 
-  p = new ProductInfo(it->second->info());
-  return p;
+  return it->second->info();
 }
 
 // Product id is ignored (it is virtual)

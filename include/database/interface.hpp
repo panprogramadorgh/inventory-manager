@@ -3,7 +3,7 @@
 
 #include "forwarder.hpp"
 #include "product/product.hpp"
-#include "database/errors.hpp"
+#include "database/dberror.hpp"
 #include "utils/strutils.hpp"
 #include "sqlite3.h"
 #include <filesystem>
@@ -13,9 +13,12 @@ namespace fs = std::filesystem;
 
 using QueryResult = std::pair<std::vector<std::string>, std::vector<std::string>>;
 
-using QueryUmap = std::unordered_map<int, std::shared_ptr<Product>>;
+using SecureQueryUmap = std::unordered_map<int, std::shared_ptr<Product>>;
 
-class Database
+template <IsProductOrProductInfo T>
+using QueryUmap = std::unordered_map<int, std::shared_ptr<T>>
+
+    class Database
 {
 private:
   sqlite3 *db;
@@ -86,7 +89,12 @@ public:
   // Static methods
 
   // Builds a map of records based on columns and values
-  static QueryUmap &umapQuery(QueryUmap &&dest, QueryResult &&qresult);
+
+  // FIXME: En C++ el tipo no forma parte de la declaracion, deben diferenciarse por un parametro inutilizado
+
+  static QueryUmap<ProductInfo> umapQuery(QueryResult qresult);
+
+  static QueryUmap<Product> umapQuery(QueryResult qresult);
 
   // Allows you to format SQL queries with a vector of arguments
   static std::string mergeQueryArgs(std::string query, const std::vector<std::string> &&args) noexcept
@@ -101,7 +109,7 @@ public:
 
   // Query visualization utils
   static void printQuery(const QueryResult qresult) noexcept;
-  static void printQuery(const QueryUmap qumap) noexcept;
+  static void printQuery(const QueryUmap<ProductInfo> qumap) noexcept;
 };
 
 #endif

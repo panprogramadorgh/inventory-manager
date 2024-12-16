@@ -2,7 +2,7 @@
 #define PMANAGER_HPP
 
 #include "database/interface.hpp"
-#include "database/errors.hpp"
+#include "database/dberror.hpp"
 #include "product/product.hpp"
 #include <memory>
 
@@ -19,7 +19,18 @@ private:
 
   std::size_t removeProductFromCache(int id) noexcept;
 
+  // Static members
+
+  struct ErrorMessages
+  {
+    static constexpr char DB_IS_NULL[] = "Database is null";
+    static constexpr char PRODUCT_NOT_FOUND[] = "Product was not found";
+  };
+
 public:
+  template <typename T>
+  using SecureReturn = std::pair<std::shared_ptr<T>, std::string>;
+
   ProductManager(std::string dbfile)
       : db(nullptr), should_free_db_ptr(true)
   {
@@ -28,9 +39,11 @@ public:
   }
 
   // Must receive a connected database (Database::connect())
-  ProductManager(Database *db, bool should_manage_mem = false)
-      : db(db), should_free_db_ptr(should_manage_mem)
+  ProductManager(Database *db, bool should_free_db_ptr = false)
+      : db(db), should_free_db_ptr(should_free_db_ptr)
   {
+    if (!db)
+      throw std::runtime_error()
   }
 
   // other.db must be already connected (Database::connect())
@@ -44,20 +57,19 @@ public:
 
   // Methods
 
-  /// @brief  Permite obtener prodctos desde la base de datos y los cachea
-  /// @param id Identificador del producto dentro de la base de datos
-  /// @return Retorna un puntero a un bloque de memoria dinamica que ha de ser manualmente eliminado con delete para llamar al destructor de Product
-  ProductInfo *getProduct(const int id) noexcept;
+  SecureReturn<ProductInfo> secGetProduct(const int id) noexcept;
+  ProductInfo getProduct(const int id);
 
-  /// @brief Permite agregar productos actualizando la base de datos.
-  /// @param p En realidad el miembro `vendor_name` del objeto p es ignorado puesto que el vendedor es indicado como un segundo argumento del metodo.
-  /// @param vendor_id Hace referencia al vendedor del producto
-  /// @returns Retorna una referencia al nuevo producto insertado (con el nombre del vendedor correspondiente al id indicado)
-  void addProduct(const ProductInfo &p, const int vendor_id, const bool commit_update = false) noexcept(false);
+  //
 
-  /// @brief Su proposito es eliminar productos de la base de datos y de la cache
-  /// @param id Identificador de producto
-  void removeProduct(const int id, const bool commit_update = true) noexcept;
+  SecureReturn<ProductInfo> secAddProduct(const ProductInfo &p, const int vendor_id, const bool commit_update = false) noexcept;
+  ProductInfo addProduct(const ProductInfo &p, const int vendor_id, const bool commit_update = false);
+
+  //
+
+  SecureReturn<int> secRemoveProduct(const int id, const bool commit_update = true) noexcept;
+  int removeProduct(const int id, const bool commit_update = true);
+
   // Operators
 
   operator bool() const noexcept

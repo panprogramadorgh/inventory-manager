@@ -10,6 +10,8 @@
 
 - Cambiar como se genera el archivo de base de datos al momento de construir el proyecto (y no en la configuracion) y crear target para inicializar la base de datos (el target es llamao automaticamente si se llama al target install)
 
+- Mejorar tipo QueryUmap para admitir tanto Product como ProductInfo (mejorar tambien el metodo umapQuery)
+
 - Agregar metodo seguro de obtencion de prouctos (y su respectiva version no segura que lanza excepcion) (mismo concepto para todos los metodos de interaccion con la base de datos)
 
 - Agregar / decrementar cantidad de productos

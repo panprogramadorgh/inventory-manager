@@ -1,5 +1,5 @@
 #include "database/interface.hpp"
-#include "database/errors.hpp"
+#include "database/dberror.hpp"
 #include "product/product.hpp"
 
 // Non-static methods
@@ -52,8 +52,9 @@ void Database::executeUpdate(const std::string raw_query, std::vector<std::strin
 
 // Static methods
 
-QueryUmap &Database::umapQuery(QueryUmap &&dest, QueryResult &&qresult)
+QueryUmap<Product> Database::umapQuery(QueryResult qresult)
 {
+  QueryUmap<Product> dest;
   UmappedProduct row;
   ProductField field;
 
@@ -79,6 +80,12 @@ QueryUmap &Database::umapQuery(QueryUmap &&dest, QueryResult &&qresult)
   }
 
   return dest;
+}
+
+QueryUmap<ProductInfo> Database::umapQuery(QueryResult qresult)
+{
+  // TODO: Implementar
+  return QueryUmap<ProductInfo>();
 }
 
 void Database::printQuery(const QueryResult qresult) noexcept
