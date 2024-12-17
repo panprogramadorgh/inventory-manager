@@ -52,42 +52,6 @@ void Database::executeUpdate(const std::string raw_query, std::vector<std::strin
 
 // Static methods
 
-QueryUmap<Product> Database::umapQuery(QueryResult qresult)
-{
-  QueryUmap<Product> dest;
-  UmappedProduct row;
-  ProductField field;
-
-  auto cols = qresult.first;
-  auto vals = qresult.second;
-
-  for (auto it = vals.begin();
-       it != vals.cend() &&
-       std::distance(vals.begin(), it) % cols.size() < cols.size();
-       it++)
-  {
-    field = string_to_product_field.at(cols[std::distance(vals.begin(), it) % cols.size()]);
-    row[field] = *it;
-
-    // En caso de que sea la ulima columna por registro
-    if (std::distance(vals.begin(), it) % cols.size() == cols.size() - 1)
-    {
-      // Creates a non-virtual ProductInfo
-      ProductInfo pinfo(row, false);
-      dest.emplace(pinfo.product_id, std::make_shared<Product>(Product(pinfo)));
-      row.clear(); // Limpiar el mapa para la proxima fila
-    }
-  }
-
-  return dest;
-}
-
-QueryUmap<ProductInfo> Database::umapQuery(QueryResult qresult)
-{
-  // TODO: Implementar
-  return QueryUmap<ProductInfo>();
-}
-
 void Database::printQuery(const QueryResult qresult) noexcept
 {
   auto cols = qresult.first;
@@ -98,29 +62,4 @@ void Database::printQuery(const QueryResult qresult) noexcept
 
   for (auto it = vals.cbegin(); it != vals.cend(); it++)
     std::cout << *it << (std::distance(vals.cbegin(), it) % cols.size() == cols.size() - 1 ? "\n" : ",");
-}
-
-void Database::printQuery(const QueryUmap qumap) noexcept
-{
-  ProductInfo pinfo; // Intermediate step to umap product
-  UmappedProduct up;
-
-  for (auto fit = product_field_to_string.cbegin(); fit != product_field_to_string.cend(); fit++)
-  {
-    if (fit != product_field_to_string.cbegin())
-      std::cout << ',';
-    std::cout << fit->second;
-  }
-  for (auto pit = qumap.cbegin(); pit != qumap.cend(); pit++)
-  {
-    pinfo = pit->second->info();
-    up = Product::umapProduct(pinfo);
-    for (auto fit = up.cbegin(); fit != up.cend(); fit++)
-    {
-      if (fit != up.cbegin())
-        std::cout << ',';
-      std::cout << fit->second;
-    }
-    std::cout << std::endl;
-  }
 }

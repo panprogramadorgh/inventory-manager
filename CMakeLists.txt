@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.10)
 project(InventoryManager)
 
+# Enables the C++20 standard and disables specific features of the compiler
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 set(MAINCPP "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp" CACHE STRING "Sets the entry point of the program") # Loads a diferent entry point for the program
 option(DEV_MODE "Enable developing mode" OFF) # Enables some features like an initializing database method
 

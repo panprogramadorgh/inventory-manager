@@ -104,6 +104,31 @@ ProductInfo ProductManager::getProduct(const int id)
 }
 
 // Product id is ignored (it is virtual)
+SecureReturn<ProductInfo> ProductManager::secAddProduct(const ProductInfo &p, const int vendor_id, const bool commit_update) noexcept(false)
+{
+  try
+  {
+    db->executeUpdate(
+        "INSERT INTO products (product_name, product_description, vendor_id, product_count, product_price) VALUES ($, $, $, $, $)",
+        {"\"" + p.product_name + "\"",
+         "\"" + p.product_description + "\"",
+         std::to_string(vendor_id),
+         std::to_string(p.product_price),
+         std::to_string(p.product_count)});
+    if (commit_update)
+      db->executeQuery("COMMIT");
+    db->executeQuery("SELECT * FROM products_info WHERE product_id = max(SELECT product_id FROM products_info)");
+
+    auto result = umapQuery<ProductManager>(db->fetchQuery());
+    return std::make_pair(std::make_shared<*result>, "");
+  }
+  catch (const std::exception &e)
+  {
+    return std::make_pair(std::make_shared(nullptr), std::string(e.what()));
+  }
+}
+
+// Product id is ignored (it is virtual)
 void ProductManager::addProduct(const ProductInfo &p, const int vendor_id, const bool commit_update) noexcept(false)
 {
   db->executeUpdate(
