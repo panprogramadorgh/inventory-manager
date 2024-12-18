@@ -24,10 +24,10 @@ ProductManager::SecureReturn<ProductInfo> ProductManager::secGetProduct(const in
   // Returns the product if it is in cache
   auto it = cached_products.find(id);
   if (it != cached_products.cend())
-    return std::make_pair(it->second->info(), std::string(""));
+    return std::make_pair(std::make_shared<ProductInfo>(it->second->info()), std::string(""));
 
   if (!db)
-    return std::make_pair(std::make_shared<ProductInfo>(nullptr), ErrorMessages::DB_IS_NULL);
+    return std::make_pair(std::make_shared<ProductInfo>(nullptr), std::string(ErrorMessages::DB_IS_NULL));
 
   // Obtains the product from database
   try
@@ -39,7 +39,7 @@ ProductManager::SecureReturn<ProductInfo> ProductManager::secGetProduct(const in
     return std::make_pair(std::make_shared<ProductInfo>(nullptr), std::string(e.what()));
   }
 
-  auto products = Database::umapQuery(QueryUmap(), db->fetchQuery());
+  auto products = Database::umapQuery<Product>(db->fetchQuery());
   it = products.find(id);
   if (it == products.end())
   {
@@ -48,7 +48,7 @@ ProductManager::SecureReturn<ProductInfo> ProductManager::secGetProduct(const in
 
   addProductToCache(it->second); // And finally we push the product to cache
 
-  return std::make_pair(it->second->info(), std::string(""));
+  return std::make_pair(std::make_shared<ProductInfo>(it->second->info()), std::string(""));
 }
 
 ProductInfo ProductManager::getProduct(const int id)
@@ -91,7 +91,7 @@ ProductInfo ProductManager::getProduct(const int id)
     throw std::runtime_error(e.what());
   }
 
-  auto products = Database::umapQuery(QueryUmap(), db->fetchQuery());
+  auto products = Database::umapQuery<Product>(db->fetchQuery());
   it = products.find(id);
   if (it == products.end())
   {
@@ -104,7 +104,7 @@ ProductInfo ProductManager::getProduct(const int id)
 }
 
 // Product id is ignored (it is virtual)
-SecureReturn<ProductInfo> ProductManager::secAddProduct(const ProductInfo &p, const int vendor_id, const bool commit_update) noexcept(false)
+ProductManager::SecureReturn<ProductInfo> ProductManager::secAddProduct(const ProductInfo &p, const int vendor_id, const bool commit_update) noexcept
 {
   try
   {
@@ -119,17 +119,17 @@ SecureReturn<ProductInfo> ProductManager::secAddProduct(const ProductInfo &p, co
       db->executeQuery("COMMIT");
     db->executeQuery("SELECT * FROM products_info WHERE product_id = max(SELECT product_id FROM products_info)");
 
-    auto result = umapQuery<ProductManager>(db->fetchQuery());
-    return std::make_pair(std::make_shared<*result>, "");
+    auto result = Database::umapQuery<ProductInfo>(db->fetchQuery());
+    return std::make_pair(result.cbegin()->second, std::string(""));
   }
   catch (const std::exception &e)
   {
-    return std::make_pair(std::make_shared(nullptr), std::string(e.what()));
+    return std::make_pair(std::make_shared<ProductInfo>(nullptr), std::string(e.what()));
   }
 }
 
 // Product id is ignored (it is virtual)
-void ProductManager::addProduct(const ProductInfo &p, const int vendor_id, const bool commit_update) noexcept(false)
+ProductInfo ProductManager::addProduct(const ProductInfo &p, const int vendor_id, const bool commit_update)
 {
   db->executeUpdate(
       "INSERT INTO products (product_name, product_description, vendor_id, product_count, product_price) VALUES ($, $, $, $, $)",
@@ -140,12 +140,49 @@ void ProductManager::addProduct(const ProductInfo &p, const int vendor_id, const
        std::to_string(p.product_count)});
   if (commit_update)
     db->executeQuery("COMMIT");
+  db->executeQuery("SELECT * FROM products_info WHERE product_id = max(SELECT product_id FROM products_info)");
+  auto result = Database::umapQuery<ProductInfo>(db->fetchQuery());
+  return *(result.cbegin()->second);
 }
 
-void ProductManager::removeProduct(const int id, const bool commit_update) noexcept
+ProductManager::SecureReturn<int> ProductManager::secRemoveProduct(const int id, const bool commit_update) noexcept
+{
+  try
+  {
+    db->executeUpdate("DELETE FROM products as p WHERE p.product_id = $",
+                      {std::to_string(id)});
+    db->executeQuery("SELECT * FROM products as p WHERE p.product_id = $", {std::to_string(id)});
+    auto result = Database::umapQuery<ProductInfo>(db->fetchQuery());
+    for (const auto &p : result)
+    {
+      if (p.first == id)
+        throw std::runtime_error("Coud not delete product");
+    }
+  }
+  catch (const std::exception &e)
+  {
+    return std::make_pair(std::shared_ptr<int>(nullptr), std::string(e.what()));
+  }
+
+  removeProductFromCache(id); // Es eliminado de la cache
+
+  if (commit_update)
+    db->executeUpdate("COMMIT");
+
+  return std::make_pair(std::make_shared<int>(id), std::string(""));
+}
+
+int ProductManager::removeProduct(const int id, const bool commit_update)
 {
   db->executeUpdate("DELETE FROM products as p WHERE p.product_id = $",
                     {std::to_string(id)});
+  db->executeQuery("SELECT * FROM products_info as p WHERE p.product_id = $", {std::to_string(id)});
+  auto result = Database::umapQuery<ProductInfo>(db->fetchQuery());
+  for (const auto &p : result)
+  {
+    if (p.first == id)
+      throw std::runtime_error("Coud not delete product");
+  }
   removeProductFromCache(id); // Es eliminado de la cache
   if (commit_update)
     db->executeUpdate("COMMIT");

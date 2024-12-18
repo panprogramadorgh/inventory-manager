@@ -1,8 +1,7 @@
-template <typename T>
-QueryUmap<T> Database::umapQuery(QueryResult qresult)
-  requires std::is_same_v<ProductInfo, T>
+template <>
+QueryUmap<ProductInfo> Database::umapQuery(QueryResult qresult)
 {
-  QueryUmap<Product> dest;
+  QueryUmap<ProductInfo> dest;
   UmappedProduct row;
   ProductField field;
 
@@ -22,7 +21,7 @@ QueryUmap<T> Database::umapQuery(QueryResult qresult)
     {
       // Creates a non-virtual ProductInfo
       ProductInfo pinfo(row, false);
-      dest.emplace(pinfo.product_id, std::make_shared<Product>(Product(pinfo)));
+      dest.emplace(pinfo.product_id, std::make_shared<ProductInfo>(pinfo));
       row.clear(); // Limpiar el mapa para la proxima fila
     }
   }
@@ -30,9 +29,8 @@ QueryUmap<T> Database::umapQuery(QueryResult qresult)
   return dest;
 }
 
-template <typename T>
-static QueryUmap<T> umapQuery(QueryResult qresult)
-  requires std::is_same_v<Product, T>
+template <>
+QueryUmap<Product> Database::umapQuery(QueryResult qresult)
 {
   return QueryUmap<Product>();
 }

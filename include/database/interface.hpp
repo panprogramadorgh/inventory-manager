@@ -86,13 +86,11 @@ public:
 
   // Static methods
 
-  template <typename T>
-  static QueryUmap<T> umapQuery(QueryResult qresult)
-    requires std::is_same_v<ProductInfo, T>;
+  // template <typename T>
+  // static QueryUmap<ProductInfo> umapQuery(QueryResult qresult);
 
   template <typename T>
-  static QueryUmap<T> umapQuery(QueryResult qresult)
-    requires std::is_same_v<Product, T>;
+  static QueryUmap<T> umapQuery(QueryResult qresult);
 
   // Allows you to format SQL queries with a vector of arguments
   static std::string mergeQueryArgs(std::string query, const std::vector<std::string> &&args) noexcept

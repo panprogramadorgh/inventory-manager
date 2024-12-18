@@ -12,7 +12,7 @@ private:
   Database *db;
   bool should_free_db_ptr;
 
-  QueryUmap cached_products;
+  QueryUmap<Product> cached_products;
 
   // Gestion interna de recursos cacheados
   std::size_t addProductToCache(std::shared_ptr<Product>) noexcept;
@@ -43,7 +43,7 @@ public:
       : db(db), should_free_db_ptr(should_free_db_ptr)
   {
     if (!db)
-      throw std::runtime_error()
+      throw std::runtime_error(ErrorMessages::DB_IS_NULL);
   }
 
   // other.db must be already connected (Database::connect())
