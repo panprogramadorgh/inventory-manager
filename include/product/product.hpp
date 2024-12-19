@@ -14,7 +14,8 @@ enum class ProductField
   product_price
 };
 
-using UmappedProduct = std::unordered_map<ProductField, std::string>;
+using UmappedProduct = umap<ProductField, std::string>;
+using RUmappedProduct = umap<std::string, ProductField>;
 
 // Maps each sql colum of products_info
 inline UmappedProduct product_field_to_string = {
@@ -26,7 +27,7 @@ inline UmappedProduct product_field_to_string = {
     {ProductField::product_price, "product_price"},
 };
 
-inline std::unordered_map<std::string, ProductField> string_to_product_field = {
+inline RUmappedProduct string_to_product_field = {
     {"product_id", ProductField::product_id},
     {"product_name", ProductField::product_name},
     {"product_description", ProductField::product_description},

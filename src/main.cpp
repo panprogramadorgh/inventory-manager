@@ -3,6 +3,19 @@
 #include "product/product.hpp"
 #include "cxxopts.hpp"
 
+enum class Method
+{
+  get,
+  add,
+  rem
+};
+
+umap<Method, std::string> method_to_string = {
+    {Method::get, "get"},
+    {Method::add, "add"},
+    {Method::rem, "rem"},
+};
+
 int main(int argc, char **argv)
 {
   cxxopts::Options options(argv[0], "Allows to manage inventory with products.");
@@ -54,7 +67,7 @@ int main(int argc, char **argv)
   try
   {
     /* The `get` method allows the user to display at screen products from the database (at this moment making reference to products just with their id)  */
-    if (result["method"].as<std::string>() == "get")
+    if (result["method"].as<std::string>() == method_to_string[Method::get])
     {
       std::vector<ProductField> displayables;
       if (result["N"].as<bool>())
@@ -71,17 +84,12 @@ int main(int argc, char **argv)
       if (!result.count("id"))
         throw std::runtime_error(options.help());
       int id = result["id"].as<int>();
-      auto p = manager.getProduct(id);
-      if (!p)
-      {
-        throw std::runtime_error(
-            "Could not find product with id '" + std::to_string(id) + "'");
-      }
-      std::cout << p->str(displayables) << std::endl;
-      delete p;
+
+      auto pinfo = manager.getProduct(id);
+      std::cout << pinfo.str(displayables) << std::endl;
     }
     /* The `add` method allows users to insert new products in the database. The product id is calculated by the own implementation and must not be specify as a command line option */
-    else if (result["method"].as<std::string>() == "add")
+    else if (result["method"].as<std::string>() == method_to_string[Method::add])
     {
       /* Product fields */
       std::string name, desc;
@@ -114,9 +122,9 @@ int main(int argc, char **argv)
       ProductInfo p(up, true);
       /* - - - */
 
-      manager.addProduct(p, vendor_id, true);
+      manager.addProduct(p, vendor_id, std::make_tuple(true, true));
     }
-    else if (result["method"].as<std::string>() == "rem")
+    else if (result["method"].as<std::string>() == method_to_string[Method::rem])
     {
       /* Checks for missing command-line options */
       if (!result.count("id"))
@@ -124,7 +132,7 @@ int main(int argc, char **argv)
       int id = result["id"].as<int>();
       /* - - - */
 
-      manager.removeProduct(id, true);
+      manager.removeProduct(id, std::make_tuple(true, true));
       std::cout << "Product with id '" << std::to_string(id) << "' was removed" << std::endl;
     }
     else

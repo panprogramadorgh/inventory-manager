@@ -6,4 +6,7 @@
 #include <vector>
 #include <cstdlib>
 
+template <typename T, typename U>
+using umap = std::unordered_map<T, U>;
+
 #endif

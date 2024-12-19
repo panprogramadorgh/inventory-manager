@@ -4,6 +4,7 @@
 #include "database/interface.hpp"
 #include "database/dberror.hpp"
 #include "product/product.hpp"
+#include <optional>
 #include <memory>
 
 class ProductManager
@@ -25,11 +26,12 @@ private:
   {
     static constexpr char DB_IS_NULL[] = "Database is null";
     static constexpr char PRODUCT_NOT_FOUND[] = "Product was not found";
+    static constexpr char DELETE_PRODUCT_FAILED[] = "Could not delete product";
   };
 
 public:
   template <typename T>
-  using SecureReturn = std::pair<std::shared_ptr<T>, std::string>;
+  using SecureReturn = std::pair<std::optional<T>, std::string>;
 
   ProductManager(std::string dbfile)
       : db(nullptr), should_free_db_ptr(true)
@@ -62,13 +64,13 @@ public:
 
   //
 
-  SecureReturn<ProductInfo> secAddProduct(const ProductInfo &p, const int vendor_id, const bool commit_update = false) noexcept;
-  ProductInfo addProduct(const ProductInfo &p, const int vendor_id, const bool commit_update = false);
+  SecureReturn<ProductInfo> secAddProduct(const ProductInfo &p, const int vendor_id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true)) noexcept;
+  ProductInfo addProduct(const ProductInfo &p, const int vendor_id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true));
 
   //
 
-  SecureReturn<int> secRemoveProduct(const int id, const bool commit_update = true) noexcept;
-  int removeProduct(const int id, const bool commit_update = true);
+  SecureReturn<int> secRemoveProduct(const int id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true)) noexcept;
+  int removeProduct(const int id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true));
 
   // Operators
 

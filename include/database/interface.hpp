@@ -14,7 +14,7 @@ namespace fs = std::filesystem;
 using QueryResult = std::pair<std::vector<std::string>, std::vector<std::string>>;
 
 template <IsPrInfoBased T>
-using QueryUmap = std::unordered_map<int, std::shared_ptr<T>>;
+using QueryUmap = umap<int, std::shared_ptr<T>>;
 
 class Database
 {
@@ -86,12 +86,6 @@ public:
 
   // Static methods
 
-  // template <typename T>
-  // static QueryUmap<ProductInfo> umapQuery(QueryResult qresult);
-
-  template <typename T>
-  static QueryUmap<T> umapQuery(QueryResult qresult);
-
   // Allows you to format SQL queries with a vector of arguments
   static std::string mergeQueryArgs(std::string query, const std::vector<std::string> &&args) noexcept
   {
@@ -103,20 +97,14 @@ public:
     return query;
   }
 
+  template <typename T>
+  static QueryUmap<T> umapQuery(QueryResult qresult);
+
   // Query visualization utils
+  template <typename T>
+  static void printQuery(const QueryUmap<T> qresult) noexcept;
+
   static void printQuery(const QueryResult qresult) noexcept;
-
-  template <typename T>
-  static void printQuery(const QueryUmap<T> qumap) noexcept
-    requires std::is_same_v<ProductInfo, T>;
-
-  template <typename T>
-  static void printQuery(const QueryUmap<T> qumap) noexcept
-    requires std::is_same_v<Product, T>;
 };
-
-// Implementaciones que requieren ser generadas dinamicamente por el compilador
-
-#include "database/interface.tpp"
 
 #endif
