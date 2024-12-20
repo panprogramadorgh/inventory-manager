@@ -12,7 +12,7 @@ protected:
   int code;
 
 public:
-  struct GenericErrorMessages
+  struct GenericErrMsgs
   {
     static constexpr char OPENING_FAILED[] = "Database opening failed";
     static constexpr char INITIALIZATION_FAILED[] = "Database initialization failed";

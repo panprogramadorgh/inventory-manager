@@ -1,5 +1,5 @@
 #include "forwarder.hpp"
-#include "product/manager.hpp"
+#include "product/pmanager.hpp"
 #include "product/product.hpp"
 #include "cxxopts.hpp"
 
@@ -122,7 +122,8 @@ int main(int argc, char **argv)
       ProductInfo p(up, true);
       /* - - - */
 
-      manager.addProduct(p, vendor_id, std::make_tuple(true, true));
+      auto pinfo = manager.addProduct(p, vendor_id, std::make_tuple(true, true));
+      std::cout << "New product was created with id '" << pinfo.product_id << "'" << std::endl;
     }
     else if (result["method"].as<std::string>() == method_to_string[Method::rem])
     {

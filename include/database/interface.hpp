@@ -65,7 +65,7 @@ public:
   {
     int exit_code;
     if (!should_open_db || (exit_code = sqlite3_open(file_name.c_str(), &db)))
-      throw DatabaseError(exit_code, DatabaseError::GenericErrorMessages::OPENING_FAILED);
+      throw DatabaseError(exit_code, DatabaseError::GenericErrMsgs::OPENING_FAILED);
   }
 
   // Database interaction utilities
@@ -96,13 +96,6 @@ public:
 
     return query;
   }
-
-  template <typename T>
-  static QueryUmap<T> umapQuery(QueryResult qresult);
-
-  // Query visualization utils
-  template <typename T>
-  static void printQuery(const QueryUmap<T> qresult) noexcept;
 
   static void printQuery(const QueryResult qresult) noexcept;
 };

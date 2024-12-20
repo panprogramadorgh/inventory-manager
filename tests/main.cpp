@@ -1,6 +1,6 @@
 #include "forwarder.hpp"
 #include "product/product.hpp"
-#include "product/manager.hpp"
+#include "product/pmanager.hpp"
 
 int main(int argc, char **argv)
 {

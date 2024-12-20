@@ -50,67 +50,7 @@ void Database::executeUpdate(const std::string raw_query, std::vector<std::strin
   }
 }
 
-// Static methods
 
-template <>
-QueryUmap<ProductInfo> Database::umapQuery<ProductInfo>(QueryResult qresult)
-{
-  QueryUmap<ProductInfo> dest;
-  UmappedProduct row;
-  ProductField field;
-
-  auto cols = qresult.first;
-  auto vals = qresult.second;
-
-  for (auto it = vals.begin();
-       it != vals.cend() &&
-       std::distance(vals.begin(), it) % cols.size() < cols.size();
-       it++)
-  {
-    field = string_to_product_field.at(cols[std::distance(vals.begin(), it) % cols.size()]);
-    row[field] = *it;
-
-    // En caso de que sea la ulima columna por registro
-    if (std::distance(vals.begin(), it) % cols.size() == cols.size() - 1)
-    {
-      // Creates a non-virtual ProductInfo
-      ProductInfo pinfo(row, false);
-      dest.emplace(pinfo.product_id, std::make_shared<ProductInfo>(pinfo));
-      row.clear(); // Limpiar el mapa para la proxima fila
-    }
-  }
-  return dest;
-}
-
-template <>
-QueryUmap<Product> Database::umapQuery<Product>(QueryResult qresult)
-{
-  QueryUmap<Product> dest;
-  UmappedProduct row;
-  ProductField field;
-
-  auto cols = qresult.first;
-  auto vals = qresult.second;
-
-  for (auto it = vals.begin();
-       it != vals.cend() &&
-       std::distance(vals.begin(), it) % cols.size() < cols.size();
-       it++)
-  {
-    field = string_to_product_field.at(cols[std::distance(vals.begin(), it) % cols.size()]);
-    row[field] = *it;
-
-    // En caso de que sea la ulima columna por registro
-    if (std::distance(vals.begin(), it) % cols.size() == cols.size() - 1)
-    {
-      // Creates a non-virtual Product
-      ProductInfo pinfo(row, false);
-      dest.emplace(pinfo.product_id, std::make_shared<Product>(Product(pinfo)));
-      row.clear(); // Limpiar el mapa para la proxima fila
-    }
-  }
-  return dest;
-}
 
 template <typename T>
 void Database::printQuery(const QueryUmap<T> qumap) noexcept
