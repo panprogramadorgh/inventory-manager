@@ -4,7 +4,7 @@
 #include "database/interface.hpp"
 #include "database/dberror.hpp"
 #include "product/product.hpp"
-#include "utils/interface-manager.hpp"
+#include "utils/manager.hpp"
 #include <optional>
 #include <memory>
 
@@ -25,8 +25,13 @@ public:
 
   //
 
-  SecureReturn<ProductInfo> secAddProduct(const ProductInfo &p, const std::size_t vendor_id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true)) noexcept;
-  ProductInfo addProduct(const ProductInfo &p, const std::size_t vendor_id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true));
+  SecureReturn<ProductInfo> secCreateProduct(const ProductInfo &p, const std::size_t vendor_id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true)) noexcept;
+  ProductInfo createProduct(const ProductInfo &p, const std::size_t vendor_id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true));
+
+  //
+
+  SecureReturn<std::size_t> secAddProduct(const std::size_t product_id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true)) noexcept;
+  std::size_t addProduct(const std::size_t product_id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true));
 
   //
 

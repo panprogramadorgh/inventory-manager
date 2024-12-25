@@ -97,6 +97,9 @@ public:
     return query;
   }
 
+  // FIXME: Arreglar delcaracion con definicion
+  template <typename T>
+  static void printQuery(const QueryUmap<T> qresult) noexcept;
   static void printQuery(const QueryResult qresult) noexcept;
 };
 

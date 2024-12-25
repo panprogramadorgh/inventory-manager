@@ -1,5 +1,7 @@
 DROP TABLE IF EXISTS vendors;
 
+-- // TODO: Agragar campo de contacto a vendedor
+-- // TODO: Agregar direccion IP publica y puerto para sistema de compra automatica al servidor del proveedor
 -- Se limpian los datos
 CREATE TABLE
   vendors (
@@ -19,6 +21,7 @@ VALUES
 -- 3
 DROP TABLE IF EXISTS products;
 
+-- TODO: Crear campo serial para productos normales
 -- Se limpian los datos
 CREATE TABLE
   products (
@@ -56,6 +59,29 @@ VALUES
   ('Product8', 'Product8 description', 3, 8.60),
   ('Product9', 'Product9 description', 3, 3.20);
 
+DROP TABLE IF EXISTS smart_products;
+
+-- // TODO: Terminar SmartProduct
+CREATE TABLE
+  IF NOT EXISTS smart_products (
+    smart_product_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    smart_product_name TEXT NOT NULL,
+    smart_product_description TEXT NOT NULL,
+    smart_product_serial TEXT NOT NULL,
+    smart_product_inaddr TEXT NOT NULL,
+    vendor_id INTEGER NOT NULL,
+    smart_product_price REAL DEFAULT 0 NOT NULL,
+    FOREIGN KEY (vendor_id) REFERENCES vendors (vendor_id),
+    CHECK (
+      LENGTH (product_name) < 128
+      AND LENGTH (product_description) < 512
+      AND LENGTH (product_description) < 512
+      AND LENGTH (product_serial) < 128
+      AND LENGTH (smart_product_inaddr) < 16 -- xxx.xxx.xxx.xxx
+    )
+  );
+
+-- Vista para productos estandar
 DROP VIEW IF EXISTS products_info;
 
 CREATE VIEW
@@ -69,6 +95,25 @@ SELECT
   product_price
 FROM
   products as p
+  INNER JOIN vendors as v on p.vendor_id = v.vendor_id
+ORDER BY
+  p.product_price DESC;
+
+-- Vista para productos inteligentes
+DROP VIEW IF EXISTS smart_products_info;
+
+CREATE VIEW
+  smart_products_info AS
+SELECT
+  smart_product_id,
+  smart_product_name,
+  smart_product_description,
+  smart_product_serial,
+  smart_product_inaddr,
+  vendor_id,
+  smart_product_price,
+FROM
+  smart_products as p
   INNER JOIN vendors as v on p.vendor_id = v.vendor_id
 ORDER BY
   p.product_price DESC

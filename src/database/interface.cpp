@@ -1,6 +1,4 @@
 #include "database/interface.hpp"
-#include "database/dberror.hpp"
-#include "product/product.hpp"
 
 // Non-static methods
 
@@ -49,8 +47,6 @@ void Database::executeUpdate(const std::string raw_query, std::vector<std::strin
     throw qerror;
   }
 }
-
-
 
 template <typename T>
 void Database::printQuery(const QueryUmap<T> qumap) noexcept

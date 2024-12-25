@@ -6,13 +6,13 @@
 enum class Method
 {
   get,
-  add,
+  create,
   rem
 };
 
 umap<Method, std::string> method_to_string = {
     {Method::get, "get"},
-    {Method::add, "add"},
+    {Method::create, "create"},
     {Method::rem, "rem"},
 };
 
@@ -89,7 +89,7 @@ int main(int argc, char **argv)
       std::cout << pinfo.str(displayables) << std::endl;
     }
     /* The `add` method allows users to insert new products in the database. The product id is calculated by the own implementation and must not be specify as a command line option */
-    else if (result["method"].as<std::string>() == method_to_string[Method::add])
+    else if (result["method"].as<std::string>() == method_to_string[Method::create])
     {
       /* Product fields */
       std::string name, desc;
@@ -122,7 +122,7 @@ int main(int argc, char **argv)
       ProductInfo p(up, true);
       /* - - - */
 
-      auto pinfo = manager.addProduct(p, vendor_id, std::make_tuple(true, true));
+      auto pinfo = manager.createProduct(p, vendor_id, std::make_tuple(true, true));
       std::cout << "New product was created with id '" << pinfo.product_id << "'" << std::endl;
     }
     else if (result["method"].as<std::string>() == method_to_string[Method::rem])

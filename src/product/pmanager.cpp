@@ -104,7 +104,7 @@ ProductInfo ProductManager::getProduct(std::size_t id)
 }
 
 // Product id is ignored (it is virtual)
-ProductManager::SecureReturn<ProductInfo> ProductManager::secAddProduct(const ProductInfo &p, std::size_t vendor_id, const std::tuple<bool, bool> handle_tran) noexcept
+ProductManager::SecureReturn<ProductInfo> ProductManager::secCreateProduct(const ProductInfo &p, std::size_t vendor_id, const std::tuple<bool, bool> handle_tran) noexcept
 {
   try
   {
@@ -131,7 +131,7 @@ ProductManager::SecureReturn<ProductInfo> ProductManager::secAddProduct(const Pr
 }
 
 // Product id is ignored (it is virtual)
-ProductInfo ProductManager::addProduct(const ProductInfo &p, std::size_t vendor_id, const std::tuple<bool, bool> handle_tran)
+ProductInfo ProductManager::createProduct(const ProductInfo &p, std::size_t vendor_id, const std::tuple<bool, bool> handle_tran)
 {
   if (std::get<0>(handle_tran))
     db->executeUpdate("BEGIN TRANSACTION");
@@ -147,6 +147,22 @@ ProductInfo ProductManager::addProduct(const ProductInfo &p, std::size_t vendor_
   db->executeQuery("SELECT * FROM products_info WHERE product_id = (SELECT MAX(product_id) FROM products_info)");
   auto qumap = Database::umapQuery<ProductInfo>(db->fetchQuery());
   return *(qumap.cbegin()->second);
+}
+
+ProductManager::SecureReturn<std::size_t> ProductMAnager::secAddProduct(const std::size_t product_id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true)) noexcept
+{
+  if (std::get<0>(handle_tran))
+    db->executeUpdate("BEGIN TRANSACTION");
+
+  db->executeUpdate(
+      "UPDATE FROM products as p WHERE p.product_id = $ SET p.product_count = p.product_count + 1", {std::to_string(product_id)});
+  db->executeQuery(
+      "SELECT * FROM products_info as p WHERE p.product_id = $", {std::to_string(product_id)});
+
+  // FIXME: Terminar
+
+  if (std::get<1>(handle_tran))
+    db->executeQuery("COMMIT");
 }
 
 ProductManager::SecureReturn<int> ProductManager::secRemoveProduct(std::size_t id, const std::tuple<bool, bool> handle_tran) noexcept
