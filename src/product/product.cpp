@@ -1,7 +1,5 @@
 #include "product/product.hpp"
 
-extern UmappedProduct product_field_to_string;
-
 /* Products info class */
 
 std::string ProductInfo::str(std::vector<ProductField> visible_fields) const noexcept

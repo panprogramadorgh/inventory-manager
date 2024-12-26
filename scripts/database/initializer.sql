@@ -28,6 +28,7 @@ CREATE TABLE
     product_id INTEGER PRIMARY KEY AUTOINCREMENT,
     product_name TEXT NOT NULL,
     product_description TEXT NOT NULL,
+    product_serial TEXT NOT NULL,
     vendor_id INTEGER NOT NULL,
     product_price REAL DEFAULT 0 NOT NULL,
     product_count INTEGER DEFAULT 0 NOT NULL,
@@ -36,6 +37,7 @@ CREATE TABLE
     CHECK (
       LENGTH (product_name) < 128
       AND LENGTH (product_description) < 512
+      AND LENGTH (product_serial) < 512
     )
   );
 

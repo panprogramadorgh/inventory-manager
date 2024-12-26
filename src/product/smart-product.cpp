@@ -1,8 +1,5 @@
 #include "product/smart-product.hpp"
 
-/* Almacena todos los puertos que emplea para verificar si la maquina remota esta activa */
-std::vector<uint16_t> liveness_check_ports({135});
-
 // Methods
 
 bool SmartProduct::check_liveness()
