@@ -1,8 +1,8 @@
 #ifndef INTERFACE_MANAGER_HPP
 #define INTERFACE_MANAGER_HPP
 
-#include "database/interface.hpp"
 #include "forwarder.hpp"
+#include "database/interface.hpp"
 #include <optional>
 
 template <typename T>

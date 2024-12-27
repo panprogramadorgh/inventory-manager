@@ -1,4 +1,5 @@
 #include "product/product.hpp"
+#include <cstring>
 
 /* Products info class */
 

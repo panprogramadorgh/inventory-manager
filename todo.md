@@ -8,9 +8,13 @@
 
 - Cambiar como se genera el archivo de base de datos al momento de construir el proyecto (y no en la configuracion) y crear target para inicializar la base de datos (el target es llamao automaticamente si se llama al target install)
 
-- Agregar / decrementar cantidad de productos
+- Metodo de actualizacion de informacion de productos (Agregar / decrementar cantidad de productos)
 
-- Actualizacion de informacion de productos
+- Simplificar nombres de campos tablas SQL y optar por modelo de aliases para las tablas en las consultas:
+
+```sql
+SELECT * FROM products as p INNER JOIN vendors as v ON v.id = p.id;
+```
 
 Ideas y conceptos a implementar
 
@@ -32,4 +36,4 @@ Ideas y conceptos a implementar
 
 - Sistema de analisis de datos basado en el historial (sistema de prediccion para agotamiento de un articulo teniendo en cuenta factores como el tiempo de reabastecimiento o sistema de agrupacion de pedidos para ahorrar costes de envio)
 
-- Sistema de accion automatica con el proveedor (contactar en el momento estimado para lanzar una nueva orden de compra)
+- Sistema de accion automatica con el proveedor (contactar en el momento estimado para lanzar una nueva orden de compra) (se puede crar otro software para proveeores que hagas las veces ed socket TCP y que reciba paquetes desde)

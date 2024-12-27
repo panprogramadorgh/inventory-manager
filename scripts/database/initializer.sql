@@ -1,85 +1,174 @@
+-- Se limpian los datos
 DROP TABLE IF EXISTS vendors;
 
--- // TODO: Agragar campo de contacto a vendedor
--- // TODO: Agregar direccion IP publica y puerto para sistema de compra automatica al servidor del proveedor
--- Se limpian los datos
 CREATE TABLE
   vendors (
-    vendor_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    vendor_name TEXT NOT NULL,
-    -- Puede ser almacenado en un buffer de 128 bytes (para almacenar el caracter nulo)
-    CHECK (LENGTH (vendor_name) < 128)
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    phone TEXT UNIQUE NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    inaddr TEXT NOT NULL, -- Direccion del agente (no debe ser un campo unico en caso de que varios vendedores unifiquen una misma maquina como agente de compras)
+    --
+    CHECK (
+      LENGTH (name) <= 128
+      AND LENGTH (phone) <= 15
+      AND LENGTH (email) <= 320
+      AND LENGTH (inaddr) <= 15
+    )
   );
 
 INSERT INTO
-  vendors (vendor_name)
+  vendors (name, phone, email, inaddr)
 VALUES
-  ('Vendor1'), -- 1
-  ('Vendor2'), -- 2
-  ('Vendor3');
+  (
+    'Vendor1',
+    '34666555444',
+    'vendor1@server',
+    '172.255.0.1'
+  ),
+  (
+    'Vendor2',
+    '34666555445',
+    'vendor2@server',
+    '172.255.0.2'
+  ),
+  (
+    'Vendor3',
+    '34666555446',
+    'vendor3@server',
+    '172.255.0.3'
+  );
 
--- 3
+-- Se limpian los datos
 DROP TABLE IF EXISTS products;
 
--- TODO: Crear campo serial para productos normales
--- Se limpian los datos
 CREATE TABLE
   products (
-    product_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    product_name TEXT NOT NULL,
-    product_description TEXT NOT NULL,
-    product_serial TEXT NOT NULL,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    serial TEXT UNIQUE NOT NULL,
+    owner TEXT NOT NULL,
     vendor_id INTEGER NOT NULL,
-    product_price REAL DEFAULT 0 NOT NULL,
-    product_count INTEGER DEFAULT 0 NOT NULL,
+    price REAL DEFAULT 0 NOT NULL,
+    count INTEGER DEFAULT 0 NOT NULL,
     -- Relacion N - 1
-    FOREIGN KEY (vendor_id) REFERENCES vendors (vendor_id),
+    FOREIGN KEY (vendor_id) REFERENCES vendors (id),
+    --
     CHECK (
-      LENGTH (product_name) < 128
-      AND LENGTH (product_description) < 512
-      AND LENGTH (product_serial) < 512
+      LENGTH (name) <= 128
+      AND LENGTH (description) <= 512
+      AND LENGTH (serial) <= 64
+      AND LENGTH (owner) <= 128
     )
   );
 
 INSERT INTO
   products (
-    product_name,
-    product_description,
+    name,
+    description,
+    serial,
+    owner,
     vendor_id,
-    product_price
+    price,
+    count
   )
 VALUES
-  ('Product1', 'Product1 description', 1, 3.14),
-  ('Product2', 'Product2 description', 1, 6.28),
-  ('Product3', 'Product3 description', 1, 7.99),
+  (
+    'Product1',
+    'Product1 description',
+    '123123123',
+    'Alfredo',
+    1,
+    3.14
+  ),
+  (
+    'Product2',
+    '234234234',
+    'Mauricio',
+    'Product2 description',
+    1,
+    6.28
+  ),
+  (
+    'Product3',
+    '345345345',
+    'Paco',
+    'Product3 description',
+    1,
+    7.99
+  ),
   --
-  ('Product4', 'Product4 description', 2, 2.20),
-  ('Product5', 'Product5 description', 2, 1.99),
-  ('Product6', 'Product6 description', 2, 9.20),
+  (
+    'Product4',
+    '111222333',
+    'Pancracio',
+    'Product4 description',
+    2,
+    2.20
+  ),
+  (
+    'Product5',
+    '222333444',
+    'Fortunatio',
+    'Product5 description',
+    2,
+    1.99
+  ),
+  (
+    'Product6',
+    '999888777',
+    'Jordi',
+    'Product6 description',
+    2,
+    9.20
+  ),
   --
-  ('Product7', 'Product7 description', 3, 0.50),
-  ('Product8', 'Product8 description', 3, 8.60),
-  ('Product9', 'Product9 description', 3, 3.20);
+  (
+    'Product7',
+    '987987987',
+    'Cofla',
+    'Product7 description',
+    3,
+    0.50
+  ),
+  (
+    'Product8',
+    '876876876',
+    'J.Silverhand',
+    'Product8 description',
+    3,
+    8.60
+  ),
+  (
+    'Product9',
+    '123987123',
+    'Kelokekelowua',
+    'Product9 description',
+    3,
+    3.20
+  );
 
 DROP TABLE IF EXISTS smart_products;
 
--- // TODO: Terminar SmartProduct
 CREATE TABLE
   IF NOT EXISTS smart_products (
-    smart_product_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    smart_product_name TEXT NOT NULL,
-    smart_product_description TEXT NOT NULL,
-    smart_product_serial TEXT NOT NULL,
-    smart_product_inaddr TEXT NOT NULL,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    serial TEXT UNIQUE NOT NULL,
+    owner TEXT NOT NULL,
+    inaddr TEXT UNIQUE NOT NULL, -- No puede haber dos productos que apunten al mismo equipo
     vendor_id INTEGER NOT NULL,
-    smart_product_price REAL DEFAULT 0 NOT NULL,
-    FOREIGN KEY (vendor_id) REFERENCES vendors (vendor_id),
+    price REAL DEFAULT 0 NOT NULL,
+    --
+    FOREIGN KEY (vendor_id) REFERENCES vendors (id),
     CHECK (
-      LENGTH (product_name) < 128
-      AND LENGTH (product_description) < 512
-      AND LENGTH (product_description) < 512
-      AND LENGTH (product_serial) < 128
-      AND LENGTH (smart_product_inaddr) < 16 -- xxx.xxx.xxx.xxx
+      LENGTH (name) <= 128
+      AND LENGTH (description) <= 512
+      AND LENGTH (serial) <= 64
+      AND LENGTH (owner) <= 128
+      AND LENGTH (inaddr) <= 15 -- xxx.xxx.xxx.xxx
     )
   );
 
@@ -89,17 +178,19 @@ DROP VIEW IF EXISTS products_info;
 CREATE VIEW
   products_info AS
 SELECT
-  product_id,
-  product_name,
-  product_description,
-  vendor_name,
-  product_count,
-  product_price
+  p.id,
+  p.name AS name,
+  p.description,
+  p.serial,
+  p.owner,
+  v.name AS vendor_name,
+  p.count,
+  p.price
 FROM
   products as p
-  INNER JOIN vendors as v on p.vendor_id = v.vendor_id
+  INNER JOIN vendors as v ON p.vendor_id = v.vendor_id
 ORDER BY
-  p.product_price DESC;
+  p.price DESC;
 
 -- Vista para productos inteligentes
 DROP VIEW IF EXISTS smart_products_info;
@@ -107,13 +198,14 @@ DROP VIEW IF EXISTS smart_products_info;
 CREATE VIEW
   smart_products_info AS
 SELECT
-  smart_product_id,
-  smart_product_name,
-  smart_product_description,
-  smart_product_serial,
-  smart_product_inaddr,
-  vendor_id,
-  smart_product_price,
+  p.id,
+  p.name AS name,
+  p.description,
+  p.serial,
+  p.owner,
+  p.inaddr,
+  v.name AS vendor_name,
+  p.price,
 FROM
   smart_products as p
   INNER JOIN vendors as v on p.vendor_id = v.vendor_id

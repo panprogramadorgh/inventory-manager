@@ -2,144 +2,123 @@
 #define PPRODUCT_HPP
 
 #include "forwarder.hpp"
+#include "utils/manager-item.hpp"
 
-template <typename T, typename std::enable_if_t<std::is_integral_v<T>, int> = 0>
-class ManagerItem
+constexpr std::uint8_t init_product_cache_relevance = 10;
+
+class ProductBase : public ManagerItem<init_product_cache_relevance>
 {
-private:
-  std::uint16_t cache_relevance;
+protected:
+  bool is_virtual;
 
 public:
-  constexpr std::uint16_t initial_cache_relevance = static_cast<std::uint16_t>(T::value);
+  // Miembros estaticos y publicos de la clase
 
-  virtual ManagerItem()
-      : cache_relevance(initial_cache_relevance)
+  enum class RecordFieldName : RecordField_t
   {
-  }
+    id = RecordField_v<0>,
+    name = RecordField_v<1>,
+    description = RecordField_v<2>,
+    serial = RecordField_v<3>,
+    owner = RecordField_v<4>,
+    vendor_name = RecordField_v<5>,
+    price = RecordField_v<6>
+  };
+  using Rfn = RecordFieldName;
 
-  virtual ManagerItem(const ManagerItem &other)
-  {
-    cache_relevance = other.cache_relevance;
-  }
+  static constexpr RecordUmap field_to_string = {
+      {Rfn::id, "id"},
+      {Rfn::name, "name"},
+      {Rfn::description, "description"},
+      {Rfn::serial, "serial"},
+      {Rfn::owner, "owner"},
+      {Rfn::vendor_name, "vendor_name"},
+      {Rfn::price, "price"}};
 
-  virtual ManagerItem(ManagerItem &&other)
-  {
-    cache_relevance = other.cache_relevance;
-    other.cache_relevance = 0;
-  }
+  static constexpr ReRecordUmap string_to_field = {
+      {"id", Rfn::id},
+      {"name", Rfn::name},
+      {"description", Rfn::description},
+      {"serial", Rfn::serial},
+      {"owner", Rfn::owner},
+      {"vendor_name", Rfn::vendor_name},
+      {"price", Rfn::price}};
 
-  /* Obtener relevancia en cache */
-  std::uint16_t getCacheRel()
-  {
-    return cache_relevance;
-  }
-
-  /* Incrementar relevancia en cache */
-  std::uint16_t incCacheRel()
-  {
-    return ++cache_relevance;
-  }
-
-  /* Decrementar relevancia en cache */
-  std::uint16_t decCacheRel()
-  {
-    return --cache_relevance;
-  }
-
-  virtual ~ManagerItem()
-  {
-    cache_relevance = 0;
-  }
-};
-
-struct Field_t
-{
-  std::uint8_t value;
-};
-
-class ProductBaseField
-{
-  static constexpr Field_t product_id = Field_t{0};
-  static constexpr Field_t product_name = Field_t{1};
-  static constexpr Field_t product_description = Field_t{2};
-  static constexpr Field_t product_serial = Field_t{3};
-  static constexpr Field_t vendor_name = Field_t{4};
-  static constexpr Field_t product_price = Field_t{5};
-};
-
-inline umap<Field_t, std::string> product_base_field_to_string = {
-    {ProductBaseField::product_id, "product_id"},
-    {ProductBaseField::product_name, "product_name"},
-    {ProductBaseField::product_description, "product_description"},
-    {ProductBaseField::product_serial, "product_serial"},
-    {ProductBaseField::vendor_name, "vendor_name"},
-    {ProductBaseField::product_price, "product_price"},
-};
-
-inline umap<std::string, Field_t> string_to_product_base_field = {
-    {"product_id", ProductBaseField::product_id},
-    {"product_name", ProductBaseField::product_name},
-    {"product_description", ProductBaseField::product_description},
-    {"product_serial", ProductBaseField::product_serial},
-    {"vendor_name", ProductBaseField::vendor_name},
-    {"product_price", ProductBaseField::product_price},
-};
-
-class ProductBase : public ManagerItem
-{
-public:
-  std::uint64_t product_id;
-  std::string product_name;
-  std::string product_description;
-  std::string product_serial;
+  std::uint64_t id;
+  std::string name;
+  std::string description;
+  std::string serial;
+  std::string owner;
   std::string vendor_name; // vendors(vendor_name)
-  double product_price;
+  double price;
 
   // Default constructor: Virtual product constructor (id = -1)
   virtual ProductBase()
-      : product_id(0), product_name(""), product_description(""), product_serial(""), vendor_name(""), product_price(0.0)
+      : is_virtual(true)
   {
   }
 
   // Secure constructor with UmappedProduct
-  virtual ProductBase(const umap<Field_t, std::string> fields_map, bool is_virtual = true)
-      : product_id(0),
-        product_name(fields_map.at(ProductField::product_name)),
-        product_description(fields_map.at(ProductField::product_description)),
-        product_serial(fields_map.at(ProductField::product_serial)),
-        vendor_name(fields_map.at(ProductField::vendor_name)),
-        product_price(std::atoi(fields_map.at(ProductField::product_price).c_str()))
+  virtual ProductBase(RecordUmap record, const bool vrtl)
+      : is_virtual(vrtl),
+
+        id(record.at(Rfn::id)),
+        name(record.at(Rfn::name)),
+        description(record.at(Rfn::description)),
+        serial(record.at(Rfn::serial)),
+        vendor_name(record.at(Rfn::vendor_name)),
+        price(std::atof(record.at(Rfn::price).c_str()))
   {
-    if (!is_virtual)
-      product_id = std::atoi(fields_map.at(ProductField::product_id).c_str());
   }
 
   // Constructors
   virtual ProductBase(ProductBase &other) noexcept
-      : product_id(other.product_id), product_name(other.product_name), product_description(other.product_description), product_serial(other.product_serial), vendor_name(other.vendor_name), product_price(other.product_price)
+      : is_virtual(other.is_virtual),
+
+        id(other.id),
+        name(other.name),
+        description(other.description),
+        serial(other.serial),
+        vendor_name(other.vendor_name),
+        price(other.price)
   {
   }
 
   virtual ProductBase(ProductBase &&other) noexcept
-      : product_id(other.product_id), product_name(std::move(other.product_name)), product_description(std::move(other.product_description)), product_serial(std::move(other.product_serial)) vendor_name(std::move(other.vendor_name)), product_price(other.product_price)
+      : is_virtual(other.is_virtual),
+
+        id(other.id),
+        name(std::move(other.name)),
+        description(std::move(other.description)),
+        serial(std::move(other.serial)),
+        vendor_name(std::move(other.vendor_name)),
+        price(other.price)
   {
-    other.product_id = 0;
-    other.product_price = 0.0;
+    other.id = 0;
+    other.price = 0.0;
   }
 
-  std::string str(std::vector<Field_t> visible_fields = {}) const noexcept = 0;
-  bool isvrtl() const noexcept = 0;
+  // Metodos publicos en linea
+  bool isVirtual()
+  {
+    return is_virtual;
+  }
+
+  // Metodos "interface" de clase base (han de ser definidos en las clases derivadas)
+  virtual std::string toString(std::vector<RecordField_t> f = {}) const noexcept = 0;
 
   // Operators
-  virtual ProductInfo &operator=(ProductInfo &other)
+  virtual ProductBase &operator=(ProductBase &other)
   {
     if (this != &other)
     {
-      product_id = other.product_id;
-      product_name = other.product_name;
-      product_description = other.product_description;
+      is_virtual = other.is_virtual;
+
+      id = other.id;
+      name = other.name;
+      description = other.description;
       vendor_name = other.vendor_name;
-      product_price = other.product_price;
+      price = other.price;
     }
     return *this;
   }
@@ -148,86 +127,104 @@ public:
   {
     if (this != &other)
     {
-      product_id = other.product_id;
-      product_name = std::move(other.product_name);
-      product_description = std::move(other.product_description);
-      vendor_name = std::move(other.vendor_name);
-      product_price = other.product_price;
+      is_virtual = other.is_virtual;
 
-      other.product_id = 0;
-      other.product_price = 0.0;
+      id = other.id;
+      name = std::move(other.name);
+      description = std::move(other.description);
+      vendor_name = std::move(other.vendor_name);
+      price = other.price;
+
+      other.id = 0;
+      other.price = 0.0;
     }
     return *this;
   }
 
   virtual ~ProductBase()
   {
-    product_id = 0;
-    product_price = 0.0;
+    id = 0;
+    price = 0.0;
   }
-}
-
-// Ensures secure access to product_field_to_string
-class ProductField : public ProductBaseField
-{
-  static constexpr Field_t product_count = Field_t{6};
-};
-
-inline umap<Field_t, std::string>
-    string_to_product_field = {
-        {ProductField::product_id, "product_id"},
-        {ProductField::product_name, "product_name"},
-        {ProductField::product_description, "product_description"},
-        {ProductField::product_serial, "product_serial"},
-        {ProductField::vendor_name, "vendor_name"},
-        {ProductField::product_count, "product_count"},
-        {ProductField::product_price, "product_price"},
 };
 
 class Product : public ProductBase
 {
 public:
-  std::uint64_t product_count;
+  enum class RecordFieldName : RecordField_t
+  {
+    id = RecordField_v<0>,
+    name = RecordField_v<1>,
+    description = RecordField_v<2>,
+    serial = RecordField_v<3>,
+    owner = RecordField_v<4>,
+    vendor_name = RecordField_v<5>,
+    price = RecordField_v<6>,
+    count = RecordField_v<7>
+  };
+  using Rfn = RecordFieldName;
 
+  static constexpr RecordUmap field_to_string = {
+      {Rfn::id, "id"},
+      {Rfn::name, "name"},
+      {Rfn::description, "description"},
+      {Rfn::serial, "serial"},
+      {Rfn::owner, "owner"},
+      {Rfn::vendor_name, "vendor_name"},
+      {Rfn::price, "price"},
+      {Rfn::count, "count"}};
+
+  static constexpr ReRecordUmap string_to_field = {
+      {"id", Rfn::id},
+      {"name", Rfn::name},
+      {"description", Rfn::description},
+      {"serial", Rfn::serial},
+      {"owner", Rfn::owner},
+      {"vendor_name", Rfn::vendor_name},
+      {"price", Rfn::price},
+      {"count", Rfn::count}};
+
+  // Miembros publicos no estaticos
+  std::uint64_t count;
+
+  // Constructores
   virtual ProductInfo()
-      : ProductBase(), product_count(0)
+      : ProductBase(), count(0)
   {
   }
 
-  // Secure constructor with UmappedProduct
-  virtual ProductInfo(const umap<Field_t, std::string> fields_map, bool is_virtual = true)
-      : ProductBase(fields_map, is_virtual), product_count(fields_map.at(ProductField::product_count))
+  virtual ProductInfo(RecordUmap record, bool vrtl)
+      : ProductBase(record, vrtl), count(record.at(Rfn::count))
   {
   }
 
-  // Constructors
   virtual ProductInfo(ProductInfo &other) noexcept
-      : ProductBase(other), product_count(other.product_count)
+      : ProductBase(other), count(other.count)
   {
   }
 
   virtual ProductInfo(ProductInfo &&other) noexcept
-      : ProductBase(std::move(other)), product_count(other.product_count)
+      : ProductBase(std::move(other)), count(other.count)
   {
-    other.product_price = 0;
+    other.price = 0.0;
   }
 
-  // Methods
-  std::string str(std::vector<ProductField> visible_fields = {}) const noexcept
+  // Methods publicos no estaticos en linea
+  std::string toString(std::vector<Rfn> f = {}) const noexcept
   {
     auto up = Product::umapProduct(*this); // Representation of ProductInfo on a map
     std::string csv;
 
-    if (visible_fields.size() < 1)
+    if (f.size() < 1)
     {
-      for (auto &field : product_field_to_string)
-        visible_fields.push_back(field.first);
+      for (auto &field : field_to_string)
+        f.push_back(field.first);
     }
 
     // Appends the field values as csv
-    for (auto &field : visible_fields)
+    for (auto &field : f)
     {
-      if (&visible_fields[0] != &field)
+      if (&f[0] != &field)
         csv += ",";
       csv += up.at(field);
     }
@@ -236,29 +233,29 @@ public:
 
   bool isvrtl() const noexcept
   {
-    return product_id == -1;
+    return id == -1;
   }
 
   // Operators
   ProductInfo &operator=(ProductInfo &other)
   {
     if (this != &other)
-      product_count = other.product_count;
+      count = other.count;
     return *this;
   }
   ProductInfo &operator=(ProductInfo &&other)
   {
     if (this != &other)
     {
-      product_count = other.product_count;
-      other.product_count = 0;
+      count = other.count;
+      other.count = 0;
     }
     return *this;
   }
 
   virtual ~ProductInfo()
   {
-    product_count = 0;
+    count = 0;
   }
 };
 

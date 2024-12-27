@@ -5,9 +5,9 @@
 #include "product/product.hpp"
 #include "database/dberror.hpp"
 #include "utils/strutils.hpp"
-#include "sqlite3.h"
 #include <filesystem>
 #include <functional>
+#include "sqlite3.h"
 
 namespace fs = std::filesystem;
 
