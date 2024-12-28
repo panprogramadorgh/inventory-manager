@@ -1,8 +1,10 @@
 #include "forwarder.hpp"
 
-template <std::uint16_t V>
 class ManagerItem
 {
+private:
+  bool is_virtual;
+
 public:
   // types
 
@@ -22,16 +24,27 @@ public:
   using RecordUmap = const umap<decltype(RecordField_v<0>), std::string>;
   using ReRecordUmap = const umap<std::string, decltype(RecordField_v<0>)>;
 
-private:
+  /* Constantes de compilacion "interface compliant" */
+  static constexpr RecordUmap field_to_string;
+  static constexpr ReRecordUmap string_to_field;
+
+protected:
+  static constexpr std::uint16_t init_cache_rel = 10;
+
   std::uint16_t cache_rel;
 
 public:
-  constexpr std::uint16_t init_cache_rel = V;
-
   virtual ManagerItem()
-      : cache_relevance(init_cache_rel)
+      : cache_relevance(init_cache_rel), is_virtual(true)
   {
   }
+
+  /* Constructor "interface" desde record. Las clases derivadas deben construir el objeto basanose en:
+  ```cpp
+  static constexpr RecordUmap field_to_string;
+  ```
+  */
+  virtual ManagerItem(const RecordUmap record, const bool vrtl) = 0;
 
   virtual ManagerItem(const ManagerItem &other)
   {
@@ -42,6 +55,15 @@ public:
   {
     cache_rel = other.cache_rel;
     other.cache_rel = 0;
+  }
+
+  // Metodos "interface"
+  virtual std::string toString(vec<RecordField_t> f = {}) const noexcept = 0;
+
+  // Metodos publicos en linea
+  bool isVirtual()
+  {
+    return is_virtual;
   }
 
   /* Obtener relevancia en cache */
@@ -62,8 +84,34 @@ public:
     return --cache_rel;
   }
 
+  // Operadores virtuales
+  virtual ManagerItem &operator=(const ManagerItem &other)
+  {
+    if (this != &other)
+    {
+      is_virtual = other.is_virtual;
+      cache_rel = other.cache_rel;
+    }
+    return *his;
+  }
+
+  virtual ManagerItem &operator=(ManagerItem &&other)
+  {
+    if (this != &other)
+    {
+      is_virtual = other.is_virtual;
+      cache_rel = other.cache_rel;
+
+      other.cache_rel = 0;
+    }
+    return *this;
+  }
+
   virtual ~ManagerItem()
   {
     cache_rel = 0;
   }
 };
+
+template <typename T>
+concept ManagerItemBased = std::is_base_of_v<ManagerItem, T> && !std::is_same_v<ManagerItem, T>;

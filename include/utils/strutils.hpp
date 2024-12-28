@@ -1,6 +1,6 @@
 #include "forwarder.hpp"
 
-inline std::string &strInsert(std::string &a, std::string b, std::size_t p, std::size_t n) noexcept
+inline std::string &strInsert(std::string &a, std::string b, std::uint64_t p, std::uint64_t n) noexcept
 {
   std::string start, end;
   try

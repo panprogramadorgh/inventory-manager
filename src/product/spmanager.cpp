@@ -1,6 +1,6 @@
 #include "product/spmanager.cpp"
 
-Manager::SecureReturn SmartProductManager::secGetSmartProduct(std::size_t smart_product_id)
+Manager::SecureReturn SmartProductManager::secGetSmartProduct(std::uint64_t smart_product_id)
 {
   try
   {
@@ -13,5 +13,5 @@ Manager::SecureReturn SmartProductManager::secGetSmartProduct(std::size_t smart_
   }
 
   // TODO: Terminar
-  // umapQuery(db->fetchQuery());
+  // extractContainer(db->fetchQuery());
 }

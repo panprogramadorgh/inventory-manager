@@ -11,7 +11,7 @@
 
 namespace fs = std::filesystem;
 
-using QueryResult = std::pair<std::vector<std::string>, std::vector<std::string>>;
+using QueryResult = std::pair<vec<std::string>, vec<std::string>>;
 
 template <IsPrInfoBased T>
 using QueryUmap = umap<int, std::shared_ptr<T>>;
@@ -21,8 +21,8 @@ class Database
 private:
   sqlite3 *db;
   const std::string file_name;
-  std::vector<std::string> cols;
-  std::vector<std::string> vals;
+  vec<std::string> cols;
+  vec<std::string> vals;
   bool should_close_db, should_open_db;
 
   // Static methods
@@ -69,8 +69,8 @@ public:
   }
 
   // Database interaction utilities
-  void executeQuery(std::string query, std::vector<std::string> &&args = {}) const noexcept(false);
-  void executeUpdate(std::string query, std::vector<std::string> &&args = {}) const noexcept(false);
+  void executeQuery(std::string query, vec<std::string> &&args = {}) const noexcept(false);
+  void executeUpdate(std::string query, vec<std::string> &&args = {}) const noexcept(false);
 
   // Exposes the columns and values ​​resulting from the query
   QueryResult fetchQuery() const noexcept
@@ -87,7 +87,7 @@ public:
   // Static methods
 
   // Allows you to format SQL queries with a vector of arguments
-  static std::string mergeQueryArgs(std::string query, const std::vector<std::string> &&args) noexcept
+  static std::string mergeQueryArgs(std::string query, const vec<std::string> &&args) noexcept
   {
     std::size_t pos, i = 0;
 

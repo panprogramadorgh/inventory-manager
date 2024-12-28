@@ -2,10 +2,10 @@
 
 // Public methods
 
-ProductManager::SecureReturn<ProductInfo> ProductManager::secGetProduct(std::size_t id) noexcept
+ProductManager::SecureReturn<Product> ProductManager::secGetProduct(std::uint64_t id) noexcept
 {
   // Decrease cache relevance of products and remove irrelevant products
-  std::vector<int> garbage_products;
+  vec<int> garbage_products;
   for (auto pair : cache)
   {
     if (pair.first != id)
@@ -24,7 +24,7 @@ ProductManager::SecureReturn<ProductInfo> ProductManager::secGetProduct(std::siz
   // Returns the product if it is in cache
   auto it = cache.find(id);
   if (it != cache.cend())
-    return std::make_pair(std::optional<ProductInfo>(it->second->info()), "");
+    return std::make_pair(std::optional<Product>(it->second->info()), "");
 
   if (!db)
     return std::make_pair(std::nullopt, ErrMsgs::Manager::DB_IS_NULL);
@@ -32,14 +32,14 @@ ProductManager::SecureReturn<ProductInfo> ProductManager::secGetProduct(std::siz
   // Obtains the product from database
   try
   {
-    db->executeQuery("SELECT * FROM products_info WHERE product_id = $", {std::to_string(id)});
+    db->executeQuery("SELECT * FROM products_info as p WHERE p.id = $", {std::to_string(id)});
   }
   catch (const std::exception &e)
   {
     return std::make_pair(std::nullopt, e.what());
   }
 
-  auto products = Database::umapQuery<Product>(db->fetchQuery());
+  auto products = extractContainer(db->fetchQuery());
   it = products.find(id);
   if (it == products.end())
   {
@@ -48,13 +48,13 @@ ProductManager::SecureReturn<ProductInfo> ProductManager::secGetProduct(std::siz
 
   addCache(it->second); // And finally we push the product to cache
 
-  return std::make_pair(std::optional<ProductInfo>(it->second->info()), "");
+  return std::make_pair(std::optional<Product>(it->second->info()), "");
 }
 
-ProductInfo ProductManager::getProduct(std::size_t id)
+Product ProductManager::getProduct(std::uint64_t id)
 {
   // Decrease cache relevance of products and remove irrelevant products
-  std::vector<int> garbage_products;
+  vec<int> garbage_products;
   for (auto pair : cache)
   {
     if (pair.first != id)
@@ -84,14 +84,14 @@ ProductInfo ProductManager::getProduct(std::size_t id)
   // Obtains the product from database
   try
   {
-    db->executeQuery("SELECT * FROM products_info WHERE product_id = $", {std::to_string(id)});
+    db->executeQuery("SELECT * FROM products_info as p WHERE p.id = $", {std::to_string(id)});
   }
   catch (const std::exception &e)
   {
     throw std::runtime_error(e.what());
   }
 
-  auto products = Database::umapQuery<Product>(db->fetchQuery());
+  auto products = extractContainer(db->fetchQuery());
   it = products.find(id);
   if (it == products.end())
   {
@@ -104,16 +104,16 @@ ProductInfo ProductManager::getProduct(std::size_t id)
 }
 
 // Product id is ignored (it is virtual)
-ProductManager::SecureReturn<ProductInfo> ProductManager::secCreateProduct(const ProductInfo &p, std::size_t vendor_id, const std::tuple<bool, bool> handle_tran) noexcept
+ProductManager::SecureReturn<Product> ProductManager::secCreateProduct(const Product &p, std::uint64_t vendor_id, const std::tuple<bool, bool> handle_tran) noexcept
 {
   try
   {
     if (std::get<0>(handle_tran))
       db->executeUpdate("BEGIN TRANSACTION");
     db->executeUpdate(
-        "INSERT INTO products (product_name, product_description, vendor_id, product_count, product_price) VALUES ($, $, $, $, $)",
-        {"\"" + p.product_name + "\"",
-         "\"" + p.product_description + "\"",
+        "INSERT INTO products (name, description, serial, owner vendor_id, price, count) VALUES ($, $, $, $, $, $, $)",
+        {"\"" + p.name + "\"",
+         "\"" + p.description + "\"",
          std::to_string(vendor_id),
          std::to_string(p.product_price),
          std::to_string(p.product_count)});
@@ -121,8 +121,8 @@ ProductManager::SecureReturn<ProductInfo> ProductManager::secCreateProduct(const
       db->executeUpdate("COMMIT");
     db->executeQuery("SELECT * FROM products_info WHERE product_id = (SELECT MAX(product_id) FROM products_info)");
 
-    auto qumap = Database::umapQuery<ProductInfo>(db->fetchQuery());
-    return std::make_pair(std::optional<ProductInfo>(*(qumap.cbegin()->second)), std::string());
+    auto qumap = extractContainer(db->fetchQuery());
+    return std::make_pair(std::optional<Product>(*(qumap.cbegin()->second)), std::string());
   }
   catch (const std::exception &e)
   {
@@ -131,7 +131,7 @@ ProductManager::SecureReturn<ProductInfo> ProductManager::secCreateProduct(const
 }
 
 // Product id is ignored (it is virtual)
-ProductInfo ProductManager::createProduct(const ProductInfo &p, std::size_t vendor_id, const std::tuple<bool, bool> handle_tran)
+Product ProductManager::createProduct(const Product &p, std::uint64_t vendor_id, const std::tuple<bool, bool> handle_tran)
 {
   if (std::get<0>(handle_tran))
     db->executeUpdate("BEGIN TRANSACTION");
@@ -145,11 +145,11 @@ ProductInfo ProductManager::createProduct(const ProductInfo &p, std::size_t vend
   if (std::get<1>(handle_tran))
     db->executeQuery("COMMIT");
   db->executeQuery("SELECT * FROM products_info WHERE product_id = (SELECT MAX(product_id) FROM products_info)");
-  auto qumap = Database::umapQuery<ProductInfo>(db->fetchQuery());
+  auto qumap = extractContainer(db->fetchQuery());
   return *(qumap.cbegin()->second);
 }
 
-ProductManager::SecureReturn<std::size_t> ProductMAnager::secAddProduct(const std::size_t product_id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true)) noexcept
+ProductManager::SecureReturn<std::uint64_t> ProductMAnager::secAddProduct(const std::uint64_t product_id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true)) noexcept
 {
   if (std::get<0>(handle_tran))
     db->executeUpdate("BEGIN TRANSACTION");
@@ -165,7 +165,7 @@ ProductManager::SecureReturn<std::size_t> ProductMAnager::secAddProduct(const st
     db->executeQuery("COMMIT");
 }
 
-ProductManager::SecureReturn<int> ProductManager::secRemoveProduct(std::size_t id, const std::tuple<bool, bool> handle_tran) noexcept
+ProductManager::SecureReturn<int> ProductManager::secRemoveProduct(std::uint64_t id, const std::tuple<bool, bool> handle_tran) noexcept
 {
   try
   {
@@ -176,7 +176,7 @@ ProductManager::SecureReturn<int> ProductManager::secRemoveProduct(std::size_t i
     if (std::get<1>(handle_tran))
       db->executeUpdate("COMMIT");
     db->executeQuery("SELECT * FROM products_info as p WHERE p.product_id = $", {std::to_string(id)});
-    auto qumap = Database::umapQuery<ProductInfo>(db->fetchQuery());
+    auto qumap = extractContainer(db->fetchQuery());
     if (qumap.cbegin()->first == id)
       throw std::runtime_error(ProductManager::ErrMsgs::DELETE_PRODUCT_FAILED);
   }
@@ -188,7 +188,7 @@ ProductManager::SecureReturn<int> ProductManager::secRemoveProduct(std::size_t i
   return std::make_pair(std::optional<int>(id), "");
 }
 
-int ProductManager::removeProduct(std::size_t id, const std::tuple<bool, bool> handle_tran)
+int ProductManager::removeProduct(std::uint64_t id, const std::tuple<bool, bool> handle_tran)
 {
   if (std::get<0>(handle_tran))
     db->executeUpdate("BEGIN TRANSACTION");
@@ -197,7 +197,7 @@ int ProductManager::removeProduct(std::size_t id, const std::tuple<bool, bool> h
   if (std::get<1>(handle_tran))
     db->executeUpdate("COMMIT");
   db->executeQuery("SELECT * FROM products_info as p WHERE p.product_id = $", {std::to_string(id)});
-  auto qumap = Database::umapQuery<ProductInfo>(db->fetchQuery());
+  auto qumap = extractContainer(db->fetchQuery());
   if (qumap.cbegin()->first == id)
     throw std::runtime_error(ProductManager::ErrMsgs::DELETE_PRODUCT_FAILED);
   remCache(id); // Es eliminado de la cache

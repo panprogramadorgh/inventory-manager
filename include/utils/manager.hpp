@@ -3,14 +3,15 @@
 
 #include "forwarder.hpp"
 #include "database/interface.hpp"
+#include "utils/manager-item.hpp"
 #include <optional>
 
-template <typename T>
+template <IsManagerItem T>
 class Manager
 {
 public:
   // Types
-  using Container = umap<std::size_t, std::shared_ptr<T>>;
+  using Container = umap<const std::uint64_t, std::shared_ptr<T>>;
 
   template <typename U = T>
   using SecureReturn = std::pair<std::optional<U>, std::string>;
@@ -21,22 +22,22 @@ protected:
 
   Container cache;
 
-public:
+  /* Mensajes de error genericos */
   struct ErrMsgs
   {
     static constexpr char DB_IS_NULL[] = "Database is null";
   };
 
-  Manager(std::string dbfile)
+public:
+  Manager(const std::string dbfile)
       : db(nullptr), should_free_db(true)
   {
     db = new Database(dbfile);
     db->connect();
-    ;
   }
 
   // Must receive a connected database (Database::connect())
-  Manager(Database *db, bool should_free_db = false)
+  Manager(const Database *db, const bool should_free_db = false)
       : db(db), should_free_db(should_free_db)
   {
     if (!db)
@@ -59,21 +60,19 @@ public:
     db = nullptr;
   }
 
-  // Methods
+  // Methods "interface"
 
-  virtual std::size_t addCache(std::shared_ptr<T>) noexcept = 0;
+  virtual std::uint64_t addCache(std::shared_ptr<T>) noexcept = 0;
 
-  virtual std::size_t remCache(const std::size_t) noexcept = 0;
+  virtual std::uint64_t remCache(const std::uint64_t) noexcept = 0;
 
-  // Static methods
+  // Metodos estaticos en linea
 
-  // TODO: Arreglar declaracion umapQuery
-
-  static std::enable_if_t<std::is_same_v<T, ProductInfo>, Container> umapQuery(QueryResult qresult)
+  static Container extractContainer(QueryResult qresult)
   {
     Container dest;
-    UmappedProduct row;
-    ProductField field;
+    T::RecordUmap record;
+    T::RecordField_t field;
 
     auto cols = qresult.first;
     auto vals = qresult.second;
@@ -83,45 +82,15 @@ public:
          std::distance(vals.begin(), it) % cols.size() < cols.size();
          it++)
     {
-      field = string_to_product_field.at(cols[std::distance(vals.begin(), it) % cols.size()]);
-      row[field] = *it;
+      field = T::string_to_field.at(cols[std::distance(vals.begin(), it) % cols.size()]);
+      record[field] = *it;
 
       // En caso de que sea la ulima columna por registro
       if (std::distance(vals.begin(), it) % cols.size() == cols.size() - 1)
       {
-        // Creates a non-virtual ProductInfo
-        ProductInfo pinfo(row, false);
-        dest.emplace(pinfo.product_id, std::make_shared<ProductInfo>(pinfo));
-        row.clear(); // Limpiar el mapa para la proxima fila
-      }
-    }
-    return dest;
-  }
-
-  static std::enable_if_t<std::is_same_v<T, Product>, Container> umapQuery(QueryResult qresult)
-  {
-    Container dest;
-    UmappedProduct row;
-    ProductField field;
-
-    auto cols = qresult.first;
-    auto vals = qresult.second;
-
-    for (auto it = vals.begin();
-         it != vals.cend() &&
-         std::distance(vals.begin(), it) % cols.size() < cols.size();
-         it++)
-    {
-      field = string_to_product_field.at(cols[std::distance(vals.begin(), it) % cols.size()]);
-      row[field] = *it;
-
-      // En caso de que sea la ulima columna por registro
-      if (std::distance(vals.begin(), it) % cols.size() == cols.size() - 1)
-      {
-        // Creates a non-virtual Product
-        ProductInfo pinfo(row, false);
-        dest.emplace(pinfo.product_id, std::make_shared<Product>(Product(pinfo)));
-        row.clear(); // Limpiar el mapa para la proxima fila
+        // Creates a non-virtual manager item
+        dest.emplace(pinfo.product_id, std::make_shared<T>(T(record, false)));
+        record.clear(); // Limpiar el mapa para la proxima fila
       }
     }
     return dest;
@@ -133,6 +102,8 @@ public:
   {
     return db;
   }
+
+  Manager &operator=(const Manager &other) = delete;
 
   Manager &operator=(Manager &&other)
   {

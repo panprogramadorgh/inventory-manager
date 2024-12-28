@@ -4,7 +4,7 @@
 
 // FIXME: terminar
 
-// Manager<ProductInfo>::Container Database::umapQuery<ProductInfo>(QueryResult qresult)
+// Manager<ProductInfo>::Container Database::extractContainer<ProductInfo>(QueryResult qresult)
 // {
 //   Container dest;
 //   UmappedProduct row;
@@ -33,7 +33,7 @@
 //   return dest;
 // }
 
-// Manager<ProductInfo>::Container Database::umapQuery<ProductInfo>(QueryResult qresult)
+// Manager<ProductInfo>::Container Database::extractContainer<ProductInfo>(QueryResult qresult)
 // {
 //   Container dest;
 //   UmappedProduct row;

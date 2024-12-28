@@ -10,37 +10,40 @@
 
 class ProductManager : public Manager<Product>
 {
-public:
-  // Class types
+private:
+  /* Mensajes de error genericos */
   struct ErrMsgs
   {
     static constexpr char PRODUCT_NOT_FOUND[] = "Product was not found";
     static constexpr char DELETE_PRODUCT_FAILED[] = "Could not delete product";
   };
 
-  // Methods
+public:
+  // Metodos definidos en archivos de implementacion
 
-  SecureReturn<ProductInfo> secGetProduct(const std::size_t id) noexcept;
-  ProductInfo getProduct(const std::size_t id);
+  /* Obtencion segura */
+  SecureReturn<Product> secGetProduct(const std::uint64_t id) noexcept;
+  /* Obtencion normal */
+  Product getProduct(const std::uint64_t id);
 
-  //
+  /* Creacion segura */
+  SecureReturn<Product> secCreateProduct(const Product &p, const std::uint64_t vendor_id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true)) noexcept;
+  /* Creacion normal */
+  Product createProduct(const Product &p, const std::uint64_t vendor_id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true));
 
-  SecureReturn<ProductInfo> secCreateProduct(const ProductInfo &p, const std::size_t vendor_id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true)) noexcept;
-  ProductInfo createProduct(const ProductInfo &p, const std::size_t vendor_id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true));
+  /* Adicion segura */
+  SecureReturn<std::uint64_t> secAddProduct(const std::uint64_t product_id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true)) noexcept;
+  /* Adicion normal */
+  std::uint64_t addProduct(const std::uint64_t product_id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true));
 
-  //
+  /* Eliminacion segura */
+  SecureReturn<int> secRemoveProduct(const std::uint64_t id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true)) noexcept;
+  /* Eliminacion normal */
+  int removeProduct(const std::uint64_t id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true));
 
-  SecureReturn<std::size_t> secAddProduct(const std::size_t product_id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true)) noexcept;
-  std::size_t addProduct(const std::size_t product_id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true));
+  // Metodos en linea
 
-  //
-
-  SecureReturn<int> secRemoveProduct(const std::size_t id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true)) noexcept;
-  int removeProduct(const std::size_t id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true));
-
-  // Inline methods
-
-  std::size_t addCache(std::shared_ptr<Product> p) noexcept override
+  std::uint64_t addCache(std::shared_ptr<Product> p) noexcept override
   {
     // Do not add product if it is virtual
     if (p->identifier() == -1)
@@ -54,7 +57,7 @@ public:
     return cache.size();
   }
 
-  std::size_t remCache(std::size_t id) noexcept override
+  std::uint64_t remCache(std::uint64_t id) noexcept override
   {
     cache.erase(id);
     return cache.size();
