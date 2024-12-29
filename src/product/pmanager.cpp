@@ -1,8 +1,16 @@
 #include "product/pmanager.hpp"
 
-// Public methods
+// Tipos especificos para este archivo de implementacion
 
-ProductManager::SecureReturn<Product> ProductManager::secGetProduct(std::uint64_t id) noexcept
+using Pm = ProductManager;
+
+template <typename T>
+using Sec = Pm::SecureReturn<T>;
+
+using BaseErrMsgs = Manager<Product<true>>::ErrMsgs;
+
+Sec<Product<true>>
+Pm::secGetProduct(std::uint64_t id) noexcept
 {
   // Decrease cache relevance of products and remove irrelevant products
   vec<int> garbage_products;
@@ -10,7 +18,7 @@ ProductManager::SecureReturn<Product> ProductManager::secGetProduct(std::uint64_
   {
     if (pair.first != id)
     {
-      if (!pair.second->decreaseCacheRelevance())
+      if (!pair.second->decCacheRel())
       {
         garbage_products.push_back(pair.first);
       }
@@ -24,10 +32,10 @@ ProductManager::SecureReturn<Product> ProductManager::secGetProduct(std::uint64_
   // Returns the product if it is in cache
   auto it = cache.find(id);
   if (it != cache.cend())
-    return std::make_pair(std::optional<Product>(it->second->info()), "");
+    return std::make_pair(std::optional<Product<true>>(it->second->info()), "");
 
   if (!db)
-    return std::make_pair(std::nullopt, ErrMsgs::Manager::DB_IS_NULL);
+    return std::make_pair(std::nullopt, BaseErrMsgs::DB_IS_NULL);
 
   // Obtains the product from database
   try
@@ -39,19 +47,19 @@ ProductManager::SecureReturn<Product> ProductManager::secGetProduct(std::uint64_
     return std::make_pair(std::nullopt, e.what());
   }
 
-  auto products = extractContainer(db->fetchQuery());
-  it = products.find(id);
-  if (it == products.end())
+  auto cont = extractContainer(db->fetchQuery());
+  it = cont.find(id);
+  if (it == cont.end())
   {
     return std::make_pair(std::nullopt, ErrMsgs::PRODUCT_NOT_FOUND);
   }
 
   addCache(it->second); // And finally we push the product to cache
 
-  return std::make_pair(std::optional<Product>(it->second->info()), "");
+  return std::make_pair(std::optional<Product<true>>(it->second), "");
 }
 
-Product ProductManager::getProduct(std::uint64_t id)
+Product<true> Pm::getProduct(std::uint64_t id)
 {
   // Decrease cache relevance of products and remove irrelevant products
   vec<int> garbage_products;
@@ -59,7 +67,7 @@ Product ProductManager::getProduct(std::uint64_t id)
   {
     if (pair.first != id)
     {
-      if (!pair.second->decreaseCacheRelevance())
+      if (!pair.second->decCacheRel())
       {
         garbage_products.push_back(pair.first);
       }
@@ -79,7 +87,7 @@ Product ProductManager::getProduct(std::uint64_t id)
 
   // Returns nullptr in case the product is not in cache and datbase is not initialized
   if (!db)
-    throw std::runtime_error(Manager::ErrMsgs::DB_IS_NULL);
+    throw std::runtime_error(BaseErrMsgs::DB_IS_NULL);
 
   // Obtains the product from database
   try
@@ -91,38 +99,41 @@ Product ProductManager::getProduct(std::uint64_t id)
     throw std::runtime_error(e.what());
   }
 
-  auto products = extractContainer(db->fetchQuery());
-  it = products.find(id);
-  if (it == products.end())
+  auto cont = extractContainer(db->fetchQuery());
+  it = cont.find(id);
+  if (it == cont.end())
   {
     throw std::runtime_error(ErrMsgs::PRODUCT_NOT_FOUND);
   }
 
   addCache(it->second); // And finally we push the product to cache
 
-  return it->second->info();
+  return it->second;
 }
 
-// Product id is ignored (it is virtual)
-ProductManager::SecureReturn<Product> ProductManager::secCreateProduct(const Product &p, std::uint64_t vendor_id, const std::tuple<bool, bool> handle_tran) noexcept
+Pm::Sec<Product<true>> Pm::secCreateProduct(const Product<false> &p, const std::tuple<bool, bool> handle_tran) const noexcept
 {
   try
   {
     if (std::get<0>(handle_tran))
       db->executeUpdate("BEGIN TRANSACTION");
+
     db->executeUpdate(
         "INSERT INTO products (name, description, serial, owner vendor_id, price, count) VALUES ($, $, $, $, $, $, $)",
         {"\"" + p.name + "\"",
          "\"" + p.description + "\"",
-         std::to_string(vendor_id),
+         std::to_string(p.vendor_id),
          std::to_string(p.product_price),
          std::to_string(p.product_count)});
+
     if (std::get<1>(handle_tran))
       db->executeUpdate("COMMIT");
-    db->executeQuery("SELECT * FROM products_info WHERE product_id = (SELECT MAX(product_id) FROM products_info)");
 
-    auto qumap = extractContainer(db->fetchQuery());
-    return std::make_pair(std::optional<Product>(*(qumap.cbegin()->second)), std::string());
+    /* Recuperar el producto con ID mas grande (ultima insercion porque la base de datos trabaja con autoincrement para acelerar el rendimiento) */
+    db->executeQuery("SELECT * FROM products as p products_info WHERE p.id = (SELECT MAX(p.id) FROM p)");
+
+    auto cont = extractContainer(db->fetchQuery());
+    return std::make_pair(std::optional<Product<true>>(*(cont.cbegin()->second)), "");
   }
   catch (const std::exception &e)
   {
@@ -131,75 +142,154 @@ ProductManager::SecureReturn<Product> ProductManager::secCreateProduct(const Pro
 }
 
 // Product id is ignored (it is virtual)
-Product ProductManager::createProduct(const Product &p, std::uint64_t vendor_id, const std::tuple<bool, bool> handle_tran)
+Product<true> Pm::createProduct(const Product<false> &p, const std::tuple<bool, bool> handle_tran) const
 {
   if (std::get<0>(handle_tran))
     db->executeUpdate("BEGIN TRANSACTION");
+
   db->executeUpdate(
-      "INSERT INTO products (product_name, product_description, vendor_id, product_count, product_price) VALUES ($, $, $, $, $)",
-      {"\"" + p.product_name + "\"",
-       "\"" + p.product_description + "\"",
-       std::to_string(vendor_id),
+      "INSERT INTO products (name, description, serial, owner vendor_id, price, count) VALUES ($, $, $, $, $, $, $)",
+      {"\"" + p.name + "\"",
+       "\"" + p.description + "\"",
+       std::to_string(p.vendor_id),
        std::to_string(p.product_price),
        std::to_string(p.product_count)});
-  if (std::get<1>(handle_tran))
-    db->executeQuery("COMMIT");
-  db->executeQuery("SELECT * FROM products_info WHERE product_id = (SELECT MAX(product_id) FROM products_info)");
-  auto qumap = extractContainer(db->fetchQuery());
-  return *(qumap.cbegin()->second);
-}
-
-ProductManager::SecureReturn<std::uint64_t> ProductMAnager::secAddProduct(const std::uint64_t product_id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true)) noexcept
-{
-  if (std::get<0>(handle_tran))
-    db->executeUpdate("BEGIN TRANSACTION");
-
-  db->executeUpdate(
-      "UPDATE FROM products as p WHERE p.product_id = $ SET p.product_count = p.product_count + 1", {std::to_string(product_id)});
-  db->executeQuery(
-      "SELECT * FROM products_info as p WHERE p.product_id = $", {std::to_string(product_id)});
-
-  // FIXME: Terminar
 
   if (std::get<1>(handle_tran))
     db->executeQuery("COMMIT");
+
+  db->executeQuery("SELECT * FROM products_info as p WHERE p.id = (SELECT MAX(p.id) FROM p)");
+
+  auto cont = extractContainer(db->fetchQuery());
+  return *(cont.cbegin()->second);
 }
 
-ProductManager::SecureReturn<int> ProductManager::secRemoveProduct(std::uint64_t id, const std::tuple<bool, bool> handle_tran) noexcept
+Pm::Sec<std::uint64_t> Pm::secAddProduct(const std::uint64_t id, const std::tuple<bool, bool> hanle_tran) noexcept
 {
+  std::uint64_t count;
+  bool must_update_cache;
+
   try
   {
     if (std::get<0>(handle_tran))
       db->executeUpdate("BEGIN TRANSACTION");
-    db->executeUpdate("DELETE FROM products as p WHERE p.product_id = $",
-                      {std::to_string(id)});
+
+    /* Incrementar en uno la cantidad para el registro con ID especificado */
+    db->executeUpdate(
+        "UPDATE FROM products as p WHERE p.id = $ SET p.count = p.count + 1", {std::to_string(id)});
+
     if (std::get<1>(handle_tran))
-      db->executeUpdate("COMMIT");
-    db->executeQuery("SELECT * FROM products_info as p WHERE p.product_id = $", {std::to_string(id)});
-    auto qumap = extractContainer(db->fetchQuery());
-    if (qumap.cbegin()->first == id)
-      throw std::runtime_error(ProductManager::ErrMsgs::DELETE_PRODUCT_FAILED);
+      db->executeQuery("COMMIT");
+
+    /* Extrallendo la nueva cantidad de prodcutos */
+    db->executeQuery(
+        "SELECT * FROM products_info as p WHERE p.id = $", {std::to_string(id)});
+
+    auto cont = extractContainer(db->fetchQuery());
+    auto it = cont.find(id);
+    if (it == cont.cend())
+      throw std::runtime_error(ErrMsgs::ADD_PRODUCT_FAILED);
+
+    count = it->second.count;
+
+    /* Actualizando la cache en caso de que sea necesario */
+    auto result = secGetProduct(id);
+    must_update_cache = bool(result.first);
+    remCache(id);
+
+    if (must_update_cache)
+      addCache(it->second);
+
+    return count;
   }
   catch (const std::exception &e)
   {
     return std::make_pair(std::nullopt, e.what());
   }
-  remCache(id); // Es eliminado de la cache
-  return std::make_pair(std::optional<int>(id), "");
 }
 
-int ProductManager::removeProduct(std::uint64_t id, const std::tuple<bool, bool> handle_tran)
+Pm::Sec<std::uint64_t> Pm::addProduct(const std::uint64_t product_id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true)) noexcept
+{
+  std::uint64_t count;
+  bool must_update_cache;
+
+  if (std::get<0>(handle_tran))
+    db->executeUpdate("BEGIN TRANSACTION");
+
+  /* Incrementar en uno la cantidad para el registro con ID especificado */
+  db->executeUpdate(
+      "UPDATE FROM products as p WHERE p.id = $ SET p.count = p.count + 1", {std::to_string(id)});
+
+  if (std::get<1>(handle_tran))
+    db->executeQuery("COMMIT");
+
+  /* Extrallendo la nueva cantidad de prodcutos */
+  db->executeQuery(
+      "SELECT * FROM products_info as p WHERE p.id = $", {std::to_string(id)});
+
+  auto cont = extractContainer(db->fetchQuery());
+  auto it = cont.find(id);
+  if (it == cont.cend())
+    throw std::runtime_error(ErrMsgs::ADD_PRODUCT_FAILED);
+
+  count = it->second.count;
+
+  /* Actualizar la cache en caso de ser necesario */
+  auto result = secGetProduct(id);
+  must_update_cache = bool(result.first);
+  remCache(id);
+
+  if (must_update_cache)
+    addCache(it->second);
+
+  return std::make_pair(std::optional<std::uint64_t>(count), "");
+}
+
+Pm::Sec<int> Pm::secRemoveProduct(std::uint64_t id, const std::tuple<bool, bool> handle_tran) noexcept
+{
+  try
+  {
+    if (std::get<0>(handle_tran))
+      db->executeUpdate("BEGIN TRANSACTION");
+
+    db->executeUpdate("DELETE FROM products as p WHERE p.product_id = $",
+                      {std::to_string(id)});
+
+    if (std::get<1>(handle_tran))
+      db->executeUpdate("COMMIT");
+
+    db->executeQuery("SELECT * FROM products_info as p WHERE p.id = $", {std::to_string(id)});
+
+    auto cont = extractContainer(db->fetchQuery());
+    if (cont.cbegin()->first == id)
+      throw std::runtime_error(ErrMsgs::DELETE_PRODUCT_FAILED);
+
+    remCache(id); // Es eliminado de la cache
+    return std::make_pair(std::optional<int>(id), "");
+  }
+  catch (const std::exception &e)
+  {
+    return std::make_pair(std::nullopt, e.what());
+  }
+}
+
+int Pm::removeProduct(std::uint64_t id, const std::tuple<bool, bool> handle_tran)
 {
   if (std::get<0>(handle_tran))
     db->executeUpdate("BEGIN TRANSACTION");
+
   db->executeUpdate("DELETE FROM products as p WHERE p.product_id = $",
                     {std::to_string(id)});
+
   if (std::get<1>(handle_tran))
     db->executeUpdate("COMMIT");
-  db->executeQuery("SELECT * FROM products_info as p WHERE p.product_id = $", {std::to_string(id)});
-  auto qumap = extractContainer(db->fetchQuery());
-  if (qumap.cbegin()->first == id)
-    throw std::runtime_error(ProductManager::ErrMsgs::DELETE_PRODUCT_FAILED);
+
+  db->executeQuery("SELECT * FROM products_info as p WHERE p.id = $", {std::to_string(id)});
+
+  auto cont = extractContainer(db->fetchQuery());
+  if (cont.cbegin()->first == id)
+    throw std::runtime_error(ErrMsgs::DELETE_PRODUCT_FAILED);
+
   remCache(id); // Es eliminado de la cache
-  return id;
+  return std::make_pair(std::optional<int>(id), "");
 }

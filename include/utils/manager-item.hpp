@@ -34,7 +34,7 @@ protected:
   std::uint16_t cache_rel;
 
 public:
-  virtual ManagerItem()
+  ManagerItem() noexcept
       : cache_relevance(init_cache_rel), is_virtual(true)
   {
   }
@@ -44,48 +44,49 @@ public:
   static constexpr RecordUmap field_to_string;
   ```
   */
-  virtual ManagerItem(const RecordUmap record, const bool vrtl) = 0;
+  ManagerItem(const RecordUmap record, const bool vrtl) = 0;
 
-  virtual ManagerItem(const ManagerItem &other)
+  ManagerItem(const ManagerItem &other) noexcept
   {
     cache_rel = other.cache_rel;
   }
 
-  virtual ManagerItem(ManagerItem &&other)
+  ManagerItem(ManagerItem &&other) noexcept
   {
     cache_rel = other.cache_rel;
     other.cache_rel = 0;
   }
 
   // Metodos "interface"
+  virtual RecordUmap extractRecord() const noexcept = 0;
   virtual std::string toString(vec<RecordField_t> f = {}) const noexcept = 0;
 
   // Metodos publicos en linea
-  bool isVirtual()
+  bool isVirtual() const noexcept
   {
     return is_virtual;
   }
 
   /* Obtener relevancia en cache */
-  std::uint16_t getCacheRel()
+  std::uint16_t getCacheRel() const noexcept
   {
     return cache_rel;
   }
 
   /* Incrementar relevancia en cache */
-  std::uint16_t incCacheRel()
+  std::uint16_t incCacheRel() noexcept
   {
     return ++cache_rel;
   }
 
   /* Decrementar relevancia en cache */
-  std::uint16_t decCacheRel()
+  std::uint16_t decCacheRel() noexcept
   {
     return --cache_rel;
   }
 
   // Operadores virtuales
-  virtual ManagerItem &operator=(const ManagerItem &other)
+  virtual ManagerItem &operator=(const ManagerItem &other) noexcept
   {
     if (this != &other)
     {
@@ -95,7 +96,7 @@ public:
     return *his;
   }
 
-  virtual ManagerItem &operator=(ManagerItem &&other)
+  virtual ManagerItem &operator=(ManagerItem &&other) noexcept
   {
     if (this != &other)
     {

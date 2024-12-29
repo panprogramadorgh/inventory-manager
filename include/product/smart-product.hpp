@@ -29,19 +29,19 @@ public:
   // Miembros publicos no estaticos
   std::string inaddr;
 
-  SmartProduct(const RecordUmap record, const bool vrtl) override
-      : Product(record, vrtl),
+  SmartProduct(const RecordUmap record, const bool vrtl)
+      : ProductBase(record, vrtl),
         inaddr(field_to_string.at(Rfn::inaddr))
   {
   }
 
   SmartProduct(const SmartProduct &other)
-      : Product(other), inaddr(other.inaddr)
+      : ProductBase(other), inaddr(other.inaddr)
   {
   }
 
   SmartProduct(SmartProduct &&other)
-      : Product(std::move(other)), inaddr(other.inaddr)
+      : ProductBase(std::move(other)), inaddr(other.inaddr)
   {
   }
 
@@ -68,5 +68,5 @@ public:
     return *this;
   }
 
-  virtual ~SmartProduct() = default;
+  ~SmartProduct() = default;
 }

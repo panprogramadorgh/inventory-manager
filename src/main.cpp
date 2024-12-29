@@ -69,24 +69,24 @@ int main(int argc, char **argv)
     /* The `get` method allows the user to display at screen products from the database (at this moment making reference to products just with their id)  */
     if (result["method"].as<std::string>() == method_to_string[Method::get])
     {
-      vec<ProductField> displayables;
+      vec<ManagerItem::RecordField_t> displayables;
       if (result["N"].as<bool>())
-        displayables.push_back(ProductField::product_name);
+        displayables.push_back(ProductBase::RecordFieldName::name);
       if (result["D"].as<bool>())
-        displayables.push_back(ProductField::product_description);
+        displayables.push_back(ProductBase::RecordFieldName::description);
       if (result["V"].as<bool>()) // vendor name
-        displayables.push_back(ProductField::product_name);
+        displayables.push_back(Product<true>::RecordFieldName::vendor_name);
       if (result["C"].as<bool>())
-        displayables.push_back(ProductField::product_count);
+        displayables.push_back(Product<true>::RecordFieldName::count);
       if (result["P"].as<bool>())
-        displayables.push_back(ProductField::product_price);
+        displayables.push_back(ProductBase::RecordFieldName::price);
 
       if (!result.count("id"))
         throw std::runtime_error(options.help());
       int id = result["id"].as<int>();
 
-      auto pinfo = manager.getProduct(id);
-      std::cout << pinfo.str(displayables) << std::endl;
+      auto product = manager.getProduct(id);
+      std::cout << product.toString(displayables) << std::endl;
     }
     /* The `add` method allows users to insert new products in the database. The product id is calculated by the own implementation and must not be specify as a command line option */
     else if (result["method"].as<std::string>() == method_to_string[Method::create])
@@ -113,17 +113,17 @@ int main(int argc, char **argv)
       price = result["p"].as<double>();
 
       /* Creates a virtual ProductInfo instance (non-id) from UmappedProduct to insert it to the DB */
-      UmappedProduct up = {
-          {ProductField::product_name, name},
-          {ProductField::product_description, desc},
-          {ProductField::vendor_name, ""}, // We specify the vendor by their id
-          {ProductField::product_count, std::to_string(count)},
-          {ProductField::product_price, std::to_string(price)}};
-      ProductInfo p(up, true);
+      ManagerItem::RecordUmap record = {
+          {ProductBase::RecordFieldName::name, name},
+          {ProductBase::RecordFieldName::description, desc},
+          {Product<false>::vendor_id, vendor_id},
+          {Product<true>::count, std::to_string(count)},
+          {ProductBase::RecordFieldName::price, std::to_string(price)}};
+      Product p(record, false);
       /* - - - */
 
-      auto pinfo = manager.createProduct(p, vendor_id, std::make_tuple(true, true));
-      std::cout << "New product was created with id '" << pinfo.product_id << "'" << std::endl;
+      auto product = manager.createProduct(p, std::make_tuple(true, true));
+      std::cout << "New product was created with id '" << product.id << "'" << std::endl;
     }
     else if (result["method"].as<std::string>() == method_to_string[Method::rem])
     {

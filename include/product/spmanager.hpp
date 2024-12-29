@@ -5,6 +5,7 @@
 
 class SmartProductManager : public Manager<SmartProduct>
 {
+public:
   /* Metodo seguro encargado de obtencion de productos inteligentes. */
-  Manager::SecureReturn secGetSmartProduct(std::uint64_t smart_product_id);
+  Manager::SecureReturn<SmartProduct> secGetSmartProduct(std::uint64_t id);
 }

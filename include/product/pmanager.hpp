@@ -8,7 +8,7 @@
 #include <optional>
 #include <memory>
 
-class ProductManager : public Manager<Product>
+class ProductManager : public Manager<Product<true>>
 {
 private:
   /* Mensajes de error genericos */
@@ -16,30 +16,31 @@ private:
   {
     static constexpr char PRODUCT_NOT_FOUND[] = "Product was not found";
     static constexpr char DELETE_PRODUCT_FAILED[] = "Could not delete product";
+    static constexpr char ADD_PRODUCT_FAILED[] = "Could not add product count";
   };
 
 public:
   // Metodos definidos en archivos de implementacion
 
   /* Obtencion segura */
-  SecureReturn<Product> secGetProduct(const std::uint64_t id) noexcept;
+  SecureReturn<Product<true>> secGetProduct(const std::uint64_t id) noexcept;
   /* Obtencion normal */
-  Product getProduct(const std::uint64_t id);
+  Product<true> getProduct(const std::uint64_t id);
 
   /* Creacion segura */
-  SecureReturn<Product> secCreateProduct(const Product &p, const std::uint64_t vendor_id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true)) noexcept;
+  SecureReturn<Product<true>> secCreateProduct(const Product<false> &p, const std::uint64_t vendor_id, const std::tuple<bool, bool> hanle_tran) const noexcept;
   /* Creacion normal */
-  Product createProduct(const Product &p, const std::uint64_t vendor_id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true));
+  Product<true> createProduct(const Product<false> &p, const std::tuple<bool, bool> hanle_tran) const;
 
   /* Adicion segura */
-  SecureReturn<std::uint64_t> secAddProduct(const std::uint64_t product_id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true)) noexcept;
+  SecureReturn<std::uint64_t> secAddProduct(const std::uint64_t id, const std::tuple<bool, bool> hanle_tran) const noexcept;
   /* Adicion normal */
-  std::uint64_t addProduct(const std::uint64_t product_id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true));
+  std::uint64_t addProduct(const std::uint64_t id, const std::tuple<bool, bool> hanle_tran) const;
 
   /* Eliminacion segura */
-  SecureReturn<int> secRemoveProduct(const std::uint64_t id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true)) noexcept;
+  SecureReturn<int> secRemoveProduct(const std::uint64_t id, const std::tuple<bool, bool> hanle_tran) noexcept;
   /* Eliminacion normal */
-  int removeProduct(const std::uint64_t id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true));
+  int removeProduct(const std::uint64_t id, const std::tuple<bool, bool> hanle_tran);
 
   // Metodos en linea
 
