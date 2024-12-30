@@ -20,21 +20,9 @@ public:
   };
   using Rfn = RecordFieldName;
 
-  static constexpr RecordUmap field_to_string = {
-      {Rfn::id, "id"},
-      {Rfn::name, "name"},
-      {Rfn::description, "description"},
-      {Rfn::serial, "serial"},
-      {Rfn::owner, "owner"},
-      {Rfn::price, "price"}};
+  static RecordUmap field_to_string;
 
-  static constexpr ReRecordUmap string_to_field = {
-      {"id", Rfn::id},
-      {"name", Rfn::name},
-      {"description", Rfn::description},
-      {"serial", Rfn::serial},
-      {"owner", Rfn::owner},
-      {"price", Rfn::price}};
+  static ReRecordUmap string_to_field;
 
   // Miembros no estaticos
 
@@ -52,23 +40,19 @@ public:
   }
 
   // Secure constructor with UmappedProduct
-  ProductBase(const RecordUmap record, const bool vrtl)
-      : is_virtual(vrtl),
-
-        id(record.at(Rfn::id)),
-        name(record.at(Rfn::name)),
-        description(record.at(Rfn::description)),
-        serial(record.at(Rfn::serial)),
-        owner(record.at(Rfn::owner)),
-        price(std::atof(record.at(Rfn::price).c_str()))
+  ProductBase(RecordUmap record, const bool vrtl)
+      : id(record.at(static_cast<std::uint64_t>(Rfn::id))),
+        name(record.at(static_cast<std::uint64_t>(Rfn::name))),
+        description(record.at(static_cast<std::uint64_t>(Rfn::description))),
+        serial(record.at(static_cast<std::uint64_t>(Rfn::serial))),
+        owner(record.at(static_cast<std::uint64_t>(Rfn::owner))),
+        price(std::atof(record.at(static_cast<std::uint64_t>(Rfn::price)).c_str()))
   {
   }
 
   // Constructors
   ProductBase(ProductBase &other)
-      : is_virtual(other.is_virtual),
-
-        id(other.id),
+      : id(other.id),
         name(other.name),
         description(other.description),
         serial(other.serial),
@@ -78,9 +62,7 @@ public:
   }
 
   ProductBase(ProductBase &&other)
-      : is_virtual(other.is_virtual),
-
-        id(other.id),
+      : id(other.id),
         name(std::move(other.name)),
         description(std::move(other.description)),
         serial(std::move(other.serial)),
@@ -93,15 +75,13 @@ public:
 
   // Metodos "interface" han ed ser definidos por clas clases derivadass
   virtual RecordUmap extractRecord() const noexcept = 0;
-  std::string toString(vec<Rfn> f = {}) const noexcept = 0;
+  virtual std::string toString(vec<Rfn> f = {}) const noexcept = 0;
 
   // Operators
   virtual ProductBase &operator=(const ProductBase &other) noexcept
   {
     if (this != &other)
     {
-      is_virtual = other.is_virtual;
-
       id = other.id;
       name = other.name;
       description = other.description;
@@ -116,8 +96,6 @@ public:
   {
     if (this != &other)
     {
-      is_virtual = other.is_virtual;
-
       id = other.id;
       name = std::move(other.name);
       description = std::move(other.description);
@@ -138,6 +116,22 @@ public:
   }
 };
 
+MangerItem::RecordUmap ProductBase::field_to_string = {
+    {Rfn::id, "id"},
+    {Rfn::name, "name"},
+    {Rfn::description, "description"},
+    {Rfn::serial, "serial"},
+    {Rfn::owner, "owner"},
+    {Rfn::price, "price"}};
+
+ManagerItem::RecordUmap ProductBase::string_to_field = {
+    {"id", Rfn::id},
+    {"name", Rfn::name},
+    {"description", Rfn::description},
+    {"serial", Rfn::serial},
+    {"owner", Rfn::owner},
+    {"price", Rfn::price}};
+
 /* Cuando `VendorFieldSelector` es verdadero clase incluye el campo vendor_name, de lo contrario vendor_id (producto crudo a ser insertado en la base de datos) */
 template <bool VendorFieldSelector>
 class Product;
@@ -154,13 +148,9 @@ public:
   using Rfn = RecordFieldName;
 
   /* Encargados de proporcionar una forma conveniente de identificar las columnas SQL de los registros recuperados */
-  static constexpr RecordUmap field_to_string = {
-      {Rfn::count, "count"},
-      {Rfn::vendor_name, "vendor_name"}};
+  static RecordUmap field_to_string;
 
-  static constexpr ReRecordUmap field_to_string = {
-      {"count", Rfn::count},
-      {"vendor_name", Rfn::vendor_name}};
+  static ReRecordUmap string_to_string;
 
   std::uint64_t count;
   std::string vendor_name;
@@ -172,7 +162,7 @@ public:
   }
 
   Product(RecordUmap record, bool vrtl)
-      : ProductBase(record, vrtl), count(record.at(Rfn::count)), vendor_name(record.at(Rfn::vendor_name)),
+      : ProductBase(record, vrtl), count(record.at(static_cast<std::uint64_t>(Rfn::count))), vendor_name(record.at(static_cast<std::uint64_t>(Rfn::vendor_name))),
   {
   }
 
@@ -187,7 +177,7 @@ public:
     other.price = 0.0;
   }
 
-  // TODO: Terminar metodo de conversion a record
+  // FIXME: El mapa tiene claves duplicadas
   RecordUmap extractRecord() const noexcept override
   {
     using Brfn = ProductBase::RecordFieldName;
@@ -255,6 +245,14 @@ public:
   }
 };
 
+ManagerItem::RecordUmap Product<true>::field_to_string = {
+    {Rfn::count, "count"},
+    {Rfn::vendor_name, "vendor_name"}};
+
+ManagerItem::RecordUmap Product<true>::string_to_field = {
+    {"count", Rfn::count},
+    {"vendor_name", Rfn::vendor_name}};
+
 template <>
 class Product<false> : public ProductBase
 {
@@ -267,13 +265,9 @@ public:
   using Rfn = RecordFieldName;
 
   /* Encargados de proporcionar una forma conveniente de identificar las columnas SQL de los registros recuperados */
-  static constexpr RecordUmap field_to_string = {
-      {Rfn::vendor_id, "vendor_id"},
-      {Rfn::count, "count"}};
+  static RecordUmap field_to_string;
 
-  static constexpr ReRecordUmap field_to_string = {
-      {"vendor_id", Rfn::vendor_id},
-      {"count", Rfn::count}};
+  static ReRecordUmap field_to_string;
 
   std::uint64_t count;
   std::uint64_t vendor_id;
@@ -285,7 +279,7 @@ public:
   }
 
   Product(RecordUmap record, bool vrtl)
-      : ProductBase(record, vrtl), count(record.at(Rfn::count)), vendor_id(std::atoi(record.at(Rfn::vendor_id))),
+      : ProductBase(record, vrtl), count(record.at(static_cast<std::uint64_t(Rfn::count)), vendor_id(std::atoi(record.at(static_cast<std::uint64_t>(Rfn::vendor_id)))),
   {
   }
 
@@ -303,7 +297,6 @@ public:
 
   // Metodos en linea
 
-  // TODO: Terminar metodo de conversion a record
   RecordUmap extractRecord() const noexcept override
   {
     using Brfn = ProductBase::RecordFieldName;
@@ -319,7 +312,6 @@ public:
     };
   }
 
-  // TODO:: Adaptar a la especializacion de la clase
   std::string toString(vec<Rfn> f = {}) const noexcept
   {
     auto record = extractRecord();
@@ -371,5 +363,13 @@ public:
     count = 0;
   }
 };
+
+ManagerItem::ReRecordUmap Product<false>::field_to_string = {
+    {Rfn::vendor_id, "vendor_id"},
+    {Rfn::count, "count"}};
+
+ManagerItem::ReRecordUmap Product<false>::string_to_field = {
+    {"vendor_id", Rfn::vendor_id},
+    {"count", Rfn::count}};
 
 #endif

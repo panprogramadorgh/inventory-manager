@@ -8,21 +8,11 @@
 
 - Cambiar como se genera el archivo de base de datos al momento de construir el proyecto (y no en la configuracion) y crear target para inicializar la base de datos (el target es llamao automaticamente si se llama al target install)
 
-- Metodo de actualizacion de informacion de productos (Agregar / decrementar cantidad de productos)
-
-- Simplificar nombres de campos tablas SQL y optar por modelo de aliases para las tablas en las consultas:
-
-```sql
-SELECT * FROM products as p INNER JOIN vendors as v ON v.id = p.id;
-```
+- Metodo de actualizacion de informacion de productos
 
 Ideas y conceptos a implementar
 
-- Mejorar los proveeores, añadir campo de contacto (posiblemente alguno mas)
-
 - Agregar interfaz de gestion de proveedores (VendorManager)
-
-- Actualizacion de informacion de proveedores
 
 - Sistema de notificaciones
 

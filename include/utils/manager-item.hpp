@@ -2,7 +2,7 @@
 
 class ManagerItem
 {
-private:
+protected:
   bool is_virtual;
 
 public:
@@ -14,19 +14,21 @@ public:
   {
     static constexpr std::uint8_t value = V;
   };
+ 
   /* Alias para tipo subyacente del miembro estatico de RecordField */
   using RecordField_t = decltype(RecordField<0>::value);
+  
   /* Constante de compilacion atajo para RecordField */
   template <std::uint8_t V>
   static constexpr std::uint8_t RecordField_v = RecordField<V>::value;
 
   /* Tipos empleados para mapas de tablas SQL */
-  using RecordUmap = const umap<decltype(RecordField_v<0>), std::string>;
-  using ReRecordUmap = const umap<std::string, decltype(RecordField_v<0>)>;
+  using RecordUmap = const umap<RecordField_t, std::string>;
+  using ReRecordUmap = const umap<std::string, RecordField_t>;
 
   /* Constantes de compilacion "interface compliant" */
-  static constexpr RecordUmap field_to_string;
-  static constexpr ReRecordUmap string_to_field;
+  static RecordUmap field_to_string;
+  static ReRecordUmap string_to_field;
 
 protected:
   static constexpr std::uint16_t init_cache_rel = 10;
@@ -35,25 +37,18 @@ protected:
 
 public:
   ManagerItem() noexcept
-      : cache_relevance(init_cache_rel), is_virtual(true)
+      : cache_rel(init_cache_rel), is_virtual(true)
   {
   }
 
-  /* Constructor "interface" desde record. Las clases derivadas deben construir el objeto basanose en:
-  ```cpp
-  static constexpr RecordUmap field_to_string;
-  ```
-  */
-  ManagerItem(const RecordUmap record, const bool vrtl) = 0;
-
   ManagerItem(const ManagerItem &other) noexcept
+      : cache_rel(other.cache_rel)
   {
-    cache_rel = other.cache_rel;
   }
 
   ManagerItem(ManagerItem &&other) noexcept
+      : cache_rel(other.cache_rel)
   {
-    cache_rel = other.cache_rel;
     other.cache_rel = 0;
   }
 
@@ -90,10 +85,10 @@ public:
   {
     if (this != &other)
     {
-      is_virtual = other.is_virtual;
-      cache_rel = other.cache_rel;
+      is_virtual = other.is_virtual;	 
+	 cache_rel = other.cache_rel;
     }
-    return *his;
+    return *this;
   }
 
   virtual ManagerItem &operator=(ManagerItem &&other) noexcept

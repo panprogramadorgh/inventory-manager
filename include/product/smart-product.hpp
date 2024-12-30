@@ -15,11 +15,11 @@ public:
   };
   using Rfn = RecordFieldName;
 
-  static constexpr RecordUmap field_to_string = {{Rfn::inaddr, "inaddr"}};
-  static constexpr ReRecordUmap string_to_field = {{"inaddr", Rfn::inaddr}};
+  static RecordUmap field_to_string = {{Rfn::inaddr, "inaddr"}};
+  static ReRecordUmap string_to_field = {{"inaddr", Rfn::inaddr}};
 
   /* Almacena todos los puertos que emplea para verificar si la maquina remota esta activa */
-  static constexpr vec<std::uint16_t> liveness_check_ports = {
+  static vec<std::uint16_t> liveness_check_ports = {
       68, // Client DHCP
       53, // Cliente DNS
       22, // Servidor Secure Shell
