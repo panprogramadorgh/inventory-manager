@@ -67,6 +67,6 @@ public:
     }
     return *this;
   }
-
+  
   ~SmartProduct() = default;
 }

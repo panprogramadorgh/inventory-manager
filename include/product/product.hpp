@@ -20,9 +20,9 @@ public:
   };
   using Rfn = RecordFieldName;
 
-  static RecordUmap field_to_string;
+  static const RecordUmap field_to_string;
 
-  static ReRecordUmap string_to_field;
+  static const ReRecordUmap string_to_field;
 
   // Miembros no estaticos
 
@@ -41,11 +41,11 @@ public:
 
   // Secure constructor with UmappedProduct
   ProductBase(RecordUmap record, const bool vrtl)
-      : id(record.at(static_cast<std::uint64_t>(Rfn::id))),
-        name(record.at(static_cast<std::uint64_t>(Rfn::name))),
-        description(record.at(static_cast<std::uint64_t>(Rfn::description))),
-        serial(record.at(static_cast<std::uint64_t>(Rfn::serial))),
-        owner(record.at(static_cast<std::uint64_t>(Rfn::owner))),
+      : id(std::atoi(record.at(static_cast<std::uint64_t>(Rfn::id)).c_str())),
+        name(std::string(record.at(static_cast<std::uint64_t>(Rfn::name)))),
+        description(std::string(record.at(static_cast<std::uint64_t>(Rfn::description)))),
+        serial(std::string(record.at(static_cast<std::uint64_t>(Rfn::serial)))),
+        owner(std::string(record.at(static_cast<std::uint64_t>(Rfn::owner)))),
         price(std::atof(record.at(static_cast<std::uint64_t>(Rfn::price)).c_str()))
   {
   }
@@ -56,7 +56,7 @@ public:
         name(other.name),
         description(other.description),
         serial(other.serial),
-        owner(record.at(Rfn::owner)),
+        owner(other.owner),
         price(other.price)
   {
   }
@@ -66,7 +66,7 @@ public:
         name(std::move(other.name)),
         description(std::move(other.description)),
         serial(std::move(other.serial)),
-        owner(record.at(Rfn::owner)),
+        owner(std::move(other.owner)),
         price(other.price)
   {
     other.id = 0;
@@ -116,21 +116,21 @@ public:
   }
 };
 
-MangerItem::RecordUmap ProductBase::field_to_string = {
-    {Rfn::id, "id"},
-    {Rfn::name, "name"},
-    {Rfn::description, "description"},
-    {Rfn::serial, "serial"},
-    {Rfn::owner, "owner"},
-    {Rfn::price, "price"}};
+ManagerItem::RecordUmap ProductBase::field_to_string = {
+    {ProductBase::Rfn::id, std::string("id")},
+    {ProductBase::Rfn::name, std::string("name")},
+    {ProductBase::Rfn::description, std::string("description")},
+    {ProductBase::Rfn::serial, std::string("serial")},
+    {ProductBase::Rfn::owner, std::string("owner")},
+    {ProductBase::Rfn::price, std::string("price")}};
 
-ManagerItem::RecordUmap ProductBase::string_to_field = {
-    {"id", Rfn::id},
-    {"name", Rfn::name},
-    {"description", Rfn::description},
-    {"serial", Rfn::serial},
-    {"owner", Rfn::owner},
-    {"price", Rfn::price}};
+ManagerItem::ReRecordUmap ProductBase::string_to_field = {
+    {std::string("id"), ProductBase::Rfn::id},
+    {std::string("name"), ProductBase::Rfn::name},
+    {std::string("description"), ProductBase::Rfn::description},
+    {std::string("serial"), ProductBase::Rfn::serial},
+    {std::string("owner"), ProductBase::Rfn::owner},
+    {std::string("price"), ProductBase::Rfn::price}};
 
 /* Cuando `VendorFieldSelector` es verdadero clase incluye el campo vendor_name, de lo contrario vendor_id (producto crudo a ser insertado en la base de datos) */
 template <bool VendorFieldSelector>
@@ -148,9 +148,9 @@ public:
   using Rfn = RecordFieldName;
 
   /* Encargados de proporcionar una forma conveniente de identificar las columnas SQL de los registros recuperados */
-  static RecordUmap field_to_string;
+  static const RecordUmap field_to_string;
 
-  static ReRecordUmap string_to_string;
+  static const ReRecordUmap string_to_string;
 
   std::uint64_t count;
   std::string vendor_name;
@@ -162,7 +162,7 @@ public:
   }
 
   Product(RecordUmap record, bool vrtl)
-      : ProductBase(record, vrtl), count(record.at(static_cast<std::uint64_t>(Rfn::count))), vendor_name(record.at(static_cast<std::uint64_t>(Rfn::vendor_name))),
+      : ProductBase(record, vrtl), count(std::atoi(record.at(static_cast<std::uint64_t>(Rfn::count)).c_str())), vendor_name(std::string(record.at(static_cast<std::uint64_t>(Rfn::vendor_name))))
   {
   }
 
@@ -246,12 +246,13 @@ public:
 };
 
 ManagerItem::RecordUmap Product<true>::field_to_string = {
-    {Rfn::count, "count"},
-    {Rfn::vendor_name, "vendor_name"}};
+    {Product<true>::Rfn::count, std::string("count")},
+    {Product<true>::Rfn::vendor_name, std::string("vendor_name")}};
 
-ManagerItem::RecordUmap Product<true>::string_to_field = {
-    {"count", Rfn::count},
-    {"vendor_name", Rfn::vendor_name}};
+ManagerItem::ReRecordUmap Product<true>::string_to_field = {
+    {Product<true>::Rfn::count, "count"},
+    {Product<true>::Rfn::vendor_name},
+    "vendor_name"};
 
 template <>
 class Product<false> : public ProductBase
@@ -265,9 +266,9 @@ public:
   using Rfn = RecordFieldName;
 
   /* Encargados de proporcionar una forma conveniente de identificar las columnas SQL de los registros recuperados */
-  static RecordUmap field_to_string;
+  static const RecordUmap field_to_string;
 
-  static ReRecordUmap field_to_string;
+  static const ReRecordUmap field_to_string;
 
   std::uint64_t count;
   std::uint64_t vendor_id;
@@ -279,7 +280,7 @@ public:
   }
 
   Product(RecordUmap record, bool vrtl)
-      : ProductBase(record, vrtl), count(record.at(static_cast<std::uint64_t(Rfn::count)), vendor_id(std::atoi(record.at(static_cast<std::uint64_t>(Rfn::vendor_id)))),
+      : ProductBase(record, vrtl), count(std::atoi(record.at(static_cast<std::uint64_t>(Rfn::count)).c_str())), vendor_id(std::atoi(record.at(static_cast<std::uint64_t>(Rfn::vendor_id))).c_str()),
   {
   }
 
@@ -364,12 +365,12 @@ public:
   }
 };
 
-ManagerItem::ReRecordUmap Product<false>::field_to_string = {
-    {Rfn::vendor_id, "vendor_id"},
-    {Rfn::count, "count"}};
+ManagerItem::RecordUmap Product<false>::field_to_string = {
+    {Product<false>::Rfn::vendor_id, std::string("vendor_id")},
+    {Product<false>::Rfn::count, std::string("count")}};
 
 ManagerItem::ReRecordUmap Product<false>::string_to_field = {
-    {"vendor_id", Rfn::vendor_id},
-    {"count", Rfn::count}};
+    {std::string("vendor_id"), Product<false>::Rfn::vendor_id},
+    {std::string("count"), Product<false>::Rfn::count}};
 
 #endif

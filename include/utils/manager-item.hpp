@@ -9,22 +9,22 @@ public:
   // types
 
   /* Utilizado para identificador en el mapa de registros */
-  template <std::uint8_t V>
+  template <std::uint16_t V>
   struct RecordField
   {
-    static constexpr std::uint8_t value = V;
+    static constexpr std::uint16_t value = V;
   };
- 
+
   /* Alias para tipo subyacente del miembro estatico de RecordField */
   using RecordField_t = decltype(RecordField<0>::value);
-  
+
   /* Constante de compilacion atajo para RecordField */
-  template <std::uint8_t V>
-  static constexpr std::uint8_t RecordField_v = RecordField<V>::value;
+  template <std::uint16_t V>
+  static constexpr std::uint16_t RecordField_v = RecordField<V>::value;
 
   /* Tipos empleados para mapas de tablas SQL */
-  using RecordUmap = const umap<RecordField_t, std::string>;
-  using ReRecordUmap = const umap<std::string, RecordField_t>;
+  using RecordUmap = umap<RecordField_t, std::string>;
+  using ReRecordUmap = umap<std::string, RecordField_t>;
 
   /* Constantes de compilacion "interface compliant" */
   static RecordUmap field_to_string;
@@ -85,8 +85,8 @@ public:
   {
     if (this != &other)
     {
-      is_virtual = other.is_virtual;	 
-	 cache_rel = other.cache_rel;
+      is_virtual = other.is_virtual;
+      cache_rel = other.cache_rel;
     }
     return *this;
   }
