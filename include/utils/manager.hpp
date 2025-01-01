@@ -72,7 +72,7 @@ public:
   {
     Container dest;
     T::RecordUmap record;
-    T::RecordField_t field;
+    T::RecordField field;
 
     auto cols = qresult.first;
     auto vals = qresult.second;

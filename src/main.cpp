@@ -69,7 +69,7 @@ int main(int argc, char **argv)
     /* The `get` method allows the user to display at screen products from the database (at this moment making reference to products just with their id)  */
     if (result["method"].as<std::string>() == method_to_string[Method::get])
     {
-      vec<ManagerItem::RecordField_t> displayables;
+      vec<ManagerItem::RecordField> displayables;
       if (result["N"].as<bool>())
         displayables.push_back(ProductBase::RecordFieldName::name);
       if (result["D"].as<bool>())

@@ -9,7 +9,7 @@ class SmartProduct : ProductBase
 public:
   // Miembros publicos estaticos
 
-  enum class RecordFieldName : RecordField_t
+  enum class RecordFieldName : RecordField
   {
     inaddr = RecordField_v<0>,
   };
