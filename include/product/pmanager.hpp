@@ -28,7 +28,7 @@ public:
   Product<true> getProduct(const std::uint64_t id);
 
   /* Creacion segura */
-  SecureReturn<Product<true>> secCreateProduct(const Product<false> &p, const std::uint64_t vendor_id, const std::tuple<bool, bool> hanle_tran) const noexcept;
+  SecureReturn<Product<true>> secCreateProduct(const Product<false> &p, const std::tuple<bool, bool> hanle_tran) const noexcept;
   /* Creacion normal */
   Product<true> createProduct(const Product<false> &p, const std::tuple<bool, bool> hanle_tran) const;
 
@@ -38,23 +38,22 @@ public:
   std::uint64_t addProduct(const std::uint64_t id, const std::tuple<bool, bool> hanle_tran) const;
 
   /* Eliminacion segura */
-  SecureReturn<int> secRemoveProduct(const std::uint64_t id, const std::tuple<bool, bool> hanle_tran) noexcept;
+  SecureReturn<std::uint64_t> secRemoveProduct(const std::uint64_t id, const std::tuple<bool, bool> hanle_tran) noexcept;
   /* Eliminacion normal */
-  int removeProduct(const std::uint64_t id, const std::tuple<bool, bool> hanle_tran);
+  std::uint64_t removeProduct(const std::uint64_t id, const std::tuple<bool, bool> hanle_tran);
 
   // Metodos en linea
 
-  std::uint64_t addCache(std::shared_ptr<Product> p) noexcept override
+  std::uint64_t addCache(std::shared_ptr<Product<true>> p) noexcept override
   {
     // Do not add product if it is virtual
-    if (p->identifier() == -1)
+    if (p->isVirtual())
       return 0;
 
-    auto it = cache.find(p->identifier());
+    auto it = cache.find(p->id);
     if (it != cache.cend()) // In case the product does not exist in cache, it is been added.
       return 0;
-
-    cache.emplace(p->identifier(), p);
+    cache.emplace(p->id, p);
     return cache.size();
   }
 

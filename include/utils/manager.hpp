@@ -6,7 +6,7 @@
 #include "utils/manager-item.hpp"
 #include <optional>
 
-template <IsManagerItem T>
+template <ManagerItemBased T>
 class Manager
 {
 public:
@@ -71,8 +71,8 @@ public:
   static Container extractContainer(QueryResult qresult)
   {
     Container dest;
-    T::RecordUmap record;
-    T::RecordField field;
+    typename T::RecordUmap record;
+    typename T::RecordField field;
 
     auto cols = qresult.first;
     auto vals = qresult.second;
@@ -85,15 +85,46 @@ public:
       field = T::string_to_field.at(cols[std::distance(vals.begin(), it) % cols.size()]);
       record[field] = *it;
 
-      // En caso de que sea la ulima columna por registro
+      // Crea los ManagerItem tras tener todos los campos que foman el registro
       if (std::distance(vals.begin(), it) % cols.size() == cols.size() - 1)
       {
-        // Creates a non-virtual manager item
-        dest.emplace(pinfo.product_id, std::make_shared<T>(T(record, false)));
-        record.clear(); // Limpiar el mapa para la proxima fila
+        // Se aprovecha del hecho de que todos los record de los objetos derivados ded ManagerItem almacenan su id en la primera posicion del mapa
+        dest.emplace(record.at(static_cast<RecordField>(0)), std::make_shared<T>(T(record, false)));
+        record.clear(); // Tecnicamente no es necesario, pero nos aseguramos
       }
     }
     return dest;
+  }
+
+  void printContainer(const Container cont) noexcept
+  {
+    std::uint16_t i; // Permite deducir si hace falta colocar coma
+
+    i = 0;
+    for (const auto &pair : T::field_to_string)
+    {
+      if (i++)
+        std::cout << ',';
+      std::cout << cont->second;
+    }
+    i = 0;
+    for (const auto &pair : T::field_to_string)
+    {
+      if (i++)
+        std::cout << ',';
+      std::cout << cont.at(pair.first);
+    }
+  }
+
+  void printContainer(const QueryResult qresult) noexcept
+  {
+    auto cols = qresult.first;
+    auto vals = qresult.second;
+
+    for (auto it = cols.cbegin(); it != cols.cend(); it++)
+      std::cout << *it << (it == cols.cend() - 1 ? "\n" : ",");
+    for (auto it = vals.cbegin(); it != vals.cend(); it++)
+      std::cout << *it << (std::distance(vals.cbegin(), it) % cols.size() == cols.size() - 1 ? "\n" : ",");
   }
 
   // Operators

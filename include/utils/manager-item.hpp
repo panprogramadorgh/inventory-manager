@@ -1,3 +1,6 @@
+#ifndef MANAGER_ITEM_HPP
+#define MANAGER_ITEM_HPP
+
 #include "forwarder.hpp"
 
 class ManagerItem
@@ -92,3 +95,5 @@ public:
 
 template <typename T>
 concept ManagerItemBased = std::is_base_of_v<ManagerItem, T> && !std::is_same_v<ManagerItem, T>;
+
+#endif

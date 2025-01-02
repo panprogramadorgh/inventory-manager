@@ -13,9 +13,6 @@ namespace fs = std::filesystem;
 
 using QueryResult = std::pair<vec<std::string>, vec<std::string>>;
 
-template <IsPrInfoBased T>
-using QueryUmap = umap<int, std::shared_ptr<T>>;
-
 class Database
 {
 private:
@@ -90,16 +87,13 @@ public:
   static std::string mergeQueryArgs(std::string query, const vec<std::string> &&args) noexcept
   {
     std::size_t pos, i = 0;
-
     while ((pos = query.find('$')) != std::string::npos)
-      strInsert(query, args.at(i++), pos, 1);
-
+      StringUtilities::insert(query, args.at(i++), pos, 1);
     return query;
   }
 
-  // FIXME: Arreglar delcaracion con definicion
-  template <typename T>
-  static void printQuery(const QueryUmap<T> qresult) noexcept;
+  template <bool T>
+  static void printQuery(const Product<T> qresult) noexcept;
   static void printQuery(const QueryResult qresult) noexcept;
 };
 

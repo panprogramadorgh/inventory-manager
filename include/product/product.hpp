@@ -26,6 +26,7 @@ public:
 
   // Miembros no estaticos
 
+  // CUIDADO CON MODIFICAR DESDE FUERA ED LA IMPLEMENTACION ESTOS MIEMBROS
   std::uint64_t id;
   std::string name;
   std::string description;
@@ -75,7 +76,7 @@ public:
 
   // Metodos "interface" han ed ser definidos por clas clases derivadass
   virtual RecordUmap extractRecord() const noexcept = 0;
-  virtual std::string toString(vec<Rfn> f) const noexcept = 0;
+  virtual std::string toString(vec<RecordField>) const noexcept = 0;
 
   // Operators
   virtual ProductBase &operator=(const ProductBase &other) noexcept
@@ -178,7 +179,7 @@ public:
   }
 
   // Metodos en linea
-  std::string toString(vec<Rfn> f) const noexcept
+  std::string toString(vec<RecordField> f) const noexcept
   {
     auto record = extractRecord();
     std::string csv;
@@ -186,7 +187,7 @@ public:
     if (f.size() < 1)
     {
       for (auto &field : field_to_string)
-        f.push_back(static_cast<Rfn>(field.first));
+        f.push_back(static_cast<RecordField>(field.first));
     }
 
     // Appends the field values as csv
@@ -264,7 +265,7 @@ public:
   }
 
   Product(Product<false> &&other) noexcept
-      : ProductBase(std::move(other)), count(other.count), vnedor_id(other.vendor_id)
+      : ProductBase(std::move(other)), count(other.count), vendor_id(other.vendor_id)
   {
     other.vendor_id = 0;
     other.price = 0.0;
@@ -283,11 +284,11 @@ public:
         {static_cast<std::uint16_t>(Brfn::owner), owner},
         {static_cast<std::uint16_t>(Brfn::price), std::to_string(price)},
         {static_cast<std::uint16_t>(Rfn::count), std::to_string(count)},
-        {static_cast<std::uint16_t>(Rfn::vendor_id), vendor_id},
+        {static_cast<std::uint16_t>(Rfn::vendor_id), std::to_string(vendor_id)},
     };
   }
 
-  std::string toString(vec<Rfn> f) const noexcept
+  std::string toString(vec<RecordField> f) const noexcept
   {
     auto record = extractRecord();
     std::string csv;
@@ -295,7 +296,7 @@ public:
     if (f.size() < 1)
     {
       for (auto &field : field_to_string)
-        f.push_back(static_cast<Rfn>(field.first));
+        f.push_back(static_cast<RecordField>(field.first));
     }
 
     // Appends the field values as csv

@@ -7,11 +7,10 @@ using Pm = ProductManager;
 template <typename T>
 using Sec = Pm::SecureReturn<T>;
 
-using BaseErrMsgs = Manager<Product<true>>::ErrMsgs;
-
-Sec<Product<true>>
-Pm::secGetProduct(std::uint64_t id) noexcept
+Sec<Product<true>> Pm::secGetProduct(const std::uint64_t id) noexcept
 {
+  using BaseErrMsgs = Manager<Product<true>>::ErrMsgs;
+
   // Decrease cache relevance of products and remove irrelevant products
   vec<int> garbage_products;
   for (auto pair : cache)
@@ -32,7 +31,7 @@ Pm::secGetProduct(std::uint64_t id) noexcept
   // Returns the product if it is in cache
   auto it = cache.find(id);
   if (it != cache.cend())
-    return std::make_pair(std::optional<Product<true>>(it->second->info()), "");
+    return std::make_pair(std::optional<Product<true>>(*(it->second)), "");
 
   if (!db)
     return std::make_pair(std::nullopt, BaseErrMsgs::DB_IS_NULL);
@@ -56,11 +55,13 @@ Pm::secGetProduct(std::uint64_t id) noexcept
 
   addCache(it->second); // And finally we push the product to cache
 
-  return std::make_pair(std::optional<Product<true>>(it->second), "");
+  return std::make_pair(std::optional<Product<true>>(*(it->second)), "");
 }
 
-Product<true> Pm::getProduct(std::uint64_t id)
+Product<true> Pm::getProduct(const std::uint64_t id)
 {
+  using BaseErrMsgs = Manager<Product<true>>::ErrMsgs;
+
   // Decrease cache relevance of products and remove irrelevant products
   vec<int> garbage_products;
   for (auto pair : cache)
@@ -82,7 +83,7 @@ Product<true> Pm::getProduct(std::uint64_t id)
   auto it = cache.find(id);
   if (it != cache.cend())
   {
-    return it->second->info();
+    return *(it->second);
   }
 
   // Returns nullptr in case the product is not in cache and datbase is not initialized
@@ -108,10 +109,10 @@ Product<true> Pm::getProduct(std::uint64_t id)
 
   addCache(it->second); // And finally we push the product to cache
 
-  return it->second;
+  return *(it->second);
 }
 
-Pm::Sec<Product<true>> Pm::secCreateProduct(const Product<false> &p, const std::tuple<bool, bool> handle_tran) const noexcept
+Sec<Product<true>> Pm::secCreateProduct(const Product<false> &p, const std::tuple<bool, bool> handle_tran) const noexcept
 {
   try
   {
@@ -123,8 +124,8 @@ Pm::Sec<Product<true>> Pm::secCreateProduct(const Product<false> &p, const std::
         {"\"" + p.name + "\"",
          "\"" + p.description + "\"",
          std::to_string(p.vendor_id),
-         std::to_string(p.product_price),
-         std::to_string(p.product_count)});
+         std::to_string(p.price),
+         std::to_string(p.count)});
 
     if (std::get<1>(handle_tran))
       db->executeUpdate("COMMIT");
@@ -152,8 +153,8 @@ Product<true> Pm::createProduct(const Product<false> &p, const std::tuple<bool, 
       {"\"" + p.name + "\"",
        "\"" + p.description + "\"",
        std::to_string(p.vendor_id),
-       std::to_string(p.product_price),
-       std::to_string(p.product_count)});
+       std::to_string(p.price),
+       std::to_string(p.count)});
 
   if (std::get<1>(handle_tran))
     db->executeQuery("COMMIT");
@@ -164,7 +165,7 @@ Product<true> Pm::createProduct(const Product<false> &p, const std::tuple<bool, 
   return *(cont.cbegin()->second);
 }
 
-Pm::Sec<std::uint64_t> Pm::secAddProduct(const std::uint64_t id, const std::tuple<bool, bool> hanle_tran) noexcept
+Sec<std::uint64_t> Pm::secAddProduct(const std::uint64_t id, const std::tuple<bool, bool> hanle_tran) noexcept
 {
   std::uint64_t count;
   bool must_update_cache;
@@ -208,7 +209,7 @@ Pm::Sec<std::uint64_t> Pm::secAddProduct(const std::uint64_t id, const std::tupl
   }
 }
 
-Pm::Sec<std::uint64_t> Pm::addProduct(const std::uint64_t product_id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true)) noexcept
+std::uint64_t Pm::addProduct(const std::uint64_t product_id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true)) noexcept
 {
   std::uint64_t count;
   bool must_update_cache;
@@ -238,14 +239,13 @@ Pm::Sec<std::uint64_t> Pm::addProduct(const std::uint64_t product_id, const std:
   auto result = secGetProduct(id);
   must_update_cache = bool(result.first);
   remCache(id);
-
   if (must_update_cache)
     addCache(it->second);
 
   return std::make_pair(std::optional<std::uint64_t>(count), "");
 }
 
-Pm::Sec<int> Pm::secRemoveProduct(std::uint64_t id, const std::tuple<bool, bool> handle_tran) noexcept
+Sec<std::uint64_t> Pm::secRemoveProduct(std::uint64_t id, const std::tuple<bool, bool> handle_tran) noexcept
 {
   try
   {
@@ -273,7 +273,7 @@ Pm::Sec<int> Pm::secRemoveProduct(std::uint64_t id, const std::tuple<bool, bool>
   }
 }
 
-int Pm::removeProduct(std::uint64_t id, const std::tuple<bool, bool> handle_tran)
+std::uint64_t Pm::removeProduct(std::uint64_t id, const std::tuple<bool, bool> handle_tran)
 {
   if (std::get<0>(handle_tran))
     db->executeUpdate("BEGIN TRANSACTION");
@@ -291,5 +291,5 @@ int Pm::removeProduct(std::uint64_t id, const std::tuple<bool, bool> handle_tran
     throw std::runtime_error(ErrMsgs::DELETE_PRODUCT_FAILED);
 
   remCache(id); // Es eliminado de la cache
-  return std::make_pair(std::optional<int>(id), "");
+  return id;
 }
