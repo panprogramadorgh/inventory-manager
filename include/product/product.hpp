@@ -42,12 +42,12 @@ public:
 
   // Secure constructor with UmappedProduct
   ProductBase(RecordUmap record, const bool vrtl)
-      : id(std::atoi(record.at(static_cast<std::uint64_t>(Rfn::id)).c_str())),
-        name(std::string(record.at(static_cast<std::uint64_t>(Rfn::name)))),
-        description(std::string(record.at(static_cast<std::uint64_t>(Rfn::description)))),
-        serial(std::string(record.at(static_cast<std::uint64_t>(Rfn::serial)))),
-        owner(std::string(record.at(static_cast<std::uint64_t>(Rfn::owner)))),
-        price(std::atof(record.at(static_cast<std::uint64_t>(Rfn::price)).c_str()))
+      : id(std::stoull(record.at(static_cast<RecordField>(Rfn::id)))),
+        name(std::string(record.at(static_cast<RecordField>(Rfn::name)))),
+        description(std::string(record.at(static_cast<RecordField>(Rfn::description)))),
+        serial(std::string(record.at(static_cast<RecordField>(Rfn::serial)))),
+        owner(std::string(record.at(static_cast<RecordField>(Rfn::owner)))),
+        price(std::stold(record.at(static_cast<RecordField>(Rfn::price))))
   {
   }
 
@@ -170,7 +170,9 @@ public:
   }
 
   Product(RecordUmap record, bool vrtl)
-      : ProductBase(record, vrtl), count(std::atoi(record.at(static_cast<std::uint64_t>(Rfn::count)).c_str())), vendor_name(std::string(record.at(static_cast<std::uint64_t>(Rfn::vendor_name))))
+      : ProductBase(record, vrtl),
+        count(std::stoull(record.at(static_cast<RecordField>(Rfn::count)))),
+        vendor_name(record.at(static_cast<RecordField>(Rfn::vendor_name)))
   {
   }
 
@@ -255,7 +257,9 @@ public:
   }
 
   Product(RecordUmap record, bool vrtl)
-      : ProductBase(record, vrtl), count(std::atoi(record.at(static_cast<std::uint64_t>(Rfn::count)).c_str())), vendor_id(std::atoi(record.at(static_cast<std::uint64_t>(Rfn::vendor_id)).c_str()))
+      : ProductBase(record, vrtl),
+        count(std::stoull(record.at(static_cast<RecordField>(Rfn::count)))),
+        vendor_id(std::stoull(record.at(static_cast<RecordField>(Rfn::vendor_id))))
   {
   }
 
