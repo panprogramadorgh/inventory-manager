@@ -78,6 +78,8 @@ public:
   virtual RecordUmap extractRecord() const noexcept = 0;
 
   // Metodos en linea
+
+  // Devuelve un string con los campos seleccionados en formato csv
   std::string toString(vec<RecordField> f) const noexcept
   {
     auto record = extractRecord();

@@ -1,12 +1,19 @@
 #include "forwarder.hpp"
-#include "product/product.hpp"
-#include "product/pmanager.hpp"
+#include "product/spmanager.hpp"
 
-int main(int argc, char **argv)
+int main()
 {
-  std::string *str = (std::string *)nullptr;
-  delete str;
-  delete str;
+  SmartProductManager spm(DB_DATA_FILE_DESTINATION);
+
+  auto secReturn = spm.secGetSmartProduct(1); // This is a dummy call
+  if (secReturn.first.has_value())
+  {
+    std::cout << secReturn.first->toString({}) << std::endl;
+  }
+  else
+  {
+    std::cout << "Smart product not found!" << std::endl;
+  }
 
   return EXIT_SUCCESS;
 }

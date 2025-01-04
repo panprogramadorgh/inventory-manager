@@ -59,27 +59,6 @@ public:
   SecureReturn<std::uint64_t> secRemoveProduct(const std::uint64_t id, const std::tuple<bool, bool> hanle_tran) noexcept;
   /* Eliminacion normal */
   std::uint64_t removeProduct(const std::uint64_t id, const std::tuple<bool, bool> hanle_tran);
-
-  // Metodos en linea
-
-  std::uint64_t addCache(std::shared_ptr<Product<true>> p) noexcept override
-  {
-    // Do not add product if it is virtual
-    if (p->isVirtual())
-      return 0;
-
-    auto it = cache.find(p->id);
-    if (it != cache.cend()) // In case the product does not exist in cache, it is been added.
-      return 0;
-    cache.emplace(p->id, p);
-    return cache.size();
-  }
-
-  std::uint64_t remCache(std::uint64_t id) noexcept override
-  {
-    cache.erase(id);
-    return cache.size();
-  }
 };
 
 #endif

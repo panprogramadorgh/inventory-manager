@@ -28,13 +28,13 @@ public:
   SmartProductManager(const SmartProductManager &other) = delete;
 
   // other.db must be already connected (Database::connect())
-  SmartProductManager(ProductManager &&other)
+  SmartProductManager(SmartProductManager &&other)
       : Manager(std::move(other))
   {
   }
 
   /* Metodo seguro encargado de obtencion de productos inteligentes. */
-  Manager::SecureReturn<SmartProdct> secGetSmartProduct(std::uint64_t id);
+  Manager::SecureReturn<SmartProduct> secGetSmartProduct(std::uint64_t id);
 
   SmartProductManager &operator=(Manager &&other)
   {

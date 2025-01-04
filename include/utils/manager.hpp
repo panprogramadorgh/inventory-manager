@@ -53,12 +53,6 @@ public:
     other.db = nullptr;
   }
 
-  // Methods virtuales puros
-
-  virtual std::uint64_t addCache(std::shared_ptr<T>) noexcept = 0;
-
-  virtual std::uint64_t remCache(const std::uint64_t) noexcept = 0;
-
   // Metodos estaticos en linea
 
   static Container extractContainer(QueryResult qresult)
@@ -75,15 +69,34 @@ public:
       {
         record[std::distance(it, it2)] = *it2;
         if (it2 == it + cols.size() - 1)
-          dest.emplate(
+          dest.emplace(
               std::stoull(record.at(0)),
-              std::make_shared<T>(T(record, false)))
+              std::make_shared<T>(T(record, false)));
       }
     }
     return dest;
   }
 
   // Metodos no estaticos en linea
+
+  std::uint64_t addCache(std::shared_ptr<T> p) noexcept
+  {
+    // Do not add product if it is virtual
+    if (p->isVirtual())
+      return 0;
+
+    auto it = cache.find(p->id);
+    if (it != cache.cend()) // In case the product does not exist in cache, it is been added.
+      return 0;
+    cache.emplace(p->id, p);
+    return cache.size();
+  }
+
+  std::uint64_t remCache(std::uint64_t id) noexcept
+  {
+    cache.erase(id);
+    return cache.size();
+  }
 
   void printContainer(const Container cont) noexcept
   {
@@ -103,17 +116,6 @@ public:
         std::cout << ',';
       std::cout << cont.at(pair.first);
     }
-  }
-
-  void printContainer(const QueryResult qresult) noexcept
-  {
-    auto cols = qresult.first;
-    auto vals = qresult.second;
-
-    for (auto it = cols.cbegin(); it != cols.cend(); it++)
-      std::cout << *it << (it == cols.cend() - 1 ? "\n" : ",");
-    for (auto it = vals.cbegin(); it != vals.cend(); it++)
-      std::cout << *it << (std::distance(vals.cbegin(), it) % cols.size() == cols.size() - 1 ? "\n" : ",");
   }
 
   // Operators

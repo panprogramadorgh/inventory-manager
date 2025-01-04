@@ -140,10 +140,10 @@ VALUES
     8.60
   ),
   (
-    'Product9',
+    'product9',
     '123987123',
-    'Kelokekelowua',
-    'Product9 description',
+    'kelokekelowua',
+    'product9 description',
     3,
     3.20
   );
@@ -171,6 +171,27 @@ CREATE TABLE
     )
   );
 
+INSERT INTO
+  smart_products (
+    name,
+    description,
+    serial,
+    owner,
+    inaddr,
+    vendor_id,
+    price
+  )
+VALUES
+  (
+    'product9',
+    'product9 description',
+    '123987123',
+    'kelokekelowua',
+    '192.168.1.200',
+    3,
+    3.20
+  );
+
 -- Vista para productos estandar
 DROP VIEW IF EXISTS products_info;
 
@@ -186,8 +207,8 @@ SELECT
   p.count,
   p.price
 FROM
-  products as p
-  INNER JOIN vendors as v ON p.vendor_id = v.id
+  products AS p
+  INNER JOIN vendors AS v ON p.vendor_id = v.id
 ORDER BY
   p.price DESC;
 
@@ -206,7 +227,7 @@ SELECT
   v.name AS vendor_name,
   p.price
 FROM
-  smart_products as p
-  INNER JOIN vendors as v on p.vendor_id = v.id
+  smart_products AS p
+  INNER JOIN vendors AS v ON p.vendor_id = v.id
 ORDER BY
-  p.product_price DESC
+  p.price DESC

@@ -13,14 +13,14 @@ const M::ReRecordUmap Spb::string_to_field{
     {std::string("inaddr"), static_cast<M::RecordField>(Spb::Rfn::inaddr)}};
 
 /* Almacena todos los puertos que emplea para verificar si la maquina remota esta activa */
-const vec<std::uint16_t> Sp::liveness_check_ports{
+const vec<std::uint16_t> Spb::liveness_check_ports{
     22, // Servidor Secure Shell
     135 // Servidor MSRPC (homogeneidad funciones redes windows)
 };
 
 // Methods
 
-bool Sp::checkLiveness()
+bool Spb::checkLiveness()
 {
   sockaddr_in target_addr{};
   int target_fd;
