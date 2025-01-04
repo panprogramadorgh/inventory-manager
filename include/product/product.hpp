@@ -26,7 +26,7 @@ public:
 
   // Miembros no estaticos
 
-  // CUIDADO CON MODIFICAR DESDE FUERA ED LA IMPLEMENTACION ESTOS MIEMBROS
+  // CUIDADO CON MODIFICAR DESDE FUERA DE LA IMPLEMENTACION ESTOS MIEMBROS
   std::uint64_t id;
   std::string name;
   std::string description;

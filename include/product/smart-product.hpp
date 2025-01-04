@@ -5,14 +5,14 @@
 #include <netinet/in.h> // Estructuras de direcciones des sockets
 #include <arpa/inet.h>  // Formato de direcciones IP en cadena a Big-Endian
 
-class SmartProduct : ProductBase
+class SmartProductBase : ProductBase
 {
 public:
   // Miembros publicos estaticos
 
   enum class RecordFieldName : RecordField
   {
-    inaddr = 6
+    inaddr = 6,
   };
   using Rfn = RecordFieldName;
 
@@ -24,10 +24,11 @@ public:
 
   // Miembros publicos no estaticos
   std::string inaddr;
+  bool is_active;
 
   SmartProduct(const RecordUmap record, const bool vrtl)
       : ProductBase(record, vrtl),
-        inaddr(field_to_string.at(static_cast<RecordField>(Rfn::inaddr)))
+        inaddr(field_to_string.at(static_cast<RecordField>(Rfn::inaddr))),
   {
   }
 
@@ -37,51 +38,30 @@ public:
   }
 
   SmartProduct(SmartProduct &&other)
-      : ProductBase(std::move(other)), inaddr(other.inaddr)
+      : ProductBase(std::move(other)), inaddr(std::move(other.inaddr))
   {
+    other.is_active = false;
   }
 
   // Metodos publicos en archivos ed implmentacion
   bool checkLiveness();
 
-  RecordUmap extractRecord() const noexcept override
+  // Metodos en linea
+  virtual RecordUmap extractRecord() const noexcept override
   {
     using Brfn = ProductBase::RecordFieldName;
-
-    return {
-        {static_cast<RecordField>(Brfn::id), std::to_string(id)},
-        {static_cast<RecordField>(Brfn::name), name},
-        {static_cast<RecordField>(Brfn::description), description},
-        {static_cast<RecordField>(Brfn::serial), serial},
-        {static_cast<RecordField>(Brfn::owner), owner},
-        {static_cast<RecordField>(Brfn::price), std::to_string(price)},
-        {static_cast<RecordField>(Rfn::inaddr), inaddr}};
+    return ({{static_cast<RecordField>(Brfn::id), std::to_string(id)},
+             {static_cast<RecordField>(Brfn::name), name},
+             {static_cast<RecordField>(Brfn::description), description},
+             {static_cast<RecordField>(Brfn::serial), serial},
+             {static_cast<RecordField>(Brfn::owner), owner},
+             {static_cast<RecordField>(Brfn::price), std::to_string(price)},
+             {static_cast<RecordField>(Rfn::inaddr), inaddr}});
   };
-
-  std::string toString(vec<RecordField> f) const noexcept
-  {
-    auto record = extractRecord();
-    std::string csv;
-
-    if (f.size() < 1)
-    {
-      for (auto &field : field_to_string)
-        f.push_back(static_cast<RecordField>(field.first));
-    }
-
-    // Appends the field values as csv
-    for (auto &field : f)
-    {
-      if (&f[0] != &field)
-        csv += ",";
-      csv += record.at(static_cast<RecordField>(field));
-    }
-    return csv;
-  }
 
   // Operadores
 
-  SmartProduct &operator=(const SmartProduct &other)
+  virtual &operator=(const SmartProductBase &other)
   {
     if (this != &other)
     {
@@ -90,7 +70,7 @@ public:
     return *this;
   }
 
-  SmartProduct &operator=(SmartProduct &&other)
+  virtual SmartProductBase &operator=(SmartProductBase &&other)
   {
     if (this != &other)
     {
@@ -99,5 +79,84 @@ public:
     return *this;
   }
 
-  ~SmartProduct() = default;
+  ~SmartProductBase() = default;
+};
+
+class SmartProduct : public ProductBase
+{
+public:
+  // Miembros publicos estaticos
+
+  enum class RecordFieldName : RecordField
+  {
+    is_active = 7
+  };
+  using Rfn = RecordFieldName;
+
+  static const RecordUmap field_to_string;
+  static const ReRecordUmap string_to_field;
+
+  // Miembros publicos no estaticos
+  bool is_active;
+
+  SmartProduct(const RecordUmap record, const bool vrtl)
+      : SmartProductBase(record, vrtl),
+        is_active(field_to_string.at(static_cast<RecordField>(Rfn::is_active)))
+  {
+  }
+
+  SmartProduct(const SmartProduct &other)
+      : SmartProductBase(other), is_active(other.is_active)
+  {
+  }
+
+  SmartProduct(SmartProduct &&other)
+      : SmartProductBase(std::move(other)), is_active(other.is_active)
+  {
+    other.is_active = false;
+  }
+
+  // Metodos publicos en archivos ed implmentacion
+  bool checkLiveness();
+
+  // Metodos en linea
+  RecordUmap extractRecord() const noexcept override
+  {
+    using Brfn = ProductBase::RecordFieldName;
+    return ({{static_cast<RecordField>(Brfn::id), std::to_string(id)},
+             {static_cast<RecordField>(Brfn::name), name},
+             {static_cast<RecordField>(Brfn::description), description},
+             {static_cast<RecordField>(Brfn::serial), serial},
+             {static_cast<RecordField>(Brfn::owner), owner},
+             {static_cast<RecordField>(Brfn::price), std::to_string(price)},
+             {static_cast<RecordField>(Rfn::inaddr), inaddr},
+             {static_cast<RecordField>(Rfn::is_active),
+              std::to_string(int(is_active))}});
+  };
+
+  // Operadores
+
+  SmartProduct &operator=(const SmartProduct &other)
+  {
+    if (this != &other)
+    {
+      is_active = other.is_active;
+    }
+    return *this;
+  }
+
+  SmartProduct &operator=(SmartProduct &&other)
+  {
+    if (this != &other)
+    {
+      is_active = other.is_active;
+      other.is_active = false;
+    }
+    return *this;
+  }
+
+  ~SmartProduct()
+  {
+    is_active = false;
+  }
 };

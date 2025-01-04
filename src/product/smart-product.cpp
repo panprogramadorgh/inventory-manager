@@ -1,17 +1,19 @@
 #include "product/smart-product.hpp"
 
 using M = ManagerItem;
+using Spb = SmartProductBase;
 using Sp = SmartProduct;
 
 // Inicializacion de miembros staticos constantes
 
-const M::RecordUmap Sp::field_to_string{{static_cast<M::RecordField>(Sp::Rfn::inaddr), std::string("inaddr")}};
-const M::ReRecordUmap Sp::string_to_field{{std::string("inaddr"), static_cast<M::RecordField>(Sp::Rfn::inaddr)}};
+const M::RecordUmap Spb::field_to_string{
+    {static_cast<M::RecordField>(Spb::Rfn::inaddr), std::string("inaddr")}};
+
+const M::ReRecordUmap Spb::string_to_field{
+    {std::string("inaddr"), static_cast<M::RecordField>(Spb::Rfn::inaddr)}};
 
 /* Almacena todos los puertos que emplea para verificar si la maquina remota esta activa */
 const vec<std::uint16_t> Sp::liveness_check_ports{
-    68, // Client DHCP
-    53, // Cliente DNS
     22, // Servidor Secure Shell
     135 // Servidor MSRPC (homogeneidad funciones redes windows)
 };
@@ -51,3 +53,11 @@ bool Sp::checkLiveness()
   close(target_fd);
   return false;
 }
+
+// Miembros estaticos constantes de clase derivada
+
+const M::RecordUmap Sp::field_to_string{
+    {static_cast<M::RecordField>(Sp::Rfn::is_active), std::string("is_active")}};
+
+const M::ReRecordUmap Sp::string_to_field{
+    {std::string("is_active"), static_cast<M::RecordField>(Sp::Rfn::is_active)}};

@@ -53,7 +53,7 @@ public:
     other.db = nullptr;
   }
 
-  // Methods "interface"
+  // Methods virtuales puros
 
   virtual std::uint64_t addCache(std::shared_ptr<T>) noexcept = 0;
 
@@ -65,27 +65,19 @@ public:
   {
     Container dest;
     typename T::RecordUmap record;
-    typename T::RecordField field;
 
     auto cols = qresult.first;
     auto vals = qresult.second;
 
-    for (auto it = vals.begin();
-         it != vals.cend() &&
-         std::distance(vals.begin(), it) % cols.size() < cols.size();
-         it++)
+    for (auto it = vals.cbegin(); it != vals.cend(); it += cols.size())
     {
-      field = T::string_to_field.at(cols[std::distance(vals.begin(), it) % cols.size()]);
-      record[field] = *it;
-
-      // Crea los ManagerItem tras tener todos los campos que foman el registro
-      if (std::distance(vals.begin(), it) % cols.size() == cols.size() - 1)
+      for (auto it2 = it; it2 != it + cols.size(); it2++)
       {
-        // Se aprovecha del hecho de que todos los record de los objetos derivados ded ManagerItem almacenan su id en la primera posicion del mapa
-        dest.emplace(
-            std::atoi(record.at(0).c_str()),
-            std::make_shared<T>(T(record, false)));
-        record.clear(); // Tecnicamente no es necesario, pero nos aseguramos
+        record[std::distance(it, it2)] = *it2;
+        if (it2 == it + cols.size() - 1)
+          dest.emplate(
+              std::stoull(record.at(0)),
+              std::make_shared<T>(T(record, false)))
       }
     }
     return dest;
