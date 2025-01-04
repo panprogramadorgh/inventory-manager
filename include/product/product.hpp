@@ -42,18 +42,21 @@ public:
 
   // Secure constructor with UmappedProduct
   ProductBase(RecordUmap record, const bool vrtl)
-      : id(std::stoull(record.at(static_cast<RecordField>(Rfn::id)))),
+      : ManagerItem(),
         name(std::string(record.at(static_cast<RecordField>(Rfn::name)))),
         description(std::string(record.at(static_cast<RecordField>(Rfn::description)))),
         serial(std::string(record.at(static_cast<RecordField>(Rfn::serial)))),
         owner(std::string(record.at(static_cast<RecordField>(Rfn::owner)))),
         price(std::stold(record.at(static_cast<RecordField>(Rfn::price))))
   {
+    if (!vrtl)
+      id = std::stoull(record.at(static_cast<RecordField>(Rfn::id)));
   }
 
   // Constructors
   ProductBase(const ProductBase &other)
-      : id(other.id),
+      : ManagerItem(other),
+        id(other.id),
         name(other.name),
         description(other.description),
         serial(other.serial),
@@ -63,7 +66,8 @@ public:
   }
 
   ProductBase(ProductBase &&other)
-      : id(other.id),
+      : ManagerItem(std::move(other)),
+        id(other.id),
         name(std::move(other.name)),
         description(std::move(other.description)),
         serial(std::move(other.serial)),
@@ -74,13 +78,20 @@ public:
     other.price = 0.0;
   }
 
-  // Metodos virtuales puros han de ser definidos por clas clases derivadass
-  virtual RecordUmap extractRecord() const noexcept = 0;
-
-  // Metodos en linea
+  // Metodos virtuales en linea
+  virtual RecordUmap extractRecord() const noexcept
+  {
+    return {
+        {static_cast<RecordField>(Rfn::id), std::to_string(id)},
+        {static_cast<RecordField>(Rfn::name), name},
+        {static_cast<RecordField>(Rfn::description), description},
+        {static_cast<RecordField>(Rfn::serial), serial},
+        {static_cast<RecordField>(Rfn::owner), owner},
+        {static_cast<RecordField>(Rfn::price), std::to_string(price)}};
+  }
 
   // Devuelve un string con los campos seleccionados en formato csv
-  std::string toString(vec<RecordField> f) const noexcept
+  virtual std::string toString(vec<RecordField> f) const noexcept
   {
     auto record = extractRecord();
     std::string csv;
@@ -202,6 +213,28 @@ public:
     };
   }
 
+  // Devuelve un string con los campos seleccionados en formato csv
+  std::string toString(vec<RecordField> f) const noexcept override
+  {
+    auto record = extractRecord();
+    std::string csv;
+
+    if (f.size() < 1)
+    {
+      for (auto &field : field_to_string)
+        f.push_back(static_cast<RecordField>(field.first));
+    }
+
+    // Appends the field values as csv
+    for (auto &field : f)
+    {
+      if (&f[0] != &field)
+        csv += ",";
+      csv += record.at(static_cast<RecordField>(field));
+    }
+    return csv;
+  }
+
   // Operators
   Product &operator=(Product<true> &other) noexcept
   {
@@ -289,6 +322,28 @@ public:
         {static_cast<RecordField>(Rfn::count), std::to_string(count)},
         {static_cast<RecordField>(Rfn::vendor_id), std::to_string(vendor_id)},
     };
+  }
+
+  // Devuelve un string con los campos seleccionados en formato csv
+  std::string toString(vec<RecordField> f) const noexcept override
+  {
+    auto record = extractRecord();
+    std::string csv;
+
+    if (f.size() < 1)
+    {
+      for (auto &field : field_to_string)
+        f.push_back(static_cast<RecordField>(field.first));
+    }
+
+    // Appends the field values as csv
+    for (auto &field : f)
+    {
+      if (&f[0] != &field)
+        csv += ",";
+      csv += record.at(static_cast<RecordField>(field));
+    }
+    return csv;
   }
 
   // Operators
