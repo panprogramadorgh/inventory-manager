@@ -11,7 +11,7 @@ class Manager
 {
 public:
   // Types
-  using Container = umap<const std::uint64_t, std::shared_ptr<T>>;
+  using Container = umap<std::uint64_t, std::shared_ptr<T>>;
 
   template <typename U = T>
   using SecureReturn = std::pair<std::optional<U>, std::string>;
@@ -37,7 +37,7 @@ public:
   }
 
   // Must receive a connected database (Database::connect())
-  Manager(const Database *db, const bool should_free_db = false)
+  Manager(Database *db, const bool should_free_db = false)
       : db(db), should_free_db(should_free_db)
   {
     if (!db)
@@ -51,13 +51,6 @@ public:
         cache(std::move(other.cache))
   {
     other.db = nullptr;
-  }
-
-  ~Manager()
-  {
-    if (should_free_db)
-      delete db;
-    db = nullptr;
   }
 
   // Methods "interface"
@@ -89,12 +82,16 @@ public:
       if (std::distance(vals.begin(), it) % cols.size() == cols.size() - 1)
       {
         // Se aprovecha del hecho de que todos los record de los objetos derivados ded ManagerItem almacenan su id en la primera posicion del mapa
-        dest.emplace(record.at(static_cast<RecordField>(0)), std::make_shared<T>(T(record, false)));
+        dest.emplace(
+            std::atoi(record.at(0).c_str()),
+            std::make_shared<T>(T(record, false)));
         record.clear(); // Tecnicamente no es necesario, pero nos aseguramos
       }
     }
     return dest;
   }
+
+  // Metodos no estaticos en linea
 
   void printContainer(const Container cont) noexcept
   {
@@ -136,7 +133,7 @@ public:
 
   Manager &operator=(const Manager &other) = delete;
 
-  Manager &operator=(Manager &&other)
+  virtual Manager &operator=(Manager &&other)
   {
     if (this != &other)
     {
@@ -145,6 +142,13 @@ public:
       cache = std::move(other.cache);
     }
     return *this;
+  }
+
+  virtual ~Manager()
+  {
+    if (should_free_db)
+      delete db;
+    db = nullptr;
   }
 };
 

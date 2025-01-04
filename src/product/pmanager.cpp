@@ -165,7 +165,7 @@ Product<true> Pm::createProduct(const Product<false> &p, const std::tuple<bool, 
   return *(cont.cbegin()->second);
 }
 
-Sec<std::uint64_t> Pm::secAddProduct(const std::uint64_t id, const std::tuple<bool, bool> hanle_tran) noexcept
+Sec<std::uint64_t> Pm::secAddProduct(const std::uint64_t id, const std::tuple<bool, bool> handle_tran) noexcept
 {
   std::uint64_t count;
   bool must_update_cache;
@@ -191,7 +191,7 @@ Sec<std::uint64_t> Pm::secAddProduct(const std::uint64_t id, const std::tuple<bo
     if (it == cont.cend())
       throw std::runtime_error(ErrMsgs::ADD_PRODUCT_FAILED);
 
-    count = it->second.count;
+    count = it->second->count;
 
     /* Actualizando la cache en caso de que sea necesario */
     auto result = secGetProduct(id);
@@ -201,7 +201,7 @@ Sec<std::uint64_t> Pm::secAddProduct(const std::uint64_t id, const std::tuple<bo
     if (must_update_cache)
       addCache(it->second);
 
-    return count;
+    return std::make_pair(std::optional<std::uint64_t>(count), "");
   }
   catch (const std::exception &e)
   {
@@ -209,7 +209,7 @@ Sec<std::uint64_t> Pm::secAddProduct(const std::uint64_t id, const std::tuple<bo
   }
 }
 
-std::uint64_t Pm::addProduct(const std::uint64_t product_id, const std::tuple<bool, bool> hanle_tran = std::make_tuple(true, true)) noexcept
+std::uint64_t Pm::addProduct(const std::uint64_t id, const std::tuple<bool, bool> handle_tran)
 {
   std::uint64_t count;
   bool must_update_cache;
@@ -233,7 +233,7 @@ std::uint64_t Pm::addProduct(const std::uint64_t product_id, const std::tuple<bo
   if (it == cont.cend())
     throw std::runtime_error(ErrMsgs::ADD_PRODUCT_FAILED);
 
-  count = it->second.count;
+  count = it->second->count;
 
   /* Actualizar la cache en caso de ser necesario */
   auto result = secGetProduct(id);
@@ -242,7 +242,7 @@ std::uint64_t Pm::addProduct(const std::uint64_t product_id, const std::tuple<bo
   if (must_update_cache)
     addCache(it->second);
 
-  return std::make_pair(std::optional<std::uint64_t>(count), "");
+  return count;
 }
 
 Sec<std::uint64_t> Pm::secRemoveProduct(std::uint64_t id, const std::tuple<bool, bool> handle_tran) noexcept

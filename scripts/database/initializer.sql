@@ -70,8 +70,7 @@ INSERT INTO
     serial,
     owner,
     vendor_id,
-    price,
-    count
+    price
   )
 VALUES
   (
@@ -188,7 +187,7 @@ SELECT
   p.price
 FROM
   products as p
-  INNER JOIN vendors as v ON p.vendor_id = v.vendor_id
+  INNER JOIN vendors as v ON p.vendor_id = v.id
 ORDER BY
   p.price DESC;
 
@@ -205,9 +204,9 @@ SELECT
   p.owner,
   p.inaddr,
   v.name AS vendor_name,
-  p.price,
+  p.price
 FROM
   smart_products as p
-  INNER JOIN vendors as v on p.vendor_id = v.vendor_id
+  INNER JOIN vendors as v on p.vendor_id = v.id
 ORDER BY
   p.product_price DESC

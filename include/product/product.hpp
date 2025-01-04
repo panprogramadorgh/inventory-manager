@@ -74,9 +74,30 @@ public:
     other.price = 0.0;
   }
 
-  // Metodos "interface" han ed ser definidos por clas clases derivadass
+  // Metodos virtuales puros han de ser definidos por clas clases derivadass
   virtual RecordUmap extractRecord() const noexcept = 0;
-  virtual std::string toString(vec<RecordField>) const noexcept = 0;
+
+  // Metodos en linea
+  std::string toString(vec<RecordField> f) const noexcept
+  {
+    auto record = extractRecord();
+    std::string csv;
+
+    if (f.size() < 1)
+    {
+      for (auto &field : field_to_string)
+        f.push_back(static_cast<RecordField>(field.first));
+    }
+
+    // Appends the field values as csv
+    for (auto &field : f)
+    {
+      if (&f[0] != &field)
+        csv += ",";
+      csv += record.at(static_cast<RecordField>(field));
+    }
+    return csv;
+  }
 
   // Operators
   virtual ProductBase &operator=(const ProductBase &other) noexcept
@@ -165,39 +186,16 @@ public:
   RecordUmap extractRecord() const noexcept override
   {
     using Brfn = ProductBase::RecordFieldName;
-
     return {
-        {static_cast<std::uint16_t>(Brfn::id), std::to_string(id)},
-        {static_cast<std::uint16_t>(Brfn::name), name},
-        {static_cast<std::uint16_t>(Brfn::description), description},
-        {static_cast<std::uint16_t>(Brfn::serial), serial},
-        {static_cast<std::uint16_t>(Brfn::owner), owner},
-        {static_cast<std::uint16_t>(Brfn::price), std::to_string(price)},
-        {static_cast<std::uint16_t>(Rfn::count), std::to_string(count)},
-        {static_cast<std::uint16_t>(Rfn::vendor_name), vendor_name},
+        {static_cast<RecordField>(Brfn::id), std::to_string(id)},
+        {static_cast<RecordField>(Brfn::name), name},
+        {static_cast<RecordField>(Brfn::description), description},
+        {static_cast<RecordField>(Brfn::serial), serial},
+        {static_cast<RecordField>(Brfn::owner), owner},
+        {static_cast<RecordField>(Brfn::price), std::to_string(price)},
+        {static_cast<RecordField>(Rfn::count), std::to_string(count)},
+        {static_cast<RecordField>(Rfn::vendor_name), vendor_name},
     };
-  }
-
-  // Metodos en linea
-  std::string toString(vec<RecordField> f) const noexcept
-  {
-    auto record = extractRecord();
-    std::string csv;
-
-    if (f.size() < 1)
-    {
-      for (auto &field : field_to_string)
-        f.push_back(static_cast<RecordField>(field.first));
-    }
-
-    // Appends the field values as csv
-    for (auto &field : f)
-    {
-      if (&f[0] != &field)
-        csv += ",";
-      csv += record.at(static_cast<RecordField>(field));
-    }
-    return csv;
   }
 
   // Operators
@@ -275,38 +273,16 @@ public:
   RecordUmap extractRecord() const noexcept override
   {
     using Brfn = ProductBase::RecordFieldName;
-
     return {
-        {static_cast<std::uint16_t>(Brfn::id), std::to_string(id)},
-        {static_cast<std::uint16_t>(Brfn::name), name},
-        {static_cast<std::uint16_t>(Brfn::description), description},
-        {static_cast<std::uint16_t>(Brfn::serial), serial},
-        {static_cast<std::uint16_t>(Brfn::owner), owner},
-        {static_cast<std::uint16_t>(Brfn::price), std::to_string(price)},
-        {static_cast<std::uint16_t>(Rfn::count), std::to_string(count)},
-        {static_cast<std::uint16_t>(Rfn::vendor_id), std::to_string(vendor_id)},
+        {static_cast<RecordField>(Brfn::id), std::to_string(id)},
+        {static_cast<RecordField>(Brfn::name), name},
+        {static_cast<RecordField>(Brfn::description), description},
+        {static_cast<RecordField>(Brfn::serial), serial},
+        {static_cast<RecordField>(Brfn::owner), owner},
+        {static_cast<RecordField>(Brfn::price), std::to_string(price)},
+        {static_cast<RecordField>(Rfn::count), std::to_string(count)},
+        {static_cast<RecordField>(Rfn::vendor_id), std::to_string(vendor_id)},
     };
-  }
-
-  std::string toString(vec<RecordField> f) const noexcept
-  {
-    auto record = extractRecord();
-    std::string csv;
-
-    if (f.size() < 1)
-    {
-      for (auto &field : field_to_string)
-        f.push_back(static_cast<RecordField>(field.first));
-    }
-
-    // Appends the field values as csv
-    for (auto &field : f)
-    {
-      if (&f[0] != &field)
-        csv += ",";
-      csv += record.at(static_cast<RecordField>(field));
-    }
-    return csv;
   }
 
   // Operators

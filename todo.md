@@ -10,6 +10,8 @@
 
 - Metodo de actualizacion de informacion de productos
 
+- Actualizar linea de comandos para productos inteligentes y actualizar linea de comandos para admitir nuevos campos de producto
+
 Ideas y conceptos a implementar
 
 - Agregar interfaz de gestion de proveedores (VendorManager)

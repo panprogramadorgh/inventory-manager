@@ -1,4 +1,4 @@
-#include "product/spmanager.cpp"
+#include "product/spmanager.hpp"
 
 using Spm = SmartProductManager;
 

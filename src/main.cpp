@@ -71,15 +71,15 @@ int main(int argc, char **argv)
     {
       vec<ManagerItem::RecordField> displayables;
       if (result["N"].as<bool>())
-        displayables.push_back(ProductBase::RecordFieldName::name);
+        displayables.push_back(static_cast<ManagerItem::RecordField>(ProductBase::Rfn::name));
       if (result["D"].as<bool>())
-        displayables.push_back(ProductBase::RecordFieldName::description);
+        displayables.push_back(static_cast<ManagerItem::RecordField>(ProductBase::Rfn::description));
       if (result["V"].as<bool>()) // vendor name
-        displayables.push_back(Product<true>::RecordFieldName::vendor_name);
+        displayables.push_back(static_cast<ManagerItem::RecordField>(Product<true>::Rfn::vendor_name));
       if (result["C"].as<bool>())
-        displayables.push_back(Product<true>::RecordFieldName::count);
+        displayables.push_back(static_cast<ManagerItem::RecordField>(Product<true>::Rfn::count));
       if (result["P"].as<bool>())
-        displayables.push_back(ProductBase::RecordFieldName::price);
+        displayables.push_back(static_cast<ManagerItem::RecordField>(ProductBase::Rfn::price));
 
       if (!result.count("id"))
         throw std::runtime_error(options.help());
@@ -112,14 +112,15 @@ int main(int argc, char **argv)
       count = result["c"].as<int>(), vendor_id = result["vendor-id"].as<int>();
       price = result["p"].as<double>();
 
-      /* Creates a virtual ProductInfo instance (non-id) from UmappedProduct to insert it to the DB */
-      ManagerItem::RecordUmap record = {
-          {ProductBase::RecordFieldName::name, name},
-          {ProductBase::RecordFieldName::description, desc},
-          {Product<false>::vendor_id, vendor_id},
-          {Product<true>::count, std::to_string(count)},
-          {ProductBase::RecordFieldName::price, std::to_string(price)}};
-      Product p(record, false);
+      ManagerItem::RecordUmap record{
+          {static_cast<ManagerItem::RecordField>(ProductBase::Rfn::name), name},
+          {static_cast<ManagerItem::RecordField>(ProductBase::Rfn::description), desc},
+          {static_cast<ManagerItem::RecordField>(ProductBase::Rfn::serial), "No serial number"}, // TODO: Terminar
+          {static_cast<ManagerItem::RecordField>(ProductBase::Rfn::owner), "No owner"},          // TODO: Terminar
+          {static_cast<ManagerItem::RecordField>(Product<false>::Rfn::vendor_id), std::to_string(vendor_id)},
+          {static_cast<ManagerItem::RecordField>(Product<false>::Rfn::count), std::to_string(count)},
+          {static_cast<ManagerItem::RecordField>(ProductBase::Rfn::price), std::to_string(price)}};
+      Product<false> p(record, false);
       /* - - - */
 
       auto product = manager.createProduct(p, std::make_tuple(true, true));
