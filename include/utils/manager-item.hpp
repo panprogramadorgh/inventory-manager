@@ -6,7 +6,7 @@
 class ManagerItem
 {
 public:
-  /* Utilizado en las claves de los registros */
+  /* Utilizado en las claves de los registros / binding de registros */
   using RecordField = std::uint16_t;
 
   /* Tipos empleados para mapas de tablas SQL */
@@ -36,11 +36,25 @@ public:
     other.cache_rel = 0;
   }
 
-  // Metodos "interface"
+  // Metodos virtuales puros "interface"
+
+  // Extracts the record as a RecordUmap (following the record binding)
   virtual RecordUmap extractRecord() const noexcept = 0;
-  virtual std::string toString(vec<RecordField> f) const noexcept = 0;
+
+  // Extracts the record binding
+  virtual std::pair<RecordUmap, ReRecordUmap> extractRecordBinding() const noexcept = 0;
+
+  // Usefull with derivated classes which needs to initialize its own field_to_string and string_to_field
+  virtual RecordUmap forkRecordBinding(const RecordUmap &new_content) const = 0;
+  virtual ReRecordUmap forkRecordBinding(const ReRecordUmap &new_content) const = 0;
+
+  // Metodos publicos estaticos
+
+  // Devuelve un string con los campos seleccionados en formato csv
+  static std::string toString(const ManagerItem &m, vec<RecordField> f = {});
 
   // Metodos publicos en linea
+
   bool isVirtual() const noexcept
   {
     return is_virtual;

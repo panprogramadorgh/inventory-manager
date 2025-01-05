@@ -64,6 +64,7 @@ target_include_directories(add_includes INTERFACE ${HEADERS})
 # Creates invmanl library target
 file(GLOB DATABASE_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/src/database/*.cpp")
 file(GLOB PRODUCTS_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/src/product/*.cpp")
+file(GLOB PRODUCTS_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/src/utils/*.cpp")
 
 add_library(invmanl SHARED ${DATABASE_SOURCE} ${PRODUCTS_SOURCE} ${UTILS_SOURCE})
 target_link_libraries(invmanl PUBLIC add_includes)

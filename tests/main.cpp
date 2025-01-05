@@ -1,7 +1,8 @@
 #include "forwarder.hpp"
-#include "product/spmanager.hpp"
-
-using Rfield = ManagerItem::RecordField;
+// #include "database/interface.hpp"
+// #include "product/product.hpp"
+// #include "utils/manager.hpp"
+#include "product/pmanager.hpp"
 
 int main()
 {
@@ -10,28 +11,34 @@ int main()
   // auto secReturn = spm.secGetSmartProduct(1); // This is a dummy call
   // if (secReturn.first.has_value())
   // {
-  //   std::cout << secReturn.first->toString({}) << std::endl;
+  //   SmartProduct::prt_full_record_descent(*secReturn.first);
   // }
   // else
   // {
-  //   std::cout << "Smart product not found!" << std::endl;
+  //   std::cout << secReturn.second << std::endl;
   // }
 
-  // Creando un producto con id de vendedor
+  // SmartProduct
+  //     sp({{static_cast<Rfield>(Brfn::name), "Producto 1"},
+  //         {static_cast<Rfield>(Brfn::description), "Descripcion del producto 1"},
+  //         {static_cast<Rfield>(Brfn::serial), "XXX"},
+  //         {static_cast<Rfield>(Brfn::owner), "Alfredo"},
+  //         {static_cast<Rfield>(Brfn::price), std::to_string(14.99)},
+  //         {static_cast<Rfield>(SmartProductBase::Rfn::inaddr), "192.168.1.250"},
+  //         {static_cast<Rfield>(SmartProduct::Rfn::is_active), std::to_string(1)}},
+  //        true);
 
-  Product<false>
-      p({{static_cast<Rfield>(ProductBase::Rfn::name), "Producto 1"},
-         {static_cast<Rfield>(ProductBase::Rfn::description), "Descripcion del producto 1"},
-         {static_cast<Rfield>(ProductBase::Rfn::serial), "XXX"},
-         {static_cast<Rfield>(ProductBase::Rfn::owner), "Alfredo"},
-         {static_cast<Rfield>(ProductBase::Rfn::price), std::to_string(14.99)},
-         {static_cast<Rfield>(Product<false>::Rfn::vendor_id), std::to_string(2)},
-         {static_cast<Rfield>(Product<false>::Rfn::count), std::to_string(29)}},
-        true);
+  // prt_full_record_descent(sp);
 
-  ProductBase pb = p;
+  Database db(DB_DATA_FILE_DESTINATION);
+  db.connect();
 
-  std::cout << pb.toString({}) << "," << p.toString({}) << std::endl;
+  db.executeQuery("SELECT * FROM products_info");
+
+  // FIXME: This is a dummy call
+  auto cont = ProductManager::extractContainer(db.fetchQuery());
+
+  // ProductManager::printContainer(cont);
 
   return EXIT_SUCCESS;
 }

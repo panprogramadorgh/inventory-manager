@@ -4,8 +4,6 @@
 
 **Inventory Manager** es un programa de **gestión de activos con interfaz de línea de comandos**, desarrollado en C++. Utiliza **SQLite** como motor de almacenamiento de datos y un sistema inteligente de gestión de caché de productos (por el momento esta caracteristica no es aprovechada dado el estado actual del software).
 
-El objetivo futuro para este software es ser compatible con **"activos inteligentes"**, que son aquellos capaces de conectarse a través de la red para facilitar la gestión de inventarios.
-
 ## Herramientas necesarias para la construccion
 
 ### CMake
@@ -55,6 +53,8 @@ sudo make install
 # Lanzamos el programa instalado en /usr/local/bin
 invman get --id 3
 ```
+
+> En los ejemplos de arriba se utiliza a modo de prueba la interaz de comandos del programa, no obstante el interface de comandos cambiara drasticamente en versiones posteriores a v1.1.0.
 
 Es posible que al momento de lanza el programa obtengamos un **error relacionado con la libreria del sistema ld.so**. Esta libreria se encarga de gestionar en tiempo de ejecucion las dependencias (libreria dinamica) para el programa. De manera predeterminada en la mayoria de sistemas ld.so no tiene configurara la ruta de busqueda de librerias dinamicas para /usr/local, puesto que esta no es una ruta estandar para el sistema y mas bien esta orientada a instalaciones de terceros.
 

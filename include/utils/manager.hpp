@@ -65,16 +65,43 @@ public:
 
     for (auto it = vals.cbegin(); it != vals.cend(); it += cols.size())
     {
-      for (auto it2 = it; it2 != it + cols.size(); it2++)
+      record.clear();
+      for (auto it2 = cols.cbegin(); it2 != cols.cend(); it2++)
       {
-        record[std::distance(it, it2)] = *it2;
-        if (it2 == it + cols.size() - 1)
+        record[T::string_to_field.at(*it2)] = *(it + std::distance(cols.cbegin(), it2));
+
+        if (record.size() == cols.size())
+        {
+          // DEBUG:
+          // std::cout << record.at(0) << " - " << record.at(0).size() << std::endl;
+
           dest.emplace(
               std::stoull(record.at(0)),
               std::make_shared<T>(T(record, false)));
+        }
       }
     }
     return dest;
+  }
+
+  static void printContainer(const Container cont) noexcept
+  {
+    std::uint16_t i; // Permite deducir si hace falta colocar coma
+
+    i = 0;
+    for (const auto &pair : T::field_to_string)
+    {
+      if (i++)
+        std::cout << ',';
+      std::cout << pair.second;
+    }
+    i = 0;
+    for (const auto &pair : T::field_to_string)
+    {
+      if (i++)
+        std::cout << ',';
+      std::cout << cont.at(pair.first);
+    }
   }
 
   // Metodos no estaticos en linea
@@ -96,26 +123,6 @@ public:
   {
     cache.erase(id);
     return cache.size();
-  }
-
-  void printContainer(const Container cont) noexcept
-  {
-    std::uint16_t i; // Permite deducir si hace falta colocar coma
-
-    i = 0;
-    for (const auto &pair : T::field_to_string)
-    {
-      if (i++)
-        std::cout << ',';
-      std::cout << cont->second;
-    }
-    i = 0;
-    for (const auto &pair : T::field_to_string)
-    {
-      if (i++)
-        std::cout << ',';
-      std::cout << cont.at(pair.first);
-    }
   }
 
   // Operators

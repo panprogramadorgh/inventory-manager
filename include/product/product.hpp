@@ -4,29 +4,40 @@
 #include "forwarder.hpp"
 #include "utils/manager-item.hpp"
 
+/*
+[Change]
+  Ahora el acceso a los campos de los registros se realiza con un enum sin tipo evitando los casting explicitos y centralizando en valor para cada campo en n mismo lugar. Para los productos se emplea el prefijo P_ seguido del nombre del campo en PascalCase.
+*/
+
+// Enumeracion de campos de registro
+enum P_RecordFieldName
+{
+  // ProductBase
+  P_Id = 0,
+  P_Name,
+  P_Description,
+  P_Serial,
+  P_Owner,
+  P_Price,
+
+  // Product (both specializations)
+  P_Count,
+  P_VendorName,
+  P_VendorId,
+
+  // SmartProduct and SmartProductBase
+  P_Inaddr,
+  P_IsActive
+};
+
 class ProductBase : public ManagerItem
 {
 public:
-  // Miembros estaticos y publicos de la clase
-
-  enum class RecordFieldName : RecordField
-  {
-    id = 0,
-    name = 1,
-    description = 2,
-    serial = 3,
-    owner = 4,
-    price = 5
-  };
-  using Rfn = RecordFieldName;
-
+  // Record binding for extractRecord calls
   static const RecordUmap field_to_string;
-
   static const ReRecordUmap string_to_field;
 
-  // Miembros no estaticos
-
-  // CUIDADO CON MODIFICAR DESDE FUERA DE LA IMPLEMENTACION ESTOS MIEMBROS
+  // BE CAREFUL OUTSIDE, ManagerItems like this may be incorrectly modify within the Manager::Container or derived classes
   std::uint64_t id;
   std::string name;
   std::string description;
@@ -43,14 +54,14 @@ public:
   // Secure constructor with UmappedProduct
   ProductBase(RecordUmap record, const bool vrtl)
       : ManagerItem(),
-        name(std::string(record.at(static_cast<RecordField>(Rfn::name)))),
-        description(std::string(record.at(static_cast<RecordField>(Rfn::description)))),
-        serial(std::string(record.at(static_cast<RecordField>(Rfn::serial)))),
-        owner(std::string(record.at(static_cast<RecordField>(Rfn::owner)))),
-        price(std::stold(record.at(static_cast<RecordField>(Rfn::price))))
+        name(record.at(P_Name)),
+        description(record.at(P_Description)),
+        serial(record.at(P_Serial)),
+        owner(record.at(P_Owner)),
+        price(std::stold(record.at(P_Price)))
   {
     if (!vrtl)
-      id = std::stoull(record.at(static_cast<RecordField>(Rfn::id)));
+      id = std::stoull(record.at(P_Id));
   }
 
   // Constructors
@@ -78,38 +89,50 @@ public:
     other.price = 0.0;
   }
 
-  // Metodos virtuales en linea
-  virtual RecordUmap extractRecord() const noexcept
+  virtual RecordUmap forkRecordBinding(const RecordUmap &new_content) const override
   {
-    return {
-        {static_cast<RecordField>(Rfn::id), std::to_string(id)},
-        {static_cast<RecordField>(Rfn::name), name},
-        {static_cast<RecordField>(Rfn::description), description},
-        {static_cast<RecordField>(Rfn::serial), serial},
-        {static_cast<RecordField>(Rfn::owner), owner},
-        {static_cast<RecordField>(Rfn::price), std::to_string(price)}};
+    RecordUmap record(field_to_string);
+    for (auto &new_field : new_content)
+    {
+      auto it = field_to_string.find(new_field.first);
+      if (it != field_to_string.cend()) // We cannot override exising fields y record umap
+        throw std::invalid_argument("The field " + new_field.second + " already exists in the record umap");
+      record[new_field.first] = new_field.second;
+    }
+    return record;
   }
 
-  // Devuelve un string con los campos seleccionados en formato csv
-  virtual std::string toString(vec<RecordField> f) const noexcept
+  virtual ReRecordUmap forkRecordBinding(const ReRecordUmap &new_content) const override
   {
-    auto record = extractRecord();
-    std::string csv;
-
-    if (f.size() < 1)
+    ReRecordUmap record(string_to_field);
+    for (auto &new_field : new_content)
     {
-      for (auto &field : field_to_string)
-        f.push_back(static_cast<RecordField>(field.first));
+      auto it = field_to_string.find(new_field.second);
+      if (it != field_to_string.cend()) // We cannot override exising fields y record umap
+        throw std::invalid_argument("The field " + new_field.first + " already exists in the record umap");
+      record[new_field.first] = new_field.second;
     }
+    return record;
+  };
 
-    // Appends the field values as csv
-    for (auto &field : f)
-    {
-      if (&f[0] != &field)
-        csv += ",";
-      csv += record.at(static_cast<RecordField>(field));
-    }
-    return csv;
+  // Metodos virtuales en linea
+
+  // Extracts the record as a RecordUmap (following the record binding)
+  virtual RecordUmap extractRecord() const noexcept override
+  {
+    return {
+        {P_Id, std::to_string(id)},
+        {P_Name, name},
+        {P_Description, description},
+        {P_Serial, serial},
+        {P_Owner, owner},
+        {P_Price, std::to_string(price)}};
+  }
+
+  // Extracts the record binding
+  virtual std::pair<RecordUmap, ReRecordUmap> extractRecordBinding() const noexcept override
+  {
+    return {field_to_string, string_to_field};
   }
 
   // Operators
@@ -159,16 +182,8 @@ template <>
 class Product<true> : public ProductBase
 {
 public:
-  enum class RecordFieldName : RecordField
-  {
-    count = 7,
-    vendor_name = 8
-  };
-  using Rfn = RecordFieldName;
-
-  /* Encargados de proporcionar una forma conveniente de identificar las columnas SQL de los registros recuperados */
+  // Record binding for extractRecord calls
   static const RecordUmap field_to_string;
-
   static const ReRecordUmap string_to_field;
 
   std::uint64_t count;
@@ -182,8 +197,8 @@ public:
 
   Product(RecordUmap record, bool vrtl)
       : ProductBase(record, vrtl),
-        count(std::stoull(record.at(static_cast<RecordField>(Rfn::count)))),
-        vendor_name(record.at(static_cast<RecordField>(Rfn::vendor_name)))
+        count(std::stoull(record.at(P_Count))),
+        vendor_name(record.at(P_VendorName))
   {
   }
 
@@ -200,39 +215,17 @@ public:
 
   RecordUmap extractRecord() const noexcept override
   {
-    using Brfn = ProductBase::RecordFieldName;
-    return {
-        {static_cast<RecordField>(Brfn::id), std::to_string(id)},
-        {static_cast<RecordField>(Brfn::name), name},
-        {static_cast<RecordField>(Brfn::description), description},
-        {static_cast<RecordField>(Brfn::serial), serial},
-        {static_cast<RecordField>(Brfn::owner), owner},
-        {static_cast<RecordField>(Brfn::price), std::to_string(price)},
-        {static_cast<RecordField>(Rfn::count), std::to_string(count)},
-        {static_cast<RecordField>(Rfn::vendor_name), vendor_name},
-    };
+    RecordUmap record = ProductBase::extractRecord();
+    record.emplace(P_Count, std::to_string(count));
+    record.emplace(P_VendorName, vendor_name);
+
+    return record;
   }
 
-  // Devuelve un string con los campos seleccionados en formato csv
-  std::string toString(vec<RecordField> f) const noexcept override
+  // Extracts the record binding
+  std::pair<RecordUmap, ReRecordUmap> extractRecordBinding() const noexcept override
   {
-    auto record = extractRecord();
-    std::string csv;
-
-    if (f.size() < 1)
-    {
-      for (auto &field : field_to_string)
-        f.push_back(static_cast<RecordField>(field.first));
-    }
-
-    // Appends the field values as csv
-    for (auto &field : f)
-    {
-      if (&f[0] != &field)
-        csv += ",";
-      csv += record.at(static_cast<RecordField>(field));
-    }
-    return csv;
+    return {field_to_string, string_to_field};
   }
 
   // Operators
@@ -268,16 +261,8 @@ template <>
 class Product<false> : public ProductBase
 {
 public:
-  enum class RecordFieldName : RecordField
-  {
-    count = 7,
-    vendor_id = 8
-  };
-  using Rfn = RecordFieldName;
-
-  /* Encargados de proporcionar una forma conveniente de identificar las columnas SQL de los registros recuperados */
+  // Record binding for extractRecord calls
   static const RecordUmap field_to_string;
-
   static const ReRecordUmap string_to_field;
 
   std::uint64_t count;
@@ -291,8 +276,8 @@ public:
 
   Product(RecordUmap record, bool vrtl)
       : ProductBase(record, vrtl),
-        count(std::stoull(record.at(static_cast<RecordField>(Rfn::count)))),
-        vendor_id(std::stoull(record.at(static_cast<RecordField>(Rfn::vendor_id))))
+        count(std::stoull(record.at(P_Count))),
+        vendor_id(std::stoull(record.at(P_VendorId)))
   {
   }
 
@@ -311,39 +296,17 @@ public:
   // Metodos en linea
   RecordUmap extractRecord() const noexcept override
   {
-    using Brfn = ProductBase::RecordFieldName;
-    return {
-        {static_cast<RecordField>(Brfn::id), std::to_string(id)},
-        {static_cast<RecordField>(Brfn::name), name},
-        {static_cast<RecordField>(Brfn::description), description},
-        {static_cast<RecordField>(Brfn::serial), serial},
-        {static_cast<RecordField>(Brfn::owner), owner},
-        {static_cast<RecordField>(Brfn::price), std::to_string(price)},
-        {static_cast<RecordField>(Rfn::count), std::to_string(count)},
-        {static_cast<RecordField>(Rfn::vendor_id), std::to_string(vendor_id)},
-    };
+    RecordUmap record = ProductBase::extractRecord();
+    record.emplace(P_Count, std::to_string(count));
+    record.emplace(P_VendorId, std::to_string(vendor_id));
+
+    return record;
   }
 
-  // Devuelve un string con los campos seleccionados en formato csv
-  std::string toString(vec<RecordField> f) const noexcept override
+  // Extracts the record binding
+  std::pair<RecordUmap, ReRecordUmap> extractRecordBinding() const noexcept override
   {
-    auto record = extractRecord();
-    std::string csv;
-
-    if (f.size() < 1)
-    {
-      for (auto &field : field_to_string)
-        f.push_back(static_cast<RecordField>(field.first));
-    }
-
-    // Appends the field values as csv
-    for (auto &field : f)
-    {
-      if (&f[0] != &field)
-        csv += ",";
-      csv += record.at(static_cast<RecordField>(field));
-    }
-    return csv;
+    return {field_to_string, string_to_field};
   }
 
   // Operators

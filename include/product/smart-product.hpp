@@ -8,14 +8,7 @@
 class SmartProductBase : public ProductBase
 {
 public:
-  // Miembros publicos estaticos
-
-  enum class RecordFieldName : RecordField
-  {
-    inaddr = 6,
-  };
-  using Rfn = RecordFieldName;
-
+  // Record binding for extractRecord calls
   static const RecordUmap field_to_string;
   static const ReRecordUmap string_to_field;
 
@@ -32,7 +25,7 @@ public:
 
   SmartProductBase(const RecordUmap record, const bool vrtl)
       : ProductBase(record, vrtl),
-        inaddr(field_to_string.at(static_cast<RecordField>(Rfn::inaddr)))
+        inaddr(field_to_string.at(P_Inaddr))
   {
   }
 
@@ -52,16 +45,17 @@ public:
   // Metodos en linea
   virtual RecordUmap extractRecord() const noexcept override
   {
-    using Brfn = ProductBase::RecordFieldName;
-    return {
-        {static_cast<RecordField>(Brfn::id), std::to_string(id)},
-        {static_cast<RecordField>(Brfn::name), name},
-        {static_cast<RecordField>(Brfn::description), description},
-        {static_cast<RecordField>(Brfn::serial), serial},
-        {static_cast<RecordField>(Brfn::owner), owner},
-        {static_cast<RecordField>(Brfn::price), std::to_string(price)},
-        {static_cast<RecordField>(Rfn::inaddr), inaddr}};
+    RecordUmap record = ProductBase::extractRecord();
+    record.emplate(static_cast<RecordField>(P_Inaddr), inaddr);
+
+    return record;
   };
+
+  // Extracts the record binding
+  virtual std::pair<RecordUmap, ReRecordUmap> extractRecordBinding() const noexcept override
+  {
+    return {field_to_string, string_to_field};
+  }
 
   // Operadores
 
@@ -89,14 +83,7 @@ public:
 class SmartProduct : public SmartProductBase
 {
 public:
-  // Miembros publicos estaticos
-
-  enum class RecordFieldName : RecordField
-  {
-    is_active = 7
-  };
-  using Rfn = RecordFieldName;
-
+  // Record binding for extractRecord calls
   static const RecordUmap field_to_string;
   static const ReRecordUmap string_to_field;
 
@@ -110,7 +97,7 @@ public:
 
   SmartProduct(const RecordUmap record, const bool vrtl)
       : SmartProductBase(record, vrtl),
-        is_active(std::stoi(record.at(static_cast<RecordField>(Rfn::is_active))))
+        is_active(std::stoi(record.at(P_IsActive)))
   {
   }
 
@@ -129,19 +116,20 @@ public:
   bool checkLiveness();
 
   // Metodos en linea
-  RecordUmap extractRecord() const noexcept override
+
+  virtual RecordUmap extractRecord() const noexcept override
   {
-    using Brfn = ProductBase::RecordFieldName;
-    return {{static_cast<RecordField>(Brfn::id), std::to_string(id)},
-            {static_cast<RecordField>(Brfn::name), name},
-            {static_cast<RecordField>(Brfn::description), description},
-            {static_cast<RecordField>(Brfn::serial), serial},
-            {static_cast<RecordField>(Brfn::owner), owner},
-            {static_cast<RecordField>(Brfn::price), std::to_string(price)},
-            {static_cast<RecordField>(SmartProductBase::Rfn::inaddr), inaddr},
-            {static_cast<RecordField>(Rfn::is_active),
-             std::to_string(int(is_active))}};
+    RecordUmap record = SmartProductBase::extractRecord();
+    record.emplate(static_cast<RecordField>(P_IsActive), is_active);
+
+    return record;
   };
+
+  // Extracts the record binding
+  virtual std::pair<RecordUmap, ReRecordUmap> extractRecordBinding() const noexcept override
+  {
+    return {field_to_string, string_to_field};
+  }
 
   // Operadores
 

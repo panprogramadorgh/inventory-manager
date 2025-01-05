@@ -6,6 +6,7 @@ using Sp = SmartProduct;
 template <typename T>
 using Sec = Manager<SmartProduct>::SecureReturn<T>;
 
+// FIXME: I don't know why spb was deleted memberes like if the destructor was called
 Sec<SmartProduct> Spm::secGetSmartProduct(std::uint64_t id)
 {
   SmartProductBase spb;
@@ -47,13 +48,14 @@ Sec<SmartProduct> Spm::secGetSmartProduct(std::uint64_t id)
 
       // Mueve el producto base encontrado
       spb = *(it->second);
-    }
 
-    // FIXME: I don't know why spb was deleted memberes like if the destructor was called
+      // DEBUG: Imprime el registro completo del producto base
+      // SmartProductBase::prt_full_record_descent(spb);
+    }
 
     // Extrae el registro del producto base para crear un registro de producto inteligente
     auto baseRecord = spb.extractRecord();
-    baseRecord[static_cast<ManagerItem::RecordField>(Sp::Rfn::is_active)] = std::to_string(int(spb.checkLiveness()));
+    baseRecord[static_cast<ManagerItem::RecordField>(P_IsActive)] = std::to_string(int(spb.checkLiveness()));
 
     // Crea el producto inteligente y lo mueve
     sp = SmartProduct(baseRecord, false);

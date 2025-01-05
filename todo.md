@@ -1,5 +1,7 @@
 ## TODO LIST
 
+> Corto plazo y el dia a dia
+
 - Mejorar Database::connect() abriendo solo conexiones si son inexistentes
 
 - Metodo de obtencion de productos por patron de nombre (retorna varios productos con una query)
@@ -12,7 +14,9 @@
 
 - Actualizar linea de comandos para productos inteligentes y actualizar linea de comandos para admitir nuevos campos de producto
 
-Ideas y conceptos a implementar
+- Mejorar RecordMap de ManagerItem para que sea escalable entre clases derivadas (esto mejoraria los metodos toString() y extractContainer())
+
+### Ideas y conceptos a implementar
 
 - Agregar interfaz de gestion de proveedores (VendorManager)
 

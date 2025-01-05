@@ -71,15 +71,15 @@ int main(int argc, char **argv)
     {
       vec<ManagerItem::RecordField> displayables;
       if (result["N"].as<bool>())
-        displayables.push_back(static_cast<ManagerItem::RecordField>(ProductBase::Rfn::name));
+        displayables.push_back(P_Name);
       if (result["D"].as<bool>())
-        displayables.push_back(static_cast<ManagerItem::RecordField>(ProductBase::Rfn::description));
+        displayables.push_back(P_Description);
       if (result["V"].as<bool>()) // vendor name
-        displayables.push_back(static_cast<ManagerItem::RecordField>(Product<true>::Rfn::vendor_name));
+        displayables.push_back(P_VendorName);
       if (result["C"].as<bool>())
-        displayables.push_back(static_cast<ManagerItem::RecordField>(Product<true>::Rfn::count));
+        displayables.push_back(P_Count);
       if (result["P"].as<bool>())
-        displayables.push_back(static_cast<ManagerItem::RecordField>(ProductBase::Rfn::price));
+        displayables.push_back(P_Price);
 
       if (!result.count("id"))
         throw std::runtime_error(options.help());
@@ -113,13 +113,13 @@ int main(int argc, char **argv)
       price = result["p"].as<double>();
 
       ManagerItem::RecordUmap record{
-          {static_cast<ManagerItem::RecordField>(ProductBase::Rfn::name), name},
-          {static_cast<ManagerItem::RecordField>(ProductBase::Rfn::description), desc},
-          {static_cast<ManagerItem::RecordField>(ProductBase::Rfn::serial), "No serial number"}, // TODO: Terminar
-          {static_cast<ManagerItem::RecordField>(ProductBase::Rfn::owner), "No owner"},          // TODO: Terminar
-          {static_cast<ManagerItem::RecordField>(Product<false>::Rfn::vendor_id), std::to_string(vendor_id)},
-          {static_cast<ManagerItem::RecordField>(Product<false>::Rfn::count), std::to_string(count)},
-          {static_cast<ManagerItem::RecordField>(ProductBase::Rfn::price), std::to_string(price)}};
+          {P_Name, name},
+          {P_Description, desc},
+          {P_Serial, "XXX"},           // TODO: Terminar
+          {P_Owner, "Always Alfredo"}, // TODO: Terminar
+          {P_VendorId, std::to_string(vendor_id)},
+          {P_Count, std::to_string(count)},
+          {P_Price, std::to_string(price)}};
       Product<false> p(record, false);
       /* - - - */
 

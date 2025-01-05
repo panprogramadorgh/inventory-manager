@@ -34,7 +34,7 @@ public:
   }
 
   /* Metodo seguro encargado de obtencion de productos inteligentes. */
-  Manager::SecureReturn<SmartProduct> secGetSmartProduct(std::uint64_t id);
+  SecureReturn<SmartProduct> secGetSmartProduct(std::uint64_t id);
 
   SmartProductManager &operator=(Manager &&other)
   {

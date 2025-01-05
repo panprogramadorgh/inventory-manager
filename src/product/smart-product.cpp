@@ -7,10 +7,10 @@ using Sp = SmartProduct;
 // Inicializacion de miembros staticos constantes
 
 const M::RecordUmap Spb::field_to_string{
-    {static_cast<M::RecordField>(Spb::Rfn::inaddr), std::string("inaddr")}};
+    {P_Inaddr, std::string("inaddr")}};
 
 const M::ReRecordUmap Spb::string_to_field{
-    {std::string("inaddr"), static_cast<M::RecordField>(Spb::Rfn::inaddr)}};
+    {std::string("inaddr"), P_Inaddr}};
 
 /* Almacena todos los puertos que emplea para verificar si la maquina remota esta activa */
 const vec<std::uint16_t> Spb::liveness_check_ports{
@@ -57,7 +57,7 @@ bool Spb::checkLiveness()
 // Miembros estaticos constantes de clase derivada
 
 const M::RecordUmap Sp::field_to_string{
-    {static_cast<M::RecordField>(Sp::Rfn::is_active), std::string("is_active")}};
+    {P_IsActive, std::string("is_active")}};
 
 const M::ReRecordUmap Sp::string_to_field{
-    {std::string("is_active"), static_cast<M::RecordField>(Sp::Rfn::is_active)}};
+    {std::string("is_active"), P_IsActive}};
