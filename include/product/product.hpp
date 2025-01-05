@@ -89,33 +89,13 @@ public:
     other.price = 0.0;
   }
 
-  virtual RecordUmap forkRecordBinding(const RecordUmap &new_content) const override
-  {
-    RecordUmap record(field_to_string);
-    for (auto &new_field : new_content)
-    {
-      auto it = field_to_string.find(new_field.first);
-      if (it != field_to_string.cend()) // We cannot override exising fields y record umap
-        throw std::invalid_argument("The field " + new_field.second + " already exists in the record umap");
-      record[new_field.first] = new_field.second;
-    }
-    return record;
-  }
-
-  virtual ReRecordUmap forkRecordBinding(const ReRecordUmap &new_content) const override
-  {
-    ReRecordUmap record(string_to_field);
-    for (auto &new_field : new_content)
-    {
-      auto it = field_to_string.find(new_field.second);
-      if (it != field_to_string.cend()) // We cannot override exising fields y record umap
-        throw std::invalid_argument("The field " + new_field.first + " already exists in the record umap");
-      record[new_field.first] = new_field.second;
-    }
-    return record;
-  };
-
   // Metodos virtuales en linea
+
+  // Extracts the record binding
+  virtual std::pair<RecordUmap, ReRecordUmap> extractRecordBinding() const noexcept override
+  {
+    return {field_to_string, string_to_field};
+  }
 
   // Extracts the record as a RecordUmap (following the record binding)
   virtual RecordUmap extractRecord() const noexcept override
@@ -127,12 +107,6 @@ public:
         {P_Serial, serial},
         {P_Owner, owner},
         {P_Price, std::to_string(price)}};
-  }
-
-  // Extracts the record binding
-  virtual std::pair<RecordUmap, ReRecordUmap> extractRecordBinding() const noexcept override
-  {
-    return {field_to_string, string_to_field};
   }
 
   // Operators
@@ -190,7 +164,7 @@ public:
   std::string vendor_name;
 
   // Constructores
-  Product() noexcept
+  Product()
       : ProductBase(), count(0), vendor_name("")
   {
   }
@@ -213,6 +187,12 @@ public:
     other.price = 0.0;
   }
 
+  // Extracts the record binding
+  std::pair<RecordUmap, ReRecordUmap> extractRecordBinding() const noexcept override
+  {
+    return {field_to_string, string_to_field};
+  }
+
   RecordUmap extractRecord() const noexcept override
   {
     RecordUmap record = ProductBase::extractRecord();
@@ -220,12 +200,6 @@ public:
     record.emplace(P_VendorName, vendor_name);
 
     return record;
-  }
-
-  // Extracts the record binding
-  std::pair<RecordUmap, ReRecordUmap> extractRecordBinding() const noexcept override
-  {
-    return {field_to_string, string_to_field};
   }
 
   // Operators
@@ -251,7 +225,7 @@ public:
     return *this;
   }
 
-  ~Product() noexcept
+  ~Product()
   {
     count = 0;
   }
@@ -293,6 +267,12 @@ public:
     other.price = 0.0;
   }
 
+  // Extracts the record binding
+  std::pair<RecordUmap, ReRecordUmap> extractRecordBinding() const noexcept override
+  {
+    return {field_to_string, string_to_field};
+  }
+
   // Metodos en linea
   RecordUmap extractRecord() const noexcept override
   {
@@ -301,12 +281,6 @@ public:
     record.emplace(P_VendorId, std::to_string(vendor_id));
 
     return record;
-  }
-
-  // Extracts the record binding
-  std::pair<RecordUmap, ReRecordUmap> extractRecordBinding() const noexcept override
-  {
-    return {field_to_string, string_to_field};
   }
 
   // Operators

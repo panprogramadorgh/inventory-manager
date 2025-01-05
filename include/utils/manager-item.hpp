@@ -38,17 +38,17 @@ public:
 
   // Metodos virtuales puros "interface"
 
-  // Extracts the record as a RecordUmap (following the record binding)
-  virtual RecordUmap extractRecord() const noexcept = 0;
-
   // Extracts the record binding
   virtual std::pair<RecordUmap, ReRecordUmap> extractRecordBinding() const noexcept = 0;
 
-  // Usefull with derivated classes which needs to initialize its own field_to_string and string_to_field
-  virtual RecordUmap forkRecordBinding(const RecordUmap &new_content) const = 0;
-  virtual ReRecordUmap forkRecordBinding(const ReRecordUmap &new_content) const = 0;
+  // Extracts the record as a RecordUmap (following the record binding)
+  virtual RecordUmap extractRecord() const noexcept = 0;
 
   // Metodos publicos estaticos
+
+  // Usefull with derivated classes which needs to initialize its own field_to_string and string_to_field
+  static RecordUmap forkRecordBinding(const ManagerItem &other, const RecordUmap &new_content);
+  static ReRecordUmap forkRecordBinding(const ManagerItem &other, const ReRecordUmap &new_content);
 
   // Devuelve un string con los campos seleccionados en formato csv
   static std::string toString(const ManagerItem &m, vec<RecordField> f = {});

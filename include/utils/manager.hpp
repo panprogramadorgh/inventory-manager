@@ -53,7 +53,7 @@ public:
     other.db = nullptr;
   }
 
-  // Metodos estaticos en linea
+  // Metodos estaticos
 
   static Container extractContainer(QueryResult qresult)
   {
@@ -103,8 +103,6 @@ public:
       std::cout << cont.at(pair.first);
     }
   }
-
-  // Metodos no estaticos en linea
 
   std::uint64_t addCache(std::shared_ptr<T> p) noexcept
   {

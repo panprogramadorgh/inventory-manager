@@ -59,6 +59,8 @@ public:
   SecureReturn<std::uint64_t> secRemoveProduct(const std::uint64_t id, const std::tuple<bool, bool> hanle_tran) noexcept;
   /* Eliminacion normal */
   std::uint64_t removeProduct(const std::uint64_t id, const std::tuple<bool, bool> hanle_tran);
+
+  ~ProductManager() = default;
 };
 
 #endif

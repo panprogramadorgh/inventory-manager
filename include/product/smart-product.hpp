@@ -42,6 +42,14 @@ public:
   // Metodos publicos en archivos ed implmentacion
   bool checkLiveness();
 
+  // Metodos virtuales en linea
+
+  // Extracts the record binding
+  virtual std::pair<RecordUmap, ReRecordUmap> extractRecordBinding() const noexcept override
+  {
+    return {field_to_string, string_to_field};
+  }
+
   // Metodos en linea
   virtual RecordUmap extractRecord() const noexcept override
   {
@@ -50,86 +58,6 @@ public:
 
     return record;
   };
-
-  // Extracts the record binding
-  virtual std::pair<RecordUmap, ReRecordUmap> extractRecordBinding() const noexcept override
-  {
-    return {field_to_string, string_to_field};
-  }
-
-  // Operadores
-
-  virtual SmartProductBase &operator=(const SmartProductBase &other)
-  {
-    if (this != &other)
-    {
-      inaddr = other.inaddr;
-    }
-    return *this;
-  }
-
-  virtual SmartProductBase &operator=(SmartProductBase &&other)
-  {
-    if (this != &other)
-    {
-      inaddr = std::move(other.inaddr);
-    }
-    return *this;
-  }
-
-  ~SmartProductBase() = default;
-};
-
-class SmartProduct : public SmartProductBase
-{
-public:
-  // Record binding for extractRecord calls
-  static const RecordUmap field_to_string;
-  static const ReRecordUmap string_to_field;
-
-  // Miembros publicos no estaticos
-  bool is_active;
-
-  SmartProduct()
-      : SmartProductBase(), is_active(false)
-  {
-  }
-
-  SmartProduct(const RecordUmap record, const bool vrtl)
-      : SmartProductBase(record, vrtl),
-        is_active(std::stoi(record.at(P_IsActive)))
-  {
-  }
-
-  SmartProduct(const SmartProduct &other)
-      : SmartProductBase(other), is_active(other.is_active)
-  {
-  }
-
-  SmartProduct(SmartProduct &&other)
-      : SmartProductBase(std::move(other)), is_active(other.is_active)
-  {
-    other.is_active = false;
-  }
-
-  // Metodos publicos en archivos ed implmentacion
-  bool checkLiveness();
-
-  // Metodos en linea
-
-  virtual RecordUmap extractRecord() const noexcept override
-  {
-    RecordUmap record = SmartProductBase::extractRecord();
-    record.emplate(static_cast<RecordField>(P_IsActive), is_active);
-
-    return record;
-  };
-
-  // Extracts the record binding
-  virtual std::pair<RecordUmap, ReRecordUmap> extractRecordBinding() const noexcept override
-  {
-    return {field_to_string, string_to_field};
-  }
 
   // Operadores
 

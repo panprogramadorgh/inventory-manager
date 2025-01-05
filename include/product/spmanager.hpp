@@ -46,4 +46,6 @@ public:
     }
     return *this;
   }
+
+  ~SmartProductManager() = default;
 };

@@ -1,16 +1,17 @@
 #include "product/smart-product.hpp"
 
 using M = ManagerItem;
+using Pb = ProductBase;
 using Spb = SmartProductBase;
 using Sp = SmartProduct;
 
 // Inicializacion de miembros staticos constantes
 
-const M::RecordUmap Spb::field_to_string{
-    {P_Inaddr, std::string("inaddr")}};
+const M::RecordUmap Spb::field_to_string = M::forkRecordBinding(Pb::field_to_string, {{P_Inaddr, "inaddr"}});
 
-const M::ReRecordUmap Spb::string_to_field{
-    {std::string("inaddr"), P_Inaddr}};
+// TODO: We need to use Pb::forkRecordBinding every time we define field_to_string and string_to_field
+
+const M::ReRecordUmap Spb::string_to_field = M::forkRecordBinding(Pb::string_to_field, {{"inaddr", P_Inaddr}});
 
 /* Almacena todos los puertos que emplea para verificar si la maquina remota esta activa */
 const vec<std::uint16_t> Spb::liveness_check_ports{
@@ -56,8 +57,6 @@ bool Spb::checkLiveness()
 
 // Miembros estaticos constantes de clase derivada
 
-const M::RecordUmap Sp::field_to_string{
-    {P_IsActive, std::string("is_active")}};
+const M::RecordUmap Sp::field_to_string = M::forkRecordBinding(Spb::field_to_string, {{P_IsActive, "is_active"}});
 
-const M::ReRecordUmap Sp::string_to_field{
-    {std::string("is_active"), P_IsActive}};
+const M::ReRecordUmap Sp::string_to_field = M::forkRecordBinding(Spb::string_to_field, {{"is_active", P_IsActive}});

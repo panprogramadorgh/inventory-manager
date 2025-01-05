@@ -1,8 +1,8 @@
 #include "forwarder.hpp"
-// #include "database/interface.hpp"
-// #include "product/product.hpp"
-// #include "utils/manager.hpp"
-#include "product/pmanager.hpp"
+#include "database/interface.hpp"
+#include "product/product.hpp"
+#include "utils/manager.hpp"
+// #include "product/pmanager.hpp"
 
 int main()
 {
@@ -24,7 +24,7 @@ int main()
   //         {static_cast<Rfield>(Brfn::serial), "XXX"},
   //         {static_cast<Rfield>(Brfn::owner), "Alfredo"},
   //         {static_cast<Rfield>(Brfn::price), std::to_string(14.99)},
-  //         {static_cast<Rfield>(SmartProductBase::Rfn::inaddr), "192.168.1.250"},
+  //         {static_cast<Rfield>(SmartProductBase::Rfn::inaddr), "193.168.1.250"},
   //         {static_cast<Rfield>(SmartProduct::Rfn::is_active), std::to_string(1)}},
   //        true);
 
@@ -36,7 +36,7 @@ int main()
   db.executeQuery("SELECT * FROM products_info");
 
   // FIXME: This is a dummy call
-  auto cont = ProductManager::extractContainer(db.fetchQuery());
+  auto cont = Manager<Product<true>>::extractContainer(db.fetchQuery());
 
   // ProductManager::printContainer(cont);
 
