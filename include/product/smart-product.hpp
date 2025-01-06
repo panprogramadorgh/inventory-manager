@@ -51,7 +51,7 @@ public:
   virtual RecordUmap extractRecord() const noexcept override
   {
     RecordUmap record = ProductBase::extractRecord();
-    record.emplate(P_Inaddr, inaddr);
+    record.emplace(P_Inaddr, inaddr);
 
     return record;
   };
@@ -93,7 +93,7 @@ public:
   {
   }
 
-  SmartProuct(const RecordUmap record, const bool vrtl)
+  SmartProduct(const RecordUmap record, const bool vrtl)
       : SmartProductBase(record, vrtl),
         is_active(std::stoul(record.at(P_IsActive)))
   {
@@ -119,7 +119,7 @@ public:
   RecordUmap extractRecord() const noexcept override
   {
     RecordUmap record = SmartProductBase::extractRecord();
-    record.emplate(P_Inaddr, inaddr);
+    record.emplace(P_Inaddr, inaddr);
 
     return record;
   };
@@ -149,4 +149,4 @@ public:
   {
     is_active = false;
   }
-}
+};

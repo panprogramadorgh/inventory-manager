@@ -1,4 +1,5 @@
 #include "database/dbinterface.hpp"
+#include "utils/manager.hpp"
 #include "product/smart-product.hpp"
 
 class SmartProductManager : public Manager<SmartProductBase>
@@ -33,17 +34,6 @@ public:
 
   /* Metodo seguro encargado de obtencion de productos inteligentes. */
   SecureReturn<SmartProduct> secGetSmartProduct(std::uint64_t id);
-
-  SmartProductManager &operator=(Manager &&other)
-  {
-    if (this != &other)
-    {
-      // El operador en la clase base es virtual, por lo que se llama a la implementacion de la clase derivada.
-
-      // Posteriormente probablemente definamos un comportamiento especifico para la clase derivada.
-    }
-    return *this;
-  }
 
   ~SmartProductManager() = default;
 };

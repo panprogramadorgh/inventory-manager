@@ -4,9 +4,13 @@ using Spm = SmartProductManager;
 using Sp = SmartProduct;
 
 template <typename T>
+using Sec = Manager<Sp>::SecureReturn<T>;
+
+template <typename T>
 using Sec = Manager<SmartProduct>::SecureReturn<T>;
 
 // FIXME: I don't know why spb was deleted memberes like if the destructor was called
+
 Sec<SmartProduct> Spm::secGetSmartProduct(std::uint64_t id)
 {
   SmartProductBase spb;
