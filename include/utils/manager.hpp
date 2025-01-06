@@ -62,6 +62,14 @@ public:
 
   // Metodos estaticos
 
+  /*
+    FIXME:
+
+    The cause of the error is that SmartProductBase (that way SmartProduct consequently too) doesn't have vendor_name field, but the query is trying to fetching a view that contains that field.
+
+    This means that we will need to modify SmartProduct class in order to admin both circusntances (with vendor_name or with vendor_id field). I suppose that derivated classes like SmartProduct will inherit from the vendor-name-version of SmartProductBase.
+
+  */
   static Container extractContainer(QueryResult qresult)
   {
     Container dest;
@@ -70,12 +78,31 @@ public:
     auto cols = qresult.first;
     auto vals = qresult.second;
 
+    // DEBUG:
+    // std::cout << "Cols:" << std::endl;
+    // for (const auto &col : cols)
+    // {
+    //   std::cout << col << std::endl;
+    // }
+    // std::cout << "Vals:" << std::endl;
+    // for (const auto &val : vals)
+    //   std::cout << val << std::endl;
+
+    // for (const auto &strfield : T::string_to_field)
+    // std::cout << strfield.first << std::endl;
+
+    if (vals.size() % cols.size())
+      throw std::invalid_argument("Manager<T>::exctractContainer Invalid query result");
+
     for (auto it = vals.cbegin(); it != vals.cend(); it += cols.size())
     {
       record.clear();
       for (auto it2 = cols.cbegin(); it2 != cols.cend(); it2++)
       {
         record[T::string_to_field.at(*it2)] = *(it + std::distance(cols.cbegin(), it2));
+
+        // DEBUG: Prints whenever a record is being built
+        // std::cout << record.cbegin()->first << " : " << record.cbegin()->second << std::endl;
 
         if (record.size() == cols.size())
         {
@@ -88,7 +115,8 @@ public:
     return dest;
   }
 
-  static void printContainer(const Container cont) noexcept
+  static void
+  printContainer(const Container cont) noexcept
   {
     std::uint16_t i; // Permite deducir si hace falta colocar coma
 

@@ -24,9 +24,11 @@ private:
   // Static methods
   static void checkFile(const std::string fname)
   {
-    if (std::filesystem::exists(fname))
+    if (fs::exists(fname))
       return;
+
     std::error_code ec = std::make_error_code(std::errc::no_such_file_or_directory);
+
     fs::path path(fname);
     throw fs::filesystem_error(std::string("Could not find database file: ") + path.string(), path, ec);
   }
@@ -56,12 +58,15 @@ public:
   {
   }
 
-  // Opens database file. If database should not be open or there is an sqlite3 failure, it throws an instance of DatabaseError
+  // Opens database file. If database should not be open or there is an sqlite3 failure, it throws an instance of DatabaseError with "operation_not_supported" error code since it should not be possible to open the database
   void connect()
   {
-    int exit_code;
+    int exit_code = std::make_error_code(std::errc::operation_not_supported).value();
+
     if (!should_open_db || (exit_code = sqlite3_open(file_name.c_str(), &db)))
       throw DatabaseError(exit_code, DatabaseError::ErrMsgs::OPENING_FAILED);
+
+    should_open_db = false;
   }
 
   // Database interaction utilities

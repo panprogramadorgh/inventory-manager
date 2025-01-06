@@ -195,7 +195,8 @@ public:
 
   RecordUmap extractRecord() const noexcept override
   {
-    RecordUmap record = ProductBase::extractRecord();
+    ProductBase pb(*this);
+    RecordUmap record = pb.extractRecord();
     record.emplace(P_Count, std::to_string(count));
     record.emplace(P_VendorName, vendor_name);
 
@@ -276,9 +277,10 @@ public:
   // Metodos en linea
   RecordUmap extractRecord() const noexcept override
   {
-    RecordUmap record = ProductBase::extractRecord();
+    ProductBase pb(*this);
+    RecordUmap record = pb.extractRecord();
     record.emplace(P_Count, std::to_string(count));
-    record.emplace(P_VendorId, std::to_string(vendor_id));
+    record.emplace(P_VendorName, std::to_string(vendor_id));
 
     return record;
   }

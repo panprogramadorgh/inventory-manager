@@ -1,9 +1,18 @@
+#ifndef SMART_PRODUCT_HPP
+#define SMART_PRODUCT_HPP
+
 #include "forwarder.hpp"
 #include "product/product.hpp"
 #include <unistd.h>     // Basic system calls
 #include <sys/socket.h> // Socket system calls
 #include <netinet/in.h> // Internet address family and structures
 #include <arpa/inet.h>  // Functions for manipulating numeric IP addresses
+
+/*
+
+Read the following to understand : include/utils/manager.hpp
+
+*/
 
 class SmartProductBase : public ProductBase
 {
@@ -17,6 +26,7 @@ public:
 
   // Miembros publicos no estaticos
   std::string inaddr;
+  std::string vendor_name;
 
   SmartProductBase()
       : ProductBase(), inaddr()
@@ -50,11 +60,12 @@ public:
 
   virtual RecordUmap extractRecord() const noexcept override
   {
-    RecordUmap record = ProductBase::extractRecord();
+    ProductBase pb(*this);
+    RecordUmap record = pb.extractRecord();
     record.emplace(P_Inaddr, inaddr);
 
     return record;
-  };
+  }
 
   // Operadores
 
@@ -118,11 +129,12 @@ public:
 
   RecordUmap extractRecord() const noexcept override
   {
-    RecordUmap record = SmartProductBase::extractRecord();
-    record.emplace(P_Inaddr, inaddr);
+    SmartProductBase spb(*this);
+    RecordUmap record = spb.extractRecord();
+    record.emplace(P_IsActive, std::to_string(int(is_active)));
 
     return record;
-  };
+  }
 
   // Operators
 
@@ -150,3 +162,5 @@ public:
     is_active = false;
   }
 };
+
+#endif

@@ -16,6 +16,8 @@
 
 - Mejorar RecordMap de ManagerItem para que sea escalable entre clases derivadas (esto mejoraria los metodos toString() y extractContainer())
 
+- Crear un manejador de cache para simplificar la gestion de cache de producto en los manager
+
 ### Ideas y conceptos a implementar
 
 - Agregar interfaz de gestion de proveedores (VendorManager)

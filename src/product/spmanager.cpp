@@ -17,8 +17,6 @@ Sec<SmartProduct> Spm::secGetSmartProduct(std::uint64_t id)
   SmartProduct sp;
   try
   {
-    // TODO: Crear un manejador de cache para simplificar esta terea
-
     auto it = cache.find(id);
     vec<std::uint64_t> garbage;
     if (it != cache.cend())
@@ -44,6 +42,9 @@ Sec<SmartProduct> Spm::secGetSmartProduct(std::uint64_t id)
       db->executeQuery(
           "SELECT * FROM smart_products_info as p WHERE p.id = $", {std::to_string(id)});
 
+      // DEBUG: After that line _Map_base::at exception is thrown
+      std::cout << "Turning point : Before extractContainer" << std::endl;
+
       // Extrae el contenedor de la consulta
       auto cont = extractContainer(db->fetchQuery());
       it = cont.find(id);
@@ -53,13 +54,13 @@ Sec<SmartProduct> Spm::secGetSmartProduct(std::uint64_t id)
       // Mueve el producto base encontrado
       spb = *(it->second);
 
-      // DEBUG: Imprime el registro completo del producto base
-      // SmartProductBase::prt_full_record_descent(spb);
+      // DEBUG: Prints the product base
+      // std::cout << ManagerItem::toString(spb) << std::endl;
     }
 
     // Extrae el registro del producto base para crear un registro de producto inteligente
     auto baseRecord = spb.extractRecord();
-    baseRecord[static_cast<ManagerItem::RecordField>(P_IsActive)] = std::to_string(int(spb.checkLiveness()));
+    baseRecord[P_IsActive] = std::to_string(int(spb.checkLiveness()));
 
     // Crea el producto inteligente y lo mueve
     sp = SmartProduct(baseRecord, false);
