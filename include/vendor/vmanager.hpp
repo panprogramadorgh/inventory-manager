@@ -1,6 +1,4 @@
-#include "database/interface.hpp"
-#include "utils/interface-manager.hpp"
-#include <forwarder.hpp>
+#include "utils/manager.hpp"
 
 using MyType = double;
 

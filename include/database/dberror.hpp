@@ -1,7 +1,7 @@
 #ifndef DBERRORS_HPP
 #define DBERRORS_HPP
 
-#include "database/interface.hpp"
+#include "database/dbinterface.hpp"
 #include <cstring>
 
 /* Database errors class */
@@ -12,7 +12,8 @@ protected:
   int code;
 
 public:
-  struct GenericErrMsgs
+  // Generic error messages
+  struct ErrMsgs
   {
     static constexpr char OPENING_FAILED[] = "Database opening failed";
     static constexpr char INITIALIZATION_FAILED[] = "Database initialization failed";

@@ -1,11 +1,9 @@
 #ifndef PMANAGER_HPP
 #define PMANAGER_HPP
 
-#include "database/interface.hpp"
-#include "database/dberror.hpp"
+#include "database/dbinterface.hpp"
 #include "product/product.hpp"
 #include "utils/manager.hpp"
-#include <optional>
 #include <memory>
 
 class ProductManager : public Manager<Product<true>>

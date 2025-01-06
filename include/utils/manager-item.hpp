@@ -3,7 +3,7 @@
 
 #include "forwarder.hpp"
 
-class ManagerItem
+    class ManagerItem
 {
 public:
   /* Utilizado en las claves de los registros / binding de registros */

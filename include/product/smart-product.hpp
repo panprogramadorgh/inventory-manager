@@ -1,9 +1,9 @@
 #include "forwarder.hpp"
 #include "product/product.hpp"
-#include <unistd.h>
-#include <sys/socket.h> // Crear descriptor de archivo del servidor (socket TCP)
-#include <netinet/in.h> // Estructuras de direcciones des sockets
-#include <arpa/inet.h>  // Formato de direcciones IP en cadena a Big-Endian
+#include <unistd.h>     // Basic system calls
+#include <sys/socket.h> // Socket system calls
+#include <netinet/in.h> // Internet address family and structures
+#include <arpa/inet.h>  // Functions for manipulating numeric IP addresses
 
 class SmartProductBase : public ProductBase
 {
@@ -12,7 +12,7 @@ public:
   static const RecordUmap field_to_string;
   static const ReRecordUmap string_to_field;
 
-  /* Almacena todos los puertos que emplea para verificar si la maquina remota esta activa */
+  // Stores all the ports it uses to check if the remote machine is active
   static const vec<std::uint16_t> liveness_check_ports;
 
   // Miembros publicos no estaticos
@@ -39,27 +39,92 @@ public:
   {
   }
 
-  // Metodos publicos en archivos ed implmentacion
+  // Works over liveness_check_ports to check if the remote machine is active
   bool checkLiveness();
-
-  // Metodos virtuales en linea
 
   // Extracts the record binding
   virtual std::pair<RecordUmap, ReRecordUmap> extractRecordBinding() const noexcept override
   {
-    return {field_to_string, string_to_field};
+    return std::make_pair(field_to_string, string_to_field);
   }
 
-  // Metodos en linea
   virtual RecordUmap extractRecord() const noexcept override
   {
     RecordUmap record = ProductBase::extractRecord();
-    record.emplate(static_cast<RecordField>(P_Inaddr), inaddr);
+    record.emplate(P_Inaddr, inaddr);
 
     return record;
   };
 
   // Operadores
+
+  virtual SmartProductBase &operator=(const SmartProductBase &other)
+  {
+    if (this != &other)
+    {
+      inaddr = other.inaddr;
+    }
+    return *this;
+  }
+
+  virtual SmartProductBase &operator=(SmartProductBase &&other)
+  {
+    if (this != &other)
+    {
+      inaddr = std::move(other.inaddr);
+    }
+    return *this;
+  }
+
+  virtual ~SmartProductBase() = default;
+};
+
+class SmartProduct : public SmartProductBase
+{
+public:
+  // Record binding for extractRecord calls
+  static const RecordUmap field_to_string;
+  static const ReRecordUmap string_to_field;
+
+  bool is_active;
+
+  SmartProduct()
+      : SmartProductBase(), is_active(false)
+  {
+  }
+
+  SmartProuct(const RecordUmap record, const bool vrtl)
+      : SmartProductBase(record, vrtl),
+        is_active(std::stoul(record.at(P_IsActive)))
+  {
+  }
+
+  SmartProduct(const SmartProduct &other)
+      : SmartProductBase(other), is_active(other.is_active)
+  {
+  }
+
+  SmartProduct(SmartProduct &&other)
+      : SmartProductBase(std::move(other)), is_active(other.is_active)
+  {
+    other.is_active = false;
+  }
+
+  // Extracts the record binding
+  std::pair<RecordUmap, ReRecordUmap> extractRecordBinding() const noexcept override
+  {
+    return std::make_pair(field_to_string, string_to_field);
+  }
+
+  RecordUmap extractRecord() const noexcept override
+  {
+    RecordUmap record = SmartProductBase::extractRecord();
+    record.emplate(P_Inaddr, inaddr);
+
+    return record;
+  };
+
+  // Operators
 
   SmartProduct &operator=(const SmartProduct &other)
   {
@@ -84,4 +149,4 @@ public:
   {
     is_active = false;
   }
-};
+}

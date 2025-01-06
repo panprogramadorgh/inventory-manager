@@ -1,4 +1,4 @@
-#include "database/interface.hpp"
+#include "database/dbinterface.hpp"
 
 // Non-static methods
 

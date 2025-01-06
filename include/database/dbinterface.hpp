@@ -2,7 +2,6 @@
 #define DBINTERFACE_HPP
 
 #include "forwarder.hpp"
-#include "product/product.hpp"
 #include "database/dberror.hpp"
 #include "utils/strutils.hpp"
 #include <filesystem>
@@ -62,7 +61,7 @@ public:
   {
     int exit_code;
     if (!should_open_db || (exit_code = sqlite3_open(file_name.c_str(), &db)))
-      throw DatabaseError(exit_code, DatabaseError::GenericErrMsgs::OPENING_FAILED);
+      throw DatabaseError(exit_code, DatabaseError::ErrMsgs::OPENING_FAILED);
   }
 
   // Database interaction utilities
@@ -91,10 +90,6 @@ public:
       StringUtilities::insert(query, args.at(i++), pos, 1);
     return query;
   }
-
-  template <bool T>
-  static void printQuery(const Product<T> qresult) noexcept;
-  static void printQuery(const QueryResult qresult) noexcept;
 };
 
 #endif

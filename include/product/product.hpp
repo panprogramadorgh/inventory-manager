@@ -45,7 +45,7 @@ public:
   std::string owner;
   double price;
 
-  // Default constructor: Virtual product constructor (id = -1)
+  // Default constructor
   ProductBase() noexcept
       : ManagerItem()
   {
@@ -94,7 +94,7 @@ public:
   // Extracts the record binding
   virtual std::pair<RecordUmap, ReRecordUmap> extractRecordBinding() const noexcept override
   {
-    return {field_to_string, string_to_field};
+    return std::make_pair(field_to_string, string_to_field);
   }
 
   // Extracts the record as a RecordUmap (following the record binding)
@@ -132,7 +132,7 @@ public:
       name = std::move(other.name);
       description = std::move(other.description);
       serial = other.serial;
-      owner = other.owner;
+      owner = std::move(other.owner);
       price = other.price;
 
       other.id = 0;
@@ -190,7 +190,7 @@ public:
   // Extracts the record binding
   std::pair<RecordUmap, ReRecordUmap> extractRecordBinding() const noexcept override
   {
-    return {field_to_string, string_to_field};
+    return std::make_pair(field_to_string, string_to_field);
   }
 
   RecordUmap extractRecord() const noexcept override
@@ -270,7 +270,7 @@ public:
   // Extracts the record binding
   std::pair<RecordUmap, ReRecordUmap> extractRecordBinding() const noexcept override
   {
-    return {field_to_string, string_to_field};
+    return std::make_pair(field_to_string, string_to_field);
   }
 
   // Metodos en linea

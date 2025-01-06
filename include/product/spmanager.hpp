@@ -1,6 +1,4 @@
-#include "forwarder.hpp"
-#include "database/interface.hpp"
-#include "utils/manager.hpp"
+#include "database/dbinterface.hpp"
 #include "product/smart-product.hpp"
 
 class SmartProductManager : public Manager<SmartProductBase>

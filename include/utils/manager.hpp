@@ -2,9 +2,16 @@
 #define INTERFACE_MANAGER_HPP
 
 #include "forwarder.hpp"
-#include "database/interface.hpp"
+#include "database/dbinterface.hpp"
 #include "utils/manager-item.hpp"
 #include <optional>
+
+/*
+[Warning]
+  It's important to note that the Manager class is a template class that receives a ManagerItemBased class as a parameter.
+
+  That ManagerItem must define its own database record mapping (string_to_field, field_to_string) which should begin with id field as first element -- otherwise, extractContainer would't be able to infer the id field to build the container.
+*/
 
 template <ManagerItemBased T>
 class Manager
@@ -72,9 +79,6 @@ public:
 
         if (record.size() == cols.size())
         {
-          // DEBUG:
-          // std::cout << record.at(0) << " - " << record.at(0).size() << std::endl;
-
           dest.emplace(
               std::stoull(record.at(0)),
               std::make_shared<T>(T(record, false)));

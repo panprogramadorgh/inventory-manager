@@ -1,41 +1,41 @@
-#include "product/pmanager.hpp"
+#include "product/product.hpp"
 
 using M = ManagerItem;
 using Pb = ProductBase;
 
+// FIXME: For some reason, this constant static members are not beein initialized
+
 /* Definiciones constantes para base de producto  */
 const M::RecordUmap Pb::field_to_string{
-    {P_Id, std::string("id")},
-    {P_Name, std::string("name")},
-    {P_Description, std::string("description")},
-    {P_Serial, std::string("serial")},
-    {P_Owner, std::string("owner")},
-    {P_Price, std::string("price")}};
+    {P_Id, "id"},
+    {P_Name, "name"},
+    {P_Description, "description"},
+    {P_Serial, "serial"},
+    {P_Owner, "owner"},
+    {P_Price, "price"}};
 
 const M::ReRecordUmap Pb::string_to_field{
-    {std::string("id"), P_Id},
-    {std::string("name"), P_Name},
-    {std::string("description"), P_Description},
-    {std::string("serial"), P_Serial},
-    {std::string("owner"), P_Owner},
-    {std::string("price"), P_Price}};
+    {"id", P_Id},
+    {"name", P_Name},
+    {"description", P_Description},
+    {"serial", P_Serial},
+    {"owner", P_Owner},
+    {"price", P_Price}};
 
 /* Definiciones constantes para productos con nombre de vendedor */
 const M::RecordUmap Product<true>::field_to_string =
-    M::forkRecordBinding(Pb::field_to_string, {{P_Count,
-                                                std::string("count")},
-                                               {P_VendorName,
-                                                std::string("vendor_name")}});
+    M::forkRecordBinding(Pb(), {{P_Count, "count"},
+                                {P_VendorName, "vendor_name"}});
 
 const M::ReRecordUmap Product<true>::string_to_field =
-    M::forkRecordBinding(Pb::string_to_field, {{std::string("count"), P_Count},
-                                               {std::string("vendor_name"), P_VendorName}});
+    M::forkRecordBinding(Pb(), {{"count", P_Count},
+                                {"vendor_name", P_VendorName}});
 
 /* Definiciones constantes para productos con id de vendedor  */
 const M::RecordUmap Product<false>::field_to_string =
-    M::forkRecordBinding(Pm::field_to_string, {{P_VendorId, std::string("vendor_id")},
-                                               {P_Count, std::string("count")}});
+    M::forkRecordBinding(Pb(), {{P_VendorId, "vendor_id"},
+                                {P_Count, "count"}});
 
 const M::ReRecordUmap Product<false>::string_to_field =
-    M::forkRecordBinding(Pm::string_to_string, {{std::string("vendor_id"), P_VendorId},
-                                                {std::string("count"), P_Count}});
+    M::forkRecordBinding(Pb(), {{"vendor_id", P_VendorId},
+                                {"count", P_Count}});

@@ -35,7 +35,7 @@ M::ReRecordUmap M::forkRecordBinding(const ManagerItem &other, const ReRecordUma
     str_binding[new_field.first] = new_field.second;
   }
   return str_binding;
-};
+}
 
 // Metodos no estaticos
 
