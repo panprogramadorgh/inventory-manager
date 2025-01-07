@@ -63,6 +63,7 @@ public:
   // Metodos estaticos
 
   /*
+  [FIXED]
     FIXME:
 
     The cause of the error is that SmartProductBase (that way SmartProduct consequently too) doesn't have vendor_name field, but the query is trying to fetching a view that contains that field.
@@ -101,11 +102,15 @@ public:
       {
         record[T::string_to_field.at(*it2)] = *(it + std::distance(cols.cbegin(), it2));
 
-        // DEBUG: Prints whenever a record is being built
+        // DEBUG: Prints whenever a record field is set
         // std::cout << record.cbegin()->first << " : " << record.cbegin()->second << std::endl;
 
         if (record.size() == cols.size())
         {
+          /*
+            FIXME:
+            Constructor for T is not working since it is not initializing the fields of T from record
+          */
           dest.emplace(
               std::stoull(record.at(0)),
               std::make_shared<T>(T(record, false)));

@@ -1,7 +1,6 @@
 #include "forwarder.hpp"
 #include "product/spmanager.hpp"
 #include "product/smart-product.hpp"
-#include "utils/manager-item.hpp"
 
 int main()
 {

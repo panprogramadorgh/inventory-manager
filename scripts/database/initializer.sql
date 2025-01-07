@@ -183,11 +183,11 @@ INSERT INTO
   )
 VALUES
   (
-    'product9',
-    'product9 description',
+    'SmartProduct1',
+    'SmartProduct1 Description',
     '123987123',
     'kelokekelowua',
-    '192.168.1.200',
+    '172.20.167.118',
     3,
     3.20
   );

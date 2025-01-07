@@ -8,12 +8,6 @@
 #include <netinet/in.h> // Internet address family and structures
 #include <arpa/inet.h>  // Functions for manipulating numeric IP addresses
 
-/*
-
-Read the following to understand : include/utils/manager.hpp
-
-*/
-
 class SmartProductBase : public ProductBase
 {
 public:
@@ -29,23 +23,24 @@ public:
   std::string vendor_name;
 
   SmartProductBase()
-      : ProductBase(), inaddr()
+      : ProductBase(), inaddr(), vendor_name()
   {
   }
 
   SmartProductBase(const RecordUmap record, const bool vrtl)
       : ProductBase(record, vrtl),
-        inaddr(field_to_string.at(P_Inaddr))
+        inaddr(record.at(P_Inaddr)),
+        vendor_name(record.at(P_VendorName))
   {
   }
 
   SmartProductBase(const SmartProductBase &other)
-      : ProductBase(other), inaddr(other.inaddr)
+      : ProductBase(other), inaddr(other.inaddr), vendor_name(other.vendor_name)
   {
   }
 
   SmartProductBase(SmartProductBase &&other)
-      : ProductBase(std::move(other)), inaddr(std::move(other.inaddr))
+      : ProductBase(std::move(other)), inaddr(std::move(other.inaddr)), vendor_name(std::move(other.vendor_name))
   {
   }
 
@@ -63,6 +58,7 @@ public:
     ProductBase pb(*this);
     RecordUmap record = pb.extractRecord();
     record.emplace(P_Inaddr, inaddr);
+    record.emplace(P_VendorName, vendor_name);
 
     return record;
   }
@@ -74,6 +70,7 @@ public:
     if (this != &other)
     {
       inaddr = other.inaddr;
+      vendor_name = other.vendor_name;
     }
     return *this;
   }
@@ -83,6 +80,7 @@ public:
     if (this != &other)
     {
       inaddr = std::move(other.inaddr);
+      vendor_name = std::move(other.vendor_name);
     }
     return *this;
   }

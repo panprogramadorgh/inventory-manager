@@ -3,8 +3,6 @@
 using M = ManagerItem;
 using Pb = ProductBase;
 
-// FIXME: For some reason, this constant static members are not beein initialized
-
 /* Definiciones constantes para base de producto  */
 const M::RecordUmap Pb::field_to_string{
     {P_Id, "id"},

@@ -9,8 +9,6 @@ using Sec = Manager<Sp>::SecureReturn<T>;
 template <typename T>
 using Sec = Manager<SmartProduct>::SecureReturn<T>;
 
-// FIXME: I don't know why spb was deleted memberes like if the destructor was called
-
 Sec<SmartProduct> Spm::secGetSmartProduct(std::uint64_t id)
 {
   SmartProductBase spb;
@@ -42,7 +40,6 @@ Sec<SmartProduct> Spm::secGetSmartProduct(std::uint64_t id)
       db->executeQuery(
           "SELECT * FROM smart_products_info as p WHERE p.id = $", {std::to_string(id)});
 
-      // DEBUG: After that line _Map_base::at exception is thrown
       std::cout << "Turning point : Before extractContainer" << std::endl;
 
       // Extrae el contenedor de la consulta
@@ -59,8 +56,18 @@ Sec<SmartProduct> Spm::secGetSmartProduct(std::uint64_t id)
     }
 
     // Extrae el registro del producto base para crear un registro de producto inteligente
+    /*
+      FIXME:
+      spb.extractRecord() for some reason is not working properly. Even if we copy it->second to spb, extractRecord() just create a ManagerItem::RecordUmap with some values, the rest is blank
+    */
     auto baseRecord = spb.extractRecord();
     baseRecord[P_IsActive] = std::to_string(int(spb.checkLiveness()));
+
+    // DEBUG : Prints all fields for base record umap
+    for (const auto &field : baseRecord)
+    {
+      std::cout << field.first << " - " << field.second << std::endl;
+    }
 
     // Crea el producto inteligente y lo mueve
     sp = SmartProduct(baseRecord, false);
