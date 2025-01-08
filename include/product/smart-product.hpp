@@ -55,10 +55,15 @@ public:
 
   virtual RecordUmap extractRecord() const noexcept override
   {
-    ProductBase pb(*this);
+    ProductBase pb = static_cast<const ProductBase &>(*this);
     RecordUmap record = pb.extractRecord();
     record.emplace(P_Inaddr, inaddr);
     record.emplace(P_VendorName, vendor_name);
+
+    for (const auto &field : record)
+    {
+      std::cout << field.first << " - " << field.second << std::endl;
+    }
 
     return record;
   }
@@ -127,7 +132,7 @@ public:
 
   RecordUmap extractRecord() const noexcept override
   {
-    SmartProductBase spb(*this);
+    SmartProductBase spb = static_cast<const SmartProductBase &>(*this);
     RecordUmap record = spb.extractRecord();
     record.emplace(P_IsActive, std::to_string(int(is_active)));
 

@@ -40,34 +40,26 @@ Sec<SmartProduct> Spm::secGetSmartProduct(std::uint64_t id)
       db->executeQuery(
           "SELECT * FROM smart_products_info as p WHERE p.id = $", {std::to_string(id)});
 
-      std::cout << "Turning point : Before extractContainer" << std::endl;
-
       // Extrae el contenedor de la consulta
       auto cont = extractContainer(db->fetchQuery());
       it = cont.find(id);
       if (it == cont.cend())
         throw std::runtime_error(ErrMsgs::SMART_NOT_FOUND);
 
-      // Mueve el producto base encontrado
       spb = *(it->second);
-
-      // DEBUG: Prints the product base
-      // std::cout << ManagerItem::toString(spb) << std::endl;
     }
 
-    // Extrae el registro del producto base para crear un registro de producto inteligente
     /*
       FIXME:
       spb.extractRecord() for some reason is not working properly. Even if we copy it->second to spb, extractRecord() just create a ManagerItem::RecordUmap with some values, the rest is blank
     */
+    // Extrae el registro del producto base para crear un registro de producto inteligente
+
+    // std::cout << "Turning point" << std::endl;
+    // std::cout << ManagerItem::toString(spb) << std::endl;
+
     auto baseRecord = spb.extractRecord();
     baseRecord[P_IsActive] = std::to_string(int(spb.checkLiveness()));
-
-    // DEBUG : Prints all fields for base record umap
-    for (const auto &field : baseRecord)
-    {
-      std::cout << field.first << " - " << field.second << std::endl;
-    }
 
     // Crea el producto inteligente y lo mueve
     sp = SmartProduct(baseRecord, false);

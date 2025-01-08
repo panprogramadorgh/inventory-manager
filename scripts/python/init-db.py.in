@@ -1,5 +1,6 @@
 import sqlite3
 import os
+import pandas as pd
 
 # Globals
 db_init_file = "@DB_INIT_FILE_DESTINATION@"
@@ -27,11 +28,15 @@ def main():
     print(f"[python3] -- Initializing database with sqlite-{sqlite3.sqlite_version}")
     sql_text = read_file(db_init_file)
     cursor.executescript(sql_text)
+    conn.commit()
+    df = pd.read_sql_query("SELECT * FROM products_info;", conn)
+    conn.close()
+    
+    # Prints the dataframe and shows all the records
+    print(df.to_string())
 
-    cursor.execute("SELECT * FROM products_info;")  # Queries the custom view
-    print(cursor.fetchall())
+    print("[python3] -- Database was successfilly inicialized")
 
-    print("Database was successfilly inicialized")
 
 
 if __name__ == "__main__":

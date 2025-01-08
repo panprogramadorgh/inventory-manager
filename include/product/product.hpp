@@ -9,6 +9,11 @@
   Ahora el acceso a los campos de los registros se realiza con un enum sin tipo evitando los casting explicitos y centralizando en valor para cada campo en n mismo lugar. Para los productos se emplea el prefijo P_ seguido del nombre del campo en PascalCase.
 */
 
+/*
+  FIXME:
+  Shallow copy isn't working
+*/
+
 // Enumeracion de campos de registro
 enum P_RecordFieldName
 {
@@ -195,7 +200,7 @@ public:
 
   RecordUmap extractRecord() const noexcept override
   {
-    ProductBase pb(*this);
+    ProductBase pb = static_cast<const ProductBase &>(*this);
     RecordUmap record = pb.extractRecord();
     record.emplace(P_Count, std::to_string(count));
     record.emplace(P_VendorName, vendor_name);
@@ -277,7 +282,7 @@ public:
   // Metodos en linea
   RecordUmap extractRecord() const noexcept override
   {
-    ProductBase pb(*this);
+    ProductBase pb = static_cast<const ProductBase &>(*this);
     RecordUmap record = pb.extractRecord();
     record.emplace(P_Count, std::to_string(count));
     record.emplace(P_VendorName, std::to_string(vendor_id));
