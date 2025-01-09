@@ -60,28 +60,25 @@ public:
     record.emplace(P_Inaddr, inaddr);
     record.emplace(P_VendorName, vendor_name);
 
-    for (const auto &field : record)
-    {
-      std::cout << field.first << " - " << field.second << std::endl;
-    }
-
     return record;
   }
 
   // Operadores
 
-  virtual SmartProductBase &operator=(const SmartProductBase &other)
+  SmartProductBase &operator=(const SmartProductBase &other)
   {
     if (this != &other)
     {
+      ProductBase::operator=(other);
       inaddr = other.inaddr;
       vendor_name = other.vendor_name;
     }
     return *this;
   }
 
-  virtual SmartProductBase &operator=(SmartProductBase &&other)
+  SmartProductBase &operator=(SmartProductBase &&other)
   {
+    ProductBase::operator=(std::move(other));
     if (this != &other)
     {
       inaddr = std::move(other.inaddr);
@@ -145,6 +142,7 @@ public:
   {
     if (this != &other)
     {
+      SmartProductBase::operator=(other);
       is_active = other.is_active;
     }
     return *this;
@@ -154,6 +152,7 @@ public:
   {
     if (this != &other)
     {
+      SmartProductBase::operator=(std::move(other));
       is_active = other.is_active;
       other.is_active = false;
     }

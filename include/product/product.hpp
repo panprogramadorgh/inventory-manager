@@ -115,10 +115,11 @@ public:
   }
 
   // Operators
-  virtual ProductBase &operator=(const ProductBase &other) noexcept
+  ProductBase &operator=(const ProductBase &other) noexcept
   {
     if (this != &other)
     {
+      ManagerItem::operator=(other);
       id = other.id;
       name = other.name;
       description = other.description;
@@ -129,10 +130,11 @@ public:
     return *this;
   }
 
-  virtual ProductBase &operator=(ProductBase &&other) noexcept
+  ProductBase &operator=(ProductBase &&other) noexcept
   {
     if (this != &other)
     {
+      ManagerItem::operator=(std::move(other));
       id = other.id;
       name = std::move(other.name);
       description = std::move(other.description);
@@ -213,6 +215,7 @@ public:
   {
     if (this != &other)
     {
+      ProductBase::operator=(other);
       count = other.count;
       vendor_name = other.vendor_name;
     }
@@ -223,6 +226,7 @@ public:
   {
     if (this != &other)
     {
+      ProductBase::operator=(std::move(other));
       count = other.count;
       vendor_name = std::move(other.vendor_name);
 
@@ -295,6 +299,7 @@ public:
   {
     if (this != &other)
     {
+      ProductBase::operator=(other);
       count = other.count;
       vendor_id = other.vendor_id;
     }
@@ -305,6 +310,7 @@ public:
   {
     if (this != &other)
     {
+      ProductBase::operator=(std::move(other));
       count = other.count;
       vendor_id = other.vendor_id;
 

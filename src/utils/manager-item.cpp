@@ -52,8 +52,17 @@ std::string M::toString(const ManagerItem &m, vec<RecordField> f)
       f.push_back(field.first);
   }
 
+  // Table headers
+  for (const auto &field : f)
+  {
+    if (&f[0] != &field)
+      csv += ",";
+    csv += field_to_string[field];
+  }
+  csv += "\n";
+
   // Appends the field values as csv
-  for (auto &field : f)
+  for (const auto &field : f)
   {
     if (&f[0] != &field)
       csv += ",";

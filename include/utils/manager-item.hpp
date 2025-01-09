@@ -79,7 +79,7 @@ public:
   }
 
   // Operadores virtuales
-  virtual ManagerItem &operator=(const ManagerItem &other) noexcept
+  ManagerItem &operator=(const ManagerItem &other) noexcept
   {
     if (this != &other)
     {
@@ -89,7 +89,7 @@ public:
     return *this;
   }
 
-  virtual ManagerItem &operator=(ManagerItem &&other) noexcept
+  ManagerItem &operator=(ManagerItem &&other) noexcept
   {
     if (this != &other)
     {
