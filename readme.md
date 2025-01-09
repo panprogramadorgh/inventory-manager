@@ -30,7 +30,7 @@ Para instalar python en distribuciones basadas en debian:
 sudo apt install python3
 ```
 
-Adicionalmente instalaremos la libreria pandas para la representacion de datos dataframes.
+Adicionalmente instalaremos la libreria pandas para la representacion, manipulacion y analisis.
 
 ```bash
 pip install pandas
