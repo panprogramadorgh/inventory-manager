@@ -187,7 +187,7 @@ VALUES
     'SmartProduct1 Description',
     '123987123',
     'kelokekelowua',
-    '172.20.167.117',
+    '172.20.167.118',
     3,
     3.20
   );

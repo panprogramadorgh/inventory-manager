@@ -30,22 +30,28 @@ bool Spb::checkLiveness()
   for (const auto &port : liveness_check_ports)
   {
     // Cualquier intento de configuracion el socket fallido finaliza la ejecucion de la rutina
-    if (target_fd = socket(AF_INET, SOCK_STREAM, 0) < 0)
+    if ((target_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+    {
+      close(target_fd);
       return false;
+    }
+    // En todos los casos estamos habriendo conexiones con IPv4
     target_addr.sin_family = AF_INET;
+
     target_addr.sin_port = htons(port);
     if (inet_pton(AF_INET, inaddr.c_str(), &target_addr.sin_addr) <= 0)
+    {
+      close(target_fd);
       return false;
-    // - - - - - - -
+    }
 
     /* Fallo al establecer la conexion TCP a modo cliente en el puerto determinado */
-    if (!connect(target_fd, reinterpret_cast<sockaddr *>(&target_addr), sizeof(target_addr)))
+    if (connect(target_fd, reinterpret_cast<sockaddr *>(&target_addr), sizeof(target_addr)))
     {
       close(target_fd);
       continue;
     }
 
-    // Premio
     close(target_fd);
     return true;
   }
