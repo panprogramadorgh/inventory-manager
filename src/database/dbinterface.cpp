@@ -2,11 +2,23 @@
 
 // Non-static methods
 
-void Database::executeQuery(const std::string raw_query, vec<std::string> &&args) const noexcept(false)
+void Database::connect()
 {
-  std::string query = mergeQueryArgs(raw_query, std::move(args)); // Monta la consulta con los argumentos indicados
-  char *msg = nullptr;                                            // Mensaje de sliqte3 (debe ser liberado con sqlite3_free)
-  int query_exit_code;                                            // Almacena el codigo de error de la consulta
+  int exit_code = std::make_error_code(std::errc::operation_not_supported).value();
+
+  if (!should_open || (exit_code = sqlite3_open(db_file.c_str(), &db)))
+    throw DatabaseError(exit_code, DatabaseError::ErrMsgs::OPENING_FAILED);
+
+  should_open = false;
+}
+
+void Database::executeQuery(const std::string sql) const
+{
+  if (should_open)
+    throw DatabaseError(EPERM, DatabaseError::ErrMsgs::DB_IS_NOT_OPEN);
+
+  char *msg = nullptr; // Mensaje de sliqte3 (debe ser liberado con sqlite3_free)
+  int query_exit_code; // Almacena el codigo de error de la consulta
 
   auto callback = [](void *ctx, int rows, char **vals, char **cols) -> int
   {
@@ -24,7 +36,7 @@ void Database::executeQuery(const std::string raw_query, vec<std::string> &&args
     return 0;
   };
 
-  query_exit_code = sqlite3_exec(db, query.c_str(), callback, (void *)this, &msg);
+  query_exit_code = sqlite3_exec(db, sql, callback, (void *)this, &msg);
   if (query_exit_code != SQLITE_OK)
   {
     DatabaseError qerror(query_exit_code, msg);
@@ -33,13 +45,15 @@ void Database::executeQuery(const std::string raw_query, vec<std::string> &&args
   }
 }
 
-void Database::executeUpdate(const std::string raw_query, vec<std::string> &&args) const noexcept(false)
+void Database::executeUpdate(const std::string sql) const
 {
-  std::string query = mergeQueryArgs(raw_query, std::move(args)); // Monta la consulta con los argumentos indicados
-  char *msg = nullptr;                                            // Mensaje de sliqte3 (debe ser liberado con sqlite3_free)
-  int query_exit_code;                                            // Almacena el codigo de error de la consulta
+  if (should_open)
+    throw DatabaseError(EPERM, DatabaseError::ErrMsgs::DB_IS_NOT_OPEN);
 
-  query_exit_code = sqlite3_exec(db, query.c_str(), nullptr, nullptr, &msg);
+  char *msg = nullptr; // Mensaje de sliqte3 (debe ser liberado con sqlite3_free)
+  int query_exit_code; // Almacena el codigo de error de la consulta
+
+  query_exit_code = sqlite3_exec(db, sql, nullptr, nullptr, &msg);
   if (query_exit_code != SQLITE_OK)
   {
     DatabaseError qerror(query_exit_code, msg);

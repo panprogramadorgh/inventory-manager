@@ -6,6 +6,8 @@
 #include "utils/strutils.hpp"
 #include <filesystem>
 #include <functional>
+#include <system_error>
+#include <memory>
 #include "sqlite3.h"
 
 namespace fs = std::filesystem;
@@ -15,63 +17,46 @@ using QueryResult = std::pair<vec<std::string>, vec<std::string>>;
 class Database
 {
 private:
-  sqlite3 *db;
-  const std::string file_name;
+  std::unique_ptr<sqlite3> db;
+  bool should_open;
+  std::string db_file;
+
+  // Stores query results with fetchQuery method
   vec<std::string> cols;
   vec<std::string> vals;
-  bool should_close_db, should_open_db;
-
-  // Static methods
-  static void checkFile(const std::string fname)
-  {
-    if (fs::exists(fname))
-      return;
-
-    std::error_code ec = std::make_error_code(std::errc::no_such_file_or_directory);
-
-    fs::path path(fname);
-    throw fs::filesystem_error(std::string("Could not find database file: ") + path.string(), path, ec);
-  }
 
 public:
-  Database(const std::string fname)
-      : db(nullptr), file_name(fname), should_open_db(true), should_close_db(true)
+  Database(const std::string file_path)
+      : db(nullptr), should_open(true), db_file(file_path)
   {
-    checkFile(fname);
+    if (!fs::exists(filename))
+      std::invalid_argument(std::string("Invalid argument for filename : ") + std::error_code(ENOENT, std::system_category);
   }
 
+  Database(const Database &other) = delete;
+
   Database(Database &&other)
-      : should_open_db(other.should_open_db),
-        should_close_db(other.should_close_db),
-        db(other.db),
+      : db(std::move(other.db)),
+        should_open(other.should_open),
+        db_file(std::move(other.db_file)),
         cols(std::move(other.cols)),
         vals(std::move(other.vals))
   {
-    other.should_open_db = false;
-    other.should_close_db = false;
-    other.db = nullptr;
+    other.should_open = false;
   }
 
   // Allows the posibility of extern management of sqlite3 connection
-  Database(sqlite3 *other_db, bool should_open_db, bool should_close_db)
-      : file_name("Reused sqlite3 struct"), db(other_db), should_close_db(should_close_db), should_open_db(should_open_db)
+  Database(sqlite3 &other_db, const bool is_open = false)
+      : db(other_db), should_open(!is_open)
   {
   }
 
-  // Opens database file. If database should not be open or there is an sqlite3 failure, it throws an instance of DatabaseError with "operation_not_supported" error code since it should not be possible to open the database
-  void connect()
-  {
-    int exit_code = std::make_error_code(std::errc::operation_not_supported).value();
-
-    if (!should_open_db || (exit_code = sqlite3_open(file_name.c_str(), &db)))
-      throw DatabaseError(exit_code, DatabaseError::ErrMsgs::OPENING_FAILED);
-
-    should_open_db = false;
-  }
+  /// @brief Opens database file. If database should not be open or there is an sqlite3 failure, it throws an instance of DatabaseError with "operation_not_supported" error code since it should not be possible to open the database
+  void connect();
 
   // Database interaction utilities
-  void executeQuery(std::string query, vec<std::string> &&args = {}) const noexcept(false);
-  void executeUpdate(std::string query, vec<std::string> &&args = {}) const noexcept(false);
+  void executeQuery(const std::string sql, const vec<std::string> &args = {}) const;
+  void executeUpdate(const std::string sql, const vec<std::string> &args = {}) const;
 
   // Exposes the columns and values ​​resulting from the query
   QueryResult fetchQuery() const noexcept
@@ -79,22 +64,31 @@ public:
     return std::make_pair(cols, vals);
   }
 
-  ~Database()
+  // Operators
+
+  bool operator bool()
   {
-    if (should_close_db)
-      sqlite3_close(db);
+    return (db != nullptr) && !should_open;
   }
 
-  // Static methods
+  Database &operator=(const Database &other) = delete;
 
-  // Allows you to format SQL queries with a vector of arguments
-  static std::string mergeQueryArgs(std::string query, const vec<std::string> &&args) noexcept
+  Database &operator=(Database &&other)
   {
-    std::size_t pos, i = 0;
-    while ((pos = query.find('$')) != std::string::npos)
-      StringUtilities::insert(query, args.at(i++), pos, 1);
-    return query;
+    if (&other != this)
+    {
+      db = std::move(other.db);
+      should_open = other.should_open;
+      db_file = std::move(other.db_file);
+      cols = std::move(other.cols);
+      vals = std::move(other.vals);
+
+      other.should_open = false;
+    }
+    return *this;
   }
+
+  virtual ~Database() = default;
 };
 
 #endif

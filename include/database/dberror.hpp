@@ -17,6 +17,7 @@ public:
   {
     static constexpr char OPENING_FAILED[] = "Database opening failed";
     static constexpr char INITIALIZATION_FAILED[] = "Database initialization failed";
+    static constexpr char DB_IS_NOT_OPEN[] = "Database not open";
   };
 
   // Constructors
