@@ -25,7 +25,7 @@ public:
   template <typename U = T>
   using SecureReturn = std::pair<std::optional<U>, std::string>;
 
-private:
+protected:
   // Underlayed database connection
   std::unique_ptr<Database> db;
 
@@ -40,6 +40,8 @@ private:
   struct ErrMsgs
   {
     static constexpr char ITEM_NOT_FOUND[] = "Could not find specified item/s";
+    static constexpr char CREATE_ITEM_FAILED[] = "Could not create new item";
+    static constexpr char DELETE_ITEM_FAILED[] = "Could not delete specified item/s";
   };
 
 public:
@@ -153,9 +155,6 @@ public:
     if (it != cache.cend())
       return std::make_pair(std::optional<T>(*(it->second)), "");
 
-    if (!*db)
-      return std::make_pair(std::nullopt, DatabaseError::ErrMsgs::DB_IS_NOT_OPEN);
-
     // Obtains the item from database
     try
     {
@@ -176,7 +175,7 @@ public:
     return std::make_pair(std::optional<T>(*(it->second)), "");
   }
 
-  T secGetItem(const std::uint64_t id)
+  virtual T getItem(const std::uint64_t id)
   {
     // Decrease cache relevance of items and remove irrelevant items
     vec<int> garbage_items;
@@ -200,25 +199,20 @@ public:
     if (it != cache.cend())
       return std::make_pair(std::optional<T>(*(it->second)), "");
 
-    if (!*db)
-      throw std::runtime_error(DatabaseError::ErrMsgs::DB_IS_NOT_OPEN);
-
     // Obtains the item from database
     db->executeQuery(DatabaseUtils::createQuery(sql_table, sql_viewer, "SELECT * FROM # as p WHERE p.id = $", {std::to_string(id)}));
 
     auto cont = extractContainer(db->fetchQuery());
     it = cont.find(id);
     if (it == cont.end())
-    {
       throw std::runtime_error(ErrMsgs::ITEM_NOT_FOUND);
-    }
 
     addCache(it->second); // And finally we push the item to cache
 
     return *(it->second);
   }
 
-  SecureReturn<T> secCreateItem(const T &p, const std::pair<bool> begin_commit = std::make_pair(true, true)) const noexcept
+  virtual SecureReturn<T> secCreateItem(const T &p, const std::pair<bool> begin_commit = std::make_pair(true, true)) const noexcept
   {
     try
     {
@@ -241,7 +235,7 @@ public:
       if (begin_commit.second)
         db->executeUpdate("COMMIT");
 
-      // Fetching latest product inserted (with higher i)
+      // Fetching latest item inserted (with higher i)
       query =
           DatabaseUtils::createQuery(
               sql_table,
@@ -251,6 +245,9 @@ public:
       db->executeQuery(query);
 
       auto cont = extractContainer(db->fetchQuery());
+      if (cont.size() < 1)
+        throw std::runtime_error(ErrMsgs::CREATE_ITEM_FAILED);
+
       return std::make_pair(std::optional<T>(*(cont.cbegin()->second)), "");
     }
     catch (const std::exception &e)
@@ -259,7 +256,7 @@ public:
     }
   }
 
-  T createItem(const T &p, const std::pair<bool> begin_commit = std::make_pair(true, true)) const
+  virtual T createItem(const T &p, const std::pair<bool> begin_commit = std::make_pair(true, true)) const
   {
     if (begin_commit.first)
       db->executeUpdate("BEGIN TRANSACTION");
@@ -290,31 +287,103 @@ public:
     db->executeQuery(query);
 
     auto cont = extractContainer(db->fetchQuery());
+    if (cont.size() < 1)
+      throw std::runtime_error(ErrMsgs::CREATE_ITEM_FAILED);
+
     return *(cont.cbegin()->second));
   }
 
-  /* Adicion segura */
-  SecureReturn<std::uint64_t> secAddProduct(const std::uint64_t id, const std::tuple<bool, bool> hanle_tran) noexcept;
-  /* Adicion normal */
-  std::uint64_t addProduct(const std::uint64_t id, const std::tuple<bool, bool> hanle_tran);
+  /*
+   TODO:
+    Metodos de modificacion de items genericos
+  */
+  // SecureReturn<std::uint64_t> secAddProduct(const std::uint64_t id, const std::tuple<bool, bool> hanle_tran) noexcept;
+  // std::uint64_t addProduct(const std::uint64_t id, const std::tuple<bool, bool> hanle_tran);
 
-  /* Eliminacion segura */
-  SecureReturn<std::uint64_t> secRemoveProduct(const std::uint64_t id, const std::tuple<bool, bool> hanle_tran) noexcept;
-  /* Eliminacion normal */
-  std::uint64_t removeProduct(const std::uint64_t id, const std::tuple<bool, bool> hanle_tran);
+  virtual SecureReturn<std::uint64_t> secRemoveItem(std::uint64_t id, const std::pair<bool> begin_commit = {}) noexcept
+  {
+    try
+    {
+      if (begin_commit.first)
+        db->executeUpdate("BEGIN TRANSACTION");
+
+      std::string query =
+          DatabaseUtils::createQuery(
+              sql_table,
+              sql_view,
+              "DELETE FROM % as p WHERE p.product_id = $",
+              {std::to_string(id)});
+
+      db->executeUpdate(query);
+
+      if (begin_commit.second)
+        db->executeUpdate("COMMIT");
+
+      // Verifies the item was deleted
+      query =
+          DatabaseUtils::createQuery(
+              sql_table,
+              sql_view, "SELECT * FROM # as p WHERE p.id = $", {std::to_string(id)});
+
+      db->executeQuery(query);
+
+      auto cont = extractContainer(db->fetchQuery());
+      if (cont.cbegin()->first == id)
+        throw std::runtime_error(ErrMsgs::DELETE_ITEM_FAILED);
+
+      remCache(id); // Es eliminado de la cache
+      return std::make_pair(std::optional<int>(id), "");
+    }
+    catch (const std::exception &e)
+    {
+      return std::make_pair(std::nullopt, e.what());
+    }
+  }
+
+  virtual std::uint64_t removeItem(std::uint64_t id, const std::pair<bool> begin_commit = {}) noexcept
+  {
+    if (begin_commit.first)
+      db->executeUpdate("BEGIN TRANSACTION");
+
+    std::string query =
+        DatabaseUtils::createQuery(
+            sql_table,
+            sql_view,
+            "DELETE FROM % as p WHERE p.product_id = $",
+            {std::to_string(id)});
+
+    db->executeUpdate(query);
+
+    if (begin_commit.second)
+      db->executeUpdate("COMMIT");
+
+    // Verifies the item was deleted
+    query =
+        DatabaseUtils::createQuery(
+            sql_table,
+            sql_view, "SELECT * FROM # as p WHERE p.id = $", {std::to_string(id)});
+
+    db->executeQuery(query);
+
+    auto cont = extractContainer(db->fetchQuery());
+    if (cont.cbegin()->first == id)
+      throw std::runtime_error(ErrMsgs::DELETE_ITEM_FAILED);
+
+    remCache(id); // Es eliminado de la cache
+    return id;
+  }
 
   // Cache methods
 
-  std::uint64_t addCache(std::shared_ptr<T> p) noexcept
+  std::uint64_t addCache(std::shared_ptr<T> item) noexcept
   {
-    // Do not add product if it is virtual
-    if (p->isVirtual())
+    if (item->isVirtual())
       return 0;
 
-    auto it = cache.find(p->id);
-    if (it != cache.cend()) // In case the product does not exist in cache, it is been added.
+    auto it = cache.find(item->id);
+    if (it != cache.cend()) // In case the item does not exist in cache, it is been added.
       return 0;
-    cache.emplace(p->id, p);
+    cache.emplace(item->id, p);
     return cache.size();
   }
 

@@ -4,23 +4,23 @@
 
 class SmartProductManager : public Manager<SmartProductBase>
 {
-private:
-  /* Mensajes de error genericos */
-  struct ErrMsgs
-  {
-    static constexpr char SMART_NOT_FOUND[] = "Smart product was not found";
-    static constexpr char DELETE_SMART_FAILED[] = "Could not delete smart product";
-    static constexpr char ADD_SMART_FAILED[] = "Could not add smart product count";
-  };
-
 public:
-  SmartProductManager(const std::string dbfile) : Manager(dbfile)
+  /// @brief Standard constructor
+  /// @param dbfile File path to sqlite database file
+  /// @param updater Sql table where all ManagerItems are stored as records
+  /// @param viewer Sql view which contains all resolved foreign key references (data queried from this view is used to build ManagerItem instances)
+  SmartProductManager(const std::string dbfile, const std::string updater, const std::string viewer)
+      : Manager(dbfile, updater, viewer)
   {
   }
 
-  // Must receive a connected database (Database::connect())
-  SmartProductManager(Database *db, const bool should_free_db = false)
-      : Manager(db, should_free_db)
+  /// @brief Constructor from open database instance
+  /// @param db Manager database initializer
+  /// @param updater
+  /// @param viewer
+  /// @todo Must receive a connected database (Database::connect()), so find a way to check if database is connected
+  SmartProductManager(Database &db, const std::string updater, const std::string viewer)
+      : Manager(db, updater, viewer)
   {
   }
 
@@ -32,8 +32,9 @@ public:
   {
   }
 
-  /* Metodo seguro encargado de obtencion de productos inteligentes. */
-  SecureReturn<SmartProduct> secGetSmartProduct(std::uint64_t id);
+  virtual SecureReturn<SmartProduct> secGetItem(const std::uint64_t id) noexcept override;
+
+  virtual SmartProduct getItem(const std::uint64_t id) override;
 
   ~SmartProductManager() = default;
 };
